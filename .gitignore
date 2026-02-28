@@ -1,0 +1,23 @@
+# Runtime state
+runtime/
+backups/
+
+# Legacy n8n state (kept until cutover cleanup)
+n8n_data/
+
+# Local secrets
+.env
+.env.*.local
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Temporary exports
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

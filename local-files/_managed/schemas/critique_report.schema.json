@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CritiqueReport",
+  "type": "object",
+  "required": ["stage", "score", "issues", "improved_draft"],
+  "properties": {
+    "stage": { "type": "string" },
+    "score": { "type": "number", "minimum": 0, "maximum": 10 },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "message"],
+        "properties": {
+          "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+          "message": { "type": "string", "minLength": 5 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "improved_draft": { "type": "object" }
+  },
+  "additionalProperties": false
+}

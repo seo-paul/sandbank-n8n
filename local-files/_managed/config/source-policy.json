@@ -1,0 +1,18 @@
+{
+  "mode": "local_only",
+  "allowed_sources": [
+    "searxng",
+    "rss",
+    "hacker_news",
+    "reddit_rss",
+    "searxng_site_reddit"
+  ],
+  "disabled_sources": [
+    "x"
+  ],
+  "reddit_api": {
+    "enabled": false,
+    "reason": "credentials_missing",
+    "fallback": ["reddit_rss", "searxng_site_reddit"]
+  }
+}

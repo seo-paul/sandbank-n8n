@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "source": "sandbank_richtlinien.pdf",
+  "positioning": {
+    "story": [
+      "Daten sind ueberall und datengetriebene Entscheidungen schaffen Wettbewerbsvorteile.",
+      "Sandbank macht Datenanalyse mit wenigen Klicks zugaenglich.",
+      "Fokus auf einfache Nutzung statt komplexer Enterprise-Projekte."
+    ],
+    "offer_hint": "Alles in einem Abo, Einstieg ab 69 EUR/Monat (laut Richtlinie)."
+  },
+  "values": [
+    "Transparenz",
+    "Flexibilitaet",
+    "Sicherheit",
+    "Ganzheitlich"
+  ],
+  "guidelines": [
+    "Kreativ und offen",
+    "Natuerlich und authentisch",
+    "Umweltbewusst und oekonomisch",
+    "Klar und einfach"
+  ],
+  "tone": {
+    "addressing": "Du-Ansprache auf Augenhoehe, bei Bedarf anpassungsfaehig.",
+    "writing_style": [
+      "natuerlich",
+      "authentisch",
+      "offen",
+      "klar",
+      "auf den Punkt",
+      "wissensvermittelnd"
+    ],
+    "avoid": [
+      "aufgesetzte Marketingfloskeln",
+      "unbelegte Uebertreibungen",
+      "unnatuerliche KI-Formulierungen"
+    ]
+  },
+  "visual": {
+    "colors": [
+      { "name": "SB-GRAU", "hex": "#3D3D3D" },
+      { "name": "SB-BLAU-1", "hex": "#2F4F73" },
+      { "name": "SB-BLAU-2", "hex": "#4375A2" },
+      { "name": "SB-BEIGE-1", "hex": "#C2B59C" },
+      { "name": "SB-BEIGE-2", "hex": "#F2E8CF" },
+      { "name": "SB-BEIGE-3", "hex": "#F9F4EA" },
+      { "name": "SB-BEIGE-4", "hex": "#FEF9F3" }
+    ],
+    "fonts": {
+      "primary": "Poppins Regular 400",
+      "secondary": "Poppins Semibold 600",
+      "tertiary": "Barlow Light 300 (ALLCAPS, selektiv)"
+    },
+    "logo_rules": [
+      "Hauptlogo primaer ueber Kanaele nutzen.",
+      "Mindestabstand zu anderen Elementen: halbe Logo-Breite.",
+      "Druck: mindestens 30 mm."
+    ],
+    "icon_style": "Da-vooda (SB-GRAU), optional lucide-react."
+  },
+  "content_policy": {
+    "platform_first": true,
+    "claims": "Nur belegbare Aussagen. Unsichere Fakten markieren.",
+    "structure": "Hook -> Problem -> Insight -> Beispiel -> CTA",
+    "quality_gate": "Beitrag muss Tonalitaet, ICP-Fit und Klarheit pruefbar erfuellen."
+  }
+}

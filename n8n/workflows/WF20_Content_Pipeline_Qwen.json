@@ -1,0 +1,123 @@
+{
+  "name": "WF20_Content_Pipeline_Qwen",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -980,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: {\n  topic: 'GA4 Reporting fuer Agenturen',\n  platform: 'linkedin',\n  angle: 'Haeufige Reporting-Fehler und wie Sandbank sie reduziert',\n  brand_tone: 'natuerlich, klar, authentisch, auf den Punkt'\n}}];"
+      },
+      "id": "code-input",
+      "name": "Build Topic Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const i = items[0].json;\nconst userPrompt = [\n  `Topic: ${i.topic}`,\n  `Platform: ${i.platform}`,\n  `Angle: ${i.angle}`,\n  `Tone: ${i.brand_tone}`,\n  'Erstelle einen strukturierten Post mit Hook, Problem, Insight, Beispiel und CTA.',\n  'Gib nur JSON mit Feldern title, body, cta und hashtags zurueck.'\n].join('\\n');\nreturn [{ json: { userPrompt } }];"
+      },
+      "id": "code-prompt",
+      "name": "Build Qwen Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -540,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: $env.OLLAMA_MODEL || 'qwen3.5:27b',\n  stream: false,\n  messages: [\n    { role: 'system', content: 'Du bist ein deutscher B2B-Social-Media-Copywriter. Kein Buzzword-Text. Nur belastbare Aussagen.' },\n    { role: 'user', content: $json.userPrompt }\n  ],\n  options: { temperature: 0.4 }\n} }}"
+      },
+      "id": "http-ollama",
+      "name": "Draft via Qwen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -260,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = items[0].json;\nconst content = j.message?.content || j.response || '';\nreturn [{ json: { raw_model_output: content } }];"
+      },
+      "id": "code-output",
+      "name": "Collect Draft Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Topic Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Topic Input": {
+      "main": [
+        [
+          {
+            "node": "Build Qwen Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Qwen Prompt": {
+      "main": [
+        [
+          {
+            "node": "Draft via Qwen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft via Qwen": {
+      "main": [
+        [
+          {
+            "node": "Collect Draft Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf20-content-qwen-v1"
+}

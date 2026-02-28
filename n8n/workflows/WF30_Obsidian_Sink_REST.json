@@ -1,0 +1,93 @@
+{
+  "name": "WF30_Obsidian_Sink_REST",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const date = new Date().toISOString().slice(0, 10);\nconst title = `${date} - LinkedIn - GA4 Reporting ohne Chaos`;\nconst fileName = `${title}.md`;\nconst notePath = `${$env.OBSIDIAN_NOTES_DIR}/${fileName}`;\nconst markdown = [\n  '---',\n  'description: So reduzierst du Reporting-Chaos in Agenturprojekten.',\n  'channel: linkedin',\n  'format: text-post',\n  'status: draft',\n  'link: ',\n  '---',\n  '',\n  '# ' + title,\n  '',\n  '## Hook',\n  'GA4-Dashboards scheitern selten an Datenmangel, sondern an unklaren Standards.',\n  '',\n  '## Beitrag',\n  'Viele Teams bauen Reports, aber nicht dieselbe Wahrheit. Entscheidend ist ein klarer Daten- und KPI-Vertrag.',\n  '',\n  '## CTA',\n  'Wenn du willst, teile ich eine pragmatische Checkliste fuer Agentur-Setups.'\n].join('\\n');\n\nreturn [{\n  json: {\n    notePath,\n    markdown\n  }\n}];"
+      },
+      "id": "code-note",
+      "name": "Build Obsidian Note",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{$env.OBSIDIAN_REST_URL + '/vault/' + $json.notePath}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.OBSIDIAN_REST_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "text/markdown"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/markdown",
+        "body": "={{$json.markdown}}",
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "ignoreResponseCode": true
+        }
+      },
+      "id": "http-write",
+      "name": "Write Note via Obsidian REST",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -420,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Obsidian Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Obsidian Note": {
+      "main": [
+        [
+          {
+            "node": "Write Note via Obsidian REST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf30-obsidian-sink-v1"
+}

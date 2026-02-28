@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EvidencePacket",
+  "type": "object",
+  "required": [
+    "query",
+    "source_type",
+    "title",
+    "url",
+    "published_at",
+    "summary",
+    "icp_fit_score",
+    "product_relevance_score",
+    "evidence_strength"
+  ],
+  "properties": {
+    "query": { "type": "string", "minLength": 3 },
+    "source_type": { "type": "string" },
+    "title": { "type": "string", "minLength": 3 },
+    "url": { "type": "string", "minLength": 3 },
+    "published_at": { "type": "string" },
+    "summary": { "type": "string", "minLength": 10 },
+    "key_points": { "type": "array", "items": { "type": "string" } },
+    "icp_fit_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "product_relevance_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_strength": { "type": "number", "minimum": 0, "maximum": 1 },
+    "risk_notes": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

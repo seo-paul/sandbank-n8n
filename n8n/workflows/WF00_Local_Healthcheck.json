@@ -1,0 +1,112 @@
+{
+  "name": "WF00_Local_Healthcheck",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://searxng:8080/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "sandbank"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        }
+      },
+      "id": "http-searx",
+      "name": "SearXNG Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -620,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://ollama:11434/api/tags"
+      },
+      "id": "http-ollama",
+      "name": "Ollama Tags",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -620,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.OBSIDIAN_REST_URL + '/'}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.OBSIDIAN_REST_API_KEY}}"
+            }
+          ]
+        },
+        "options": {
+          "ignoreResponseCode": true,
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "http-obsidian",
+      "name": "Obsidian Ping (Best Effort)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -620,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "SearXNG Check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ollama Tags",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Obsidian Ping (Best Effort)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf00-local-healthcheck-v1"
+}

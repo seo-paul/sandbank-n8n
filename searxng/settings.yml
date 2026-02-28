@@ -1,0 +1,35 @@
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: sandbank-local-searxng
+
+search:
+  safe_search: 1
+  autocomplete: ""
+  formats:
+    - html
+    - json
+
+server:
+  limiter: true
+  image_proxy: false
+  secret_key: "2d20e8f0a3c468ca75fd43c7dfeecb163b73281e8c0a7bb614e6fd195786afd6"
+
+redis:
+  url: valkey://valkey:6379/0
+
+outgoing:
+  request_timeout: 6.0
+  max_request_timeout: 10.0
+  pool_connections: 100
+  pool_maxsize: 20
+
+ui:
+  static_use_hash: true
+  query_in_title: true
+
+enabled_plugins:
+  - 'Hash plugin'
+  - 'Self Information'
+  - 'Tracker URL remover'

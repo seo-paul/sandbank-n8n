@@ -1,0 +1,9 @@
+query,source_type,priority
+"data infrastructure saas trends 2026",web,high
+"b2b analytics reporting pain points",web,high
+"site:reddit.com dataengineering dashboard reporting",searx_reddit,high
+"site:reddit.com marketinganalytics dashboard tooling",searx_reddit,medium
+"hacker news data analytics tools",hn,medium
+"dbt release notes analytics engineering",rss,medium
+"ga4 reporting challenges agencies",web,high
+"shopify marketing reporting attribution issues",web,medium

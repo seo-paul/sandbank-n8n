@@ -1,0 +1,25 @@
+{
+  "profiles": [
+    {
+      "platform": "linkedin",
+      "target_length_chars": [700, 1600],
+      "style": ["insight-first", "klar", "belegbar", "no fluff"],
+      "cta": ["Diskussionsfrage", "Kommentaraufforderung", "Resource-Link"]
+    },
+    {
+      "platform": "instagram",
+      "target_length_chars": [300, 1200],
+      "style": ["hook-first", "kurze Abschnitte", "scanbar"],
+      "cta": ["save/share", "dm intent", "link in bio"]
+    },
+    {
+      "platform": "reddit",
+      "target_length_chars": [500, 3000],
+      "style": ["nutzwert", "transparent", "no sales pitch"],
+      "cta": ["Erfahrungsfrage", "Best-Practice-Austausch"]
+    }
+  ],
+  "excluded": [
+    "x"
+  ]
+}

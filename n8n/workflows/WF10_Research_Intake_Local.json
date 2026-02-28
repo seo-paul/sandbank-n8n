@@ -1,0 +1,113 @@
+{
+  "name": "WF10_Research_Intake_Local",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -980,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { query: 'data infrastructure saas trends 2026', source_type: 'web' } },\n  { json: { query: 'site:reddit.com dataengineering dashboard reporting', source_type: 'searx_reddit' } },\n  { json: { query: 'ga4 reporting challenges agencies', source_type: 'web' } }\n];"
+      },
+      "id": "code-queries",
+      "name": "Build Queries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://searxng:8080/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{$json.query}}"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            },
+            {
+              "name": "language",
+              "value": "de-DE"
+            }
+          ]
+        }
+      },
+      "id": "http-search",
+      "name": "Search SearXNG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -520,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = [];\nfor (const item of items) {\n  const payload = item.json;\n  const results = Array.isArray(payload.results) ? payload.results : [];\n  for (const r of results.slice(0, 5)) {\n    out.push({\n      json: {\n        query: item.json.query || '',\n        source_type: item.json.source_type || 'web',\n        title: r.title || '',\n        url: r.url || '',\n        summary: r.content || r.snippet || '',\n        published_at: r.publishedDate || '',\n        icp_fit_score: 0.5,\n        product_relevance_score: 0.5,\n        evidence_strength: 0.5\n      }\n    });\n  }\n}\nreturn out;"
+      },
+      "id": "code-normalize",
+      "name": "Normalize Evidence Packet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Queries": {
+      "main": [
+        [
+          {
+            "node": "Search SearXNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search SearXNG": {
+      "main": [
+        [
+          {
+            "node": "Normalize Evidence Packet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf10-research-intake-v1"
+}
