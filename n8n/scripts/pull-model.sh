@@ -9,10 +9,20 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-MODEL="$(grep -E '^OLLAMA_MODEL=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" )"
+MODEL="$(grep -E '^OLLAMA_MODEL=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" || true)"
+FALLBACK_MODEL="$(grep -E '^OLLAMA_MODEL_FALLBACK=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'" || true)"
+
 if [[ -z "$MODEL" ]]; then
   MODEL="qwen3.5:27b"
 fi
+if [[ -z "$FALLBACK_MODEL" ]]; then
+  FALLBACK_MODEL="qwen2.5:3b"
+fi
 
-echo "Pulling model: $MODEL"
+echo "Pulling primary model: $MODEL"
 docker compose exec ollama ollama pull "$MODEL"
+
+if [[ "$FALLBACK_MODEL" != "$MODEL" ]]; then
+  echo "Pulling fallback model: $FALLBACK_MODEL"
+  docker compose exec ollama ollama pull "$FALLBACK_MODEL"
+fi

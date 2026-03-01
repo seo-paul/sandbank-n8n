@@ -5,5 +5,10 @@ Task:
 - Score hook strength, relevance, clarity, CTA quality.
 - Propose concrete improvements only.
 
-Output:
-- strict JSON (`critique_report.schema.json`).
+Output contract:
+- Return JSON only.
+- Must match `critique_report.schema.json`.
+
+Rules:
+- Prioritize expected outcomes: impressions, profile visits, website clicks.
+- Highlight weak strategic assumptions explicitly.

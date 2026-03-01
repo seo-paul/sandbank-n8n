@@ -56,7 +56,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{$env.OBSIDIAN_REST_URL + '/'}",
+        "url": "={{$env.OBSIDIAN_REST_URL + '/'}}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

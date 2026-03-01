@@ -123,6 +123,28 @@ else
   echo "Set OBSIDIAN_REST_API_KEY manually in .env if needed."
 fi
 
+# Ensure Obsidian content directories are set
+current_notes_dir="$(get_env_value "OBSIDIAN_NOTES_DIR")"
+if is_placeholder "$current_notes_dir"; then
+  set_env_value "OBSIDIAN_NOTES_DIR" "Marketing/Social-Media/Beitraege"
+fi
+
+current_steps_dir="$(get_env_value "OBSIDIAN_STEPS_DIR")"
+if [[ -z "$current_steps_dir" || "$current_steps_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_STEPS_DIR" "Marketing/Social-Media/Beitraege/01-Beitraege-Steps"
+fi
+
+# Ensure local model defaults are set
+current_model="$(get_env_value "OLLAMA_MODEL")"
+if is_placeholder "$current_model"; then
+  set_env_value "OLLAMA_MODEL" "qwen3.5:27b"
+fi
+
+current_model_fallback="$(get_env_value "OLLAMA_MODEL_FALLBACK")"
+if [[ -z "$current_model_fallback" || "$current_model_fallback" == "replace_with_"* ]]; then
+  set_env_value "OLLAMA_MODEL_FALLBACK" "qwen2.5:3b"
+fi
+
 # Generate SearXNG secret if still placeholder
 if [[ -f "$SEARX_SETTINGS" ]] && grep -q 'replace_me_with_openssl_rand_hex_32' "$SEARX_SETTINGS"; then
   searx_key="$(openssl rand -hex 32)"

@@ -12,11 +12,13 @@ search:
     - json
 
 server:
-  limiter: true
+  # Local-only setup behind localhost binding; disable limiter to avoid
+  # botdetection false positives for internal container-to-container calls.
+  limiter: false
   image_proxy: false
   secret_key: "2d20e8f0a3c468ca75fd43c7dfeecb163b73281e8c0a7bb614e6fd195786afd6"
 
-redis:
+valkey:
   url: valkey://valkey:6379/0
 
 outgoing:

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VisualBrief",
+  "type": "object",
+  "required": [
+    "platform",
+    "visual_prompt",
+    "color_palette",
+    "composition_constraints"
+  ],
+  "properties": {
+    "platform": { "type": "string", "enum": ["linkedin", "instagram", "reddit"] },
+    "visual_prompt": { "type": "string", "minLength": 20 },
+    "color_palette": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "type": "string", "minLength": 4 }
+    },
+    "composition_constraints": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 5 }
+    }
+  },
+  "additionalProperties": false
+}

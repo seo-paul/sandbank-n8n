@@ -9,6 +9,11 @@ Task:
   - status
   - link
 
-Output:
-- strict JSON matching `obsidian_note.schema.json`
+Output contract:
+- Return JSON only.
+- Must match `obsidian_note.schema.json`.
 - `markdown_body` must be ready to write into Obsidian note file.
+
+Rules:
+- Keep markdown human-readable and concise.
+- Preserve factual wording from approved draft.

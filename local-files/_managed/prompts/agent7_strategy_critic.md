@@ -5,5 +5,10 @@ Task:
 - Challenge weak assumptions and unclear claims.
 - Keep style aligned to Sandbank brand and audience.
 
-Output:
-- strict JSON (`critique_report.schema.json`).
+Output contract:
+- Return JSON only.
+- Must match `critique_report.schema.json`.
+
+Rules:
+- Be stricter than Agent 6.
+- Only accept drafts that are specific, credible, and channel-appropriate.

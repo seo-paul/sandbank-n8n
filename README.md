@@ -2,16 +2,18 @@
 
 Local-first stack for social content workflows with no API costs:
 - n8n orchestration
-- Qwen via Ollama (`qwen3.5:27b`)
+- Qwen via Ollama (primary `qwen3.5:27b`, fallback `qwen2.5:3b`)
 - SearXNG web research (no X integration)
-- Obsidian Local REST API sink
+- Obsidian Local REST API sink + stage trace log
 
 ## Goals
 - Local generation and review workflow for social posts.
 - Structured, inspectable intermediate artifacts.
 - Strict schemas and role-separated workflow stages.
 - Direct write target into Obsidian path:
-  `21_Marketing/Social-Media/Beitraege`
+  `Marketing/Social-Media/Beitraege`
+- Stage-by-stage run trace in:
+  `Marketing/Social-Media/Beitraege/01-Beitraege-Steps`
 
 ## What is included
 - Hardened local docker stack in `docker-compose.yml`.
@@ -19,6 +21,7 @@ Local-first stack for social content workflows with no API costs:
 - Brand-guideline extraction pipeline from PDF.
 - n8n workflow blueprints under `n8n/workflows/`.
 - Operational scripts under `n8n/scripts/`.
+- Obsidian run template under `local-files/_managed/templates/`.
 
 ## Prerequisites
 - Docker + Docker Compose
@@ -38,12 +41,15 @@ This runs one-shot bootstrap:
 - automatic key/secret generation
 - Obsidian REST key auto-load (if plugin config exists)
 - stack start
-- Qwen model pull
+- Qwen primary + fallback model pull
 - workflow import
 - health check
 
 You do not need to run separate step 3/4/5/6 commands manually.
 `./dev.sh bootstrap` handles initialization end-to-end.
+
+After bootstrap, ensure this folder exists in your Obsidian vault:
+`Marketing/Social-Media/Beitraege/01-Beitraege-Steps`
 
 ## Orchestrator commands
 ```bash
@@ -60,8 +66,32 @@ You do not need to run separate step 3/4/5/6 commands manually.
 - Workflow execution and scheduling runs in the n8n UI (`http://localhost:5678`).
 - Normal daily usage is usually:
   1) `./dev.sh up`
-  2) use n8n UI for runs/edits
+  2) run `WF90_Orchestrator_7Stage_Obsidian` in n8n UI
   3) `./dev.sh down` when done
+
+## Model sizing and fallback
+- Primary model is `qwen3.5:27b` as requested.
+- `qwen3.5:27b` needs roughly ~21 GiB available runtime memory in Ollama.
+- Current stack auto-detects insufficient memory and switches to `qwen2.5:3b`.
+- This switch is logged per run in `01-Beitraege-Steps` under "Model Selection".
+- To run `qwen3.5:27b` end-to-end, increase Docker Desktop memory accordingly.
+
+## Workflow entry points
+- `WF00_Local_Healthcheck`: checks SearXNG, Ollama, Obsidian REST.
+- `WF90_Orchestrator_7Stage_Obsidian`: production pipeline.
+  - Agent 1 Research Intake
+  - Agent 2 Topic Fit
+  - Agent 3 Draft Factory
+  - Agent 4 AI-Sounding Critic
+  - Agent 5 Visual Brief
+  - Agent 6 Strategy Critic 1
+  - Agent 7 Strategy Critic 2
+  - writes final post note + step log note to Obsidian
+
+Legacy helper workflows stay available for isolated debugging:
+- `WF10_Research_Intake_Local`
+- `WF20_Content_Pipeline_Qwen`
+- `WF30_Obsidian_Sink_REST`
 
 ## Export workflows after edits in UI
 ```bash
@@ -75,12 +105,13 @@ You do not need to run separate step 3/4/5/6 commands manually.
 
 ## Obsidian sink behavior
 - Primary path: Obsidian REST API (`/vault/{path}` family).
-- Note metadata aligns with your base fields:
+- Final post note metadata aligns with your base fields:
   - `description`
   - `channel`
   - `format`
   - `status`
   - `link`
+- Per-run step log note is written to `OBSIDIAN_STEPS_DIR`.
 
 ## Filesystem contracts
 - Managed config/prompts/schemas: `local-files/_managed/`

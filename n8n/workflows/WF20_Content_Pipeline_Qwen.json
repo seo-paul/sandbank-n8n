@@ -44,7 +44,10 @@
         "url": "http://ollama:11434/api/chat",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ {\n  model: $env.OLLAMA_MODEL || 'qwen3.5:27b',\n  stream: false,\n  messages: [\n    { role: 'system', content: 'Du bist ein deutscher B2B-Social-Media-Copywriter. Kein Buzzword-Text. Nur belastbare Aussagen.' },\n    { role: 'user', content: $json.userPrompt }\n  ],\n  options: { temperature: 0.4 }\n} }}"
+        "jsonBody": "={{ {\n  model: $env.OLLAMA_MODEL || 'qwen3.5:27b',\n  stream: false,\n  messages: [\n    { role: 'system', content: 'Du bist ein deutscher B2B-Social-Media-Copywriter. Kein Buzzword-Text. Nur belastbare Aussagen. Keine Gedankenkette, nur das Ergebnis.' },\n    { role: 'user', content: $json.userPrompt }\n  ],\n  options: { temperature: 0.3, num_predict: 180, num_ctx: 1024 }\n} }}",
+        "options": {
+          "timeout": 1200000
+        }
       },
       "id": "http-ollama",
       "name": "Draft via Qwen",
