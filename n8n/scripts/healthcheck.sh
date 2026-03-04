@@ -18,23 +18,31 @@ echo "== searxng =="
 curl -fsS -A "Mozilla/5.0 (sandbank healthcheck)" "http://localhost:8088/" >/dev/null && echo "searxng ok"
 
 echo "== ollama =="
-docker compose exec -T ollama ollama list >/dev/null && echo "ollama ok"
+if command -v ollama >/dev/null 2>&1; then
+  ollama list >/dev/null && echo "ollama ok"
+else
+  echo "ollama CLI not found on host."
+  exit 1
+fi
 
 PRIMARY_MODEL="${OLLAMA_MODEL:-qwen3.5:27b}"
-FALLBACK_MODEL="${OLLAMA_MODEL_FALLBACK:-qwen2.5:3b}"
+OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-http://host.docker.internal:11434}"
+OLLAMA_BASE_URL="${OLLAMA_BASE_URL%/}"
+HOST_OLLAMA_BASE_URL="${OLLAMA_BASE_URL/host.docker.internal/localhost}"
 
 echo "== ollama model preflight =="
-docker compose exec -T n8n node - <<'NODE'
+OLLAMA_MODEL="$PRIMARY_MODEL" OLLAMA_BASE_URL="$HOST_OLLAMA_BASE_URL" node - <<'NODE'
 const primary = process.env.OLLAMA_MODEL || 'qwen3.5:27b';
-const fallback = process.env.OLLAMA_MODEL_FALLBACK || 'qwen2.5:3b';
+const baseUrl = (process.env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\/+$/, '');
 
 async function probe(model) {
-  const response = await fetch('http://ollama:11434/api/chat', {
+  const response = await fetch(`${baseUrl}/api/chat`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       model,
       stream: false,
+      keep_alive: '30m',
       messages: [{ role: 'user', content: 'Reply only with OK.' }],
       options: { num_ctx: 512, num_predict: 2, temperature: 0 }
     })
@@ -63,25 +71,8 @@ async function probe(model) {
     process.exit(0);
   }
 
-  const memoryIssue = /model requires more system memory|model request too large for system/i.test(primaryResult.detail);
-  if (memoryIssue) {
-    console.log(`primary model unavailable due to memory: ${primary}`);
-    console.log(`reason: ${primaryResult.detail}`);
-  } else {
-    console.log(`primary model probe failed: ${primary}`);
-    console.log(`reason: ${primaryResult.detail}`);
-  }
-
-  if (fallback && fallback !== primary) {
-    const fallbackResult = await probe(fallback);
-    if (fallbackResult.ok) {
-      console.log(`fallback model ok: ${fallback}`);
-      process.exit(0);
-    }
-    console.log(`fallback model probe failed: ${fallback}`);
-    console.log(`reason: ${fallbackResult.detail}`);
-  }
-
+  console.log(`primary model probe failed: ${primary}`);
+  console.log(`reason: ${primaryResult.detail}`);
   process.exit(1);
 })().catch((error) => {
   console.log('ollama model preflight failed:', error.message || String(error));

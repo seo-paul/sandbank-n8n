@@ -75,6 +75,16 @@ if is_placeholder "$basic_user"; then
   set_env_value "N8N_BASIC_AUTH_USER" "admin"
 fi
 
+current_runner_timeout="$(get_env_value "N8N_RUNNERS_TASK_TIMEOUT")"
+if [[ -z "$current_runner_timeout" || "$current_runner_timeout" == "replace_with_"* ]]; then
+  set_env_value "N8N_RUNNERS_TASK_TIMEOUT" "1800"
+fi
+
+current_ollama_base_url="$(get_env_value "OLLAMA_BASE_URL")"
+if [[ -z "$current_ollama_base_url" || "$current_ollama_base_url" == "replace_with_"* ]]; then
+  set_env_value "OLLAMA_BASE_URL" "http://host.docker.internal:11434"
+fi
+
 # Try to auto-load Obsidian Local REST settings from plugin data.json
 PLUGIN_DATA_PATH_DEFAULT="/Users/${USER}/Library/Mobile Documents/iCloud~md~obsidian/Documents/sandbank-obsidian/.obsidian/plugins/obsidian-local-rest-api/data.json"
 PLUGIN_DATA_PATH="${OBSIDIAN_PLUGIN_DATA_PATH:-$PLUGIN_DATA_PATH_DEFAULT}"
@@ -129,20 +139,55 @@ if is_placeholder "$current_notes_dir"; then
   set_env_value "OBSIDIAN_NOTES_DIR" "Marketing/Social-Media/Beitraege"
 fi
 
-current_steps_dir="$(get_env_value "OBSIDIAN_STEPS_DIR")"
-if [[ -z "$current_steps_dir" || "$current_steps_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_STEPS_DIR" "Marketing/Social-Media/Beitraege/01-Beitraege-Steps"
+current_workflow_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DIR")"
+if [[ -z "$current_workflow_dir" || "$current_workflow_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Marketing/Social-Media/Workflow\""
+fi
+
+current_workflow_logs_dir="$(get_env_value "OBSIDIAN_WORKFLOW_LOGS_DIR")"
+if [[ -z "$current_workflow_logs_dir" || "$current_workflow_logs_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_LOGS_DIR" "\"Marketing/Social-Media/Workflow/Workflow Logs\""
+fi
+
+current_workflow_results_dir="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR")"
+if [[ -z "$current_workflow_results_dir" || "$current_workflow_results_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Marketing/Social-Media/Workflow/Workflow Ergebnisse\""
+fi
+
+current_workflow_drafts_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DRAFTS_DIR")"
+if [[ -z "$current_workflow_drafts_dir" || "$current_workflow_drafts_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_DRAFTS_DIR" "\"Marketing/Social-Media/Workflow/Drafts\""
+fi
+
+current_workflow_prompts_dir="$(get_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR")"
+if [[ -z "$current_workflow_prompts_dir" || "$current_workflow_prompts_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Marketing/Social-Media/Workflow/Prompts\""
+fi
+
+current_workflow_results_index="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_INDEX")"
+if [[ -z "$current_workflow_results_index" || "$current_workflow_results_index" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_INDEX" "\"Marketing/Social-Media/Workflow/Workflow Ergebnisse/00-Workflow-Ergebnisse.md\""
+fi
+
+current_workflow_steps_file="$(get_env_value "OBSIDIAN_WORKFLOW_STEPS_FILE")"
+if [[ -z "$current_workflow_steps_file" || "$current_workflow_steps_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_STEPS_FILE" "\"Marketing/Social-Media/Workflow/Workflow Schritte.md\""
+fi
+
+current_workflow_intermediate_file="$(get_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_FILE")"
+if [[ -z "$current_workflow_intermediate_file" || "$current_workflow_intermediate_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_FILE" "\"Marketing/Social-Media/Workflow/Workflow Zwischenergebnisse.md\""
+fi
+
+current_workflow_overview_file="$(get_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE")"
+if [[ -z "$current_workflow_overview_file" || "$current_workflow_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Social-Media/Workflow/Workflow Übersicht.md\""
 fi
 
 # Ensure local model defaults are set
 current_model="$(get_env_value "OLLAMA_MODEL")"
 if is_placeholder "$current_model"; then
   set_env_value "OLLAMA_MODEL" "qwen3.5:27b"
-fi
-
-current_model_fallback="$(get_env_value "OLLAMA_MODEL_FALLBACK")"
-if [[ -z "$current_model_fallback" || "$current_model_fallback" == "replace_with_"* ]]; then
-  set_env_value "OLLAMA_MODEL_FALLBACK" "qwen2.5:3b"
 fi
 
 # Generate SearXNG secret if still placeholder

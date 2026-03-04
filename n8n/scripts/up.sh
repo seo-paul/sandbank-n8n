@@ -9,7 +9,7 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-mkdir -p runtime/{n8n,postgres,redis,ollama,searxng} local-files/_runtime backups
+mkdir -p runtime/{n8n,postgres,redis,searxng} local-files/_runtime backups
 
 docker compose up -d
 
