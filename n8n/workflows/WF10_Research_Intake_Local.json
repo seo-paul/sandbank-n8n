@@ -1,25 +1,17 @@
 {
-  "name": "WF10_Research_Intake_Local",
+  "name": "WF10 Research Sammeln",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b2fc67f8-17a4-4d3d-9dd9-2f2e6d8f0a10",
   "nodes": [
     {
       "parameters": {},
-      "id": "manual-1",
-      "name": "Manual Trigger",
+      "id": "trigger-sub",
+      "name": "Start Manual",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [
-        -980,
-        260
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "return [\n  { json: { query: 'data infrastructure saas trends 2026', source_type: 'web' } },\n  { json: { query: 'site:reddit.com dataengineering dashboard reporting', source_type: 'searx_reddit' } },\n  { json: { query: 'ga4 reporting challenges agencies', source_type: 'web' } }\n];"
-      },
-      "id": "code-queries",
-      "name": "Build Queries",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "position": [
         -760,
         260
@@ -27,87 +19,29 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "http://searxng:8080/search",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "q",
-              "value": "={{$json.query}}"
-            },
-            {
-              "name": "format",
-              "value": "json"
-            },
-            {
-              "name": "language",
-              "value": "de-DE"
-            }
-          ]
-        }
+        "jsCode": "const ctx = items[0].json;\n\nfunction nowIso() { return new Date().toISOString(); }\nfunction ensureArray(value) { return Array.isArray(value) ? value : []; }\nfunction shortText(value, maxLen = 240) {\n  const text = typeof value === 'string' ? value : JSON.stringify(value || '');\n  return text.length <= maxLen ? text : text.slice(0, maxLen - 3) + '...';\n}\n\nasync function callSearx(query) {\n  const maxAttempts = 4;\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      return await this.helpers.httpRequest({\n        method: 'GET',\n        url: 'http://searxng:8080/search',\n        qs: { format: 'json', language: 'de-DE', q: query },\n        headers: { 'User-Agent': 'Mozilla/5.0 (sandbank-workflow-research)' },\n        json: true,\n      });\n    } catch (error) {\n      const status = error?.response?.status || error?.httpCode || 0;\n      if (status === 429 && attempt < maxAttempts) {\n        await new Promise((resolve) => setTimeout(resolve, 450 * attempt));\n        continue;\n      }\n      throw new Error('SearXNG failed for query \"' + query + '\": ' + (error.message || 'request error'));\n    }\n  }\n  throw new Error('SearXNG failed after retries for query \"' + query + '\"');\n}\n\nasync function callQwenSummary(payload) {\n  const prompt = [\n    ctx.prompts.qwen_step_summary,\n    'Payload: ' + shortText(payload, 2200),\n    'Antworte knapp in 1-2 Saetzen.',\n  ].join('\\n\\n');\n  try {\n    const data = await this.helpers.httpRequest({\n      method: 'POST',\n      url: (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\\/+$/, '') + '/api/chat'),\n      body: {\n        model: ctx.model_used,\n        stream: false,\n        keep_alive: '30m',\n        messages: [\n          { role: 'system', content: 'Du schreibst knappe Workflow-Zusammenfassungen. Keine Listen.' },\n          { role: 'user', content: prompt },\n        ],\n        options: { temperature: 0.1, num_predict: 40, num_ctx: 256 },\n      },\n      json: true,\n      timeout: 90000,\n    });\n    return shortText((data?.message?.content || data?.response || '').replace(/\\s+/g, ' ').trim(), 280);\n  } catch (error) {\n    return 'Zusammenfassung fehlgeschlagen: ' + shortText(error.message || 'unknown', 160);\n  }\n}\n\nfunction addStage(step, stage, status, inputRef, outputRef, quality, notes, issueCount = 0) {\n  ctx.stage_logs.push({\n    step,\n    stage,\n    status,\n    input_ref: inputRef,\n    output_ref: outputRef,\n    quality_score: Number.isFinite(Number(quality)) ? Number(quality) : 0,\n    notes: String(notes || ''),\n    issues: Number.isFinite(Number(issueCount)) ? Number(issueCount) : 0,\n    model_used: ctx.model_used,\n    ts: nowIso(),\n  });\n  ctx.model_trace = ensureArray(ctx.model_trace);\n  ctx.model_trace.push({ step, stage, model_used: ctx.model_used, ts: nowIso() });\n}\n\nfunction avg(values) {\n  if (!values.length) return 0;\n  return values.reduce((a, b) => a + b, 0) / values.length;\n}\n\nconst baseQueries = [\n  ctx.topic_hint ? String(ctx.topic_hint) + ' b2b datenanalyse praxis' : null,\n  'b2b analytics reporting pain points 2026',\n  'data infrastructure saas trends 2026',\n  'site:reddit.com dataengineering dashboard reporting',\n  'site:reddit.com SideProject openrouter exa serp',\n].filter(Boolean);\n\nconst rawSignals = [];\nconst failedQueries = [];\n\nfor (const query of baseQueries.slice(0, 4)) {\n  try {\n    const response = await callSearx.call(this, query);\n    const results = ensureArray(response.results).slice(0, 4);\n    for (const result of results) {\n      rawSignals.push({\n        query,\n        source_type: query.includes('site:reddit.com') ? 'searx_reddit' : 'web',\n        title: String(result.title || ''),\n        url: String(result.url || ''),\n        summary: String(result.content || result.snippet || ''),\n        published_at: String(result.publishedDate || ''),\n      });\n    }\n  } catch (error) {\n    failedQueries.push({ query, reason: String(error.message || 'unknown') });\n  }\n}\n\nif (!rawSignals.length) {\n  throw new Error('No research signals collected. Failed queries: ' + JSON.stringify(failedQueries));\n}\n\nctx.artifacts.raw_signals = rawSignals;\naddStage(\n  1,\n  'collect_research_daten',\n  'ok',\n  'run/' + ctx.run_id + '/stage1/input',\n  'run/' + ctx.run_id + '/stage1/raw_signals',\n  rawSignals.length >= 6 ? 8.5 : 6.5,\n  'signals=' + rawSignals.length + '; failed_queries=' + failedQueries.length,\n  failedQueries.length,\n);\nctx.stage_summaries.push({\n  step: 1,\n  stage: 'collect_research_daten',\n  summary: await callQwenSummary.call(this, JSON.stringify(rawSignals.slice(0, 6))),\n});\n\nconst evidencePackets = rawSignals.slice(0, 12).map((signal) => {\n  const pointA = shortText(signal.title || 'Signal ohne Titel', 120);\n  const pointB = shortText(signal.summary || 'Keine Zusammenfassung verfuegbar.', 140);\n  const isReddit = String(signal.source_type || '').includes('reddit');\n  return {\n    query: String(signal.query || ''),\n    source_type: String(signal.source_type || 'web'),\n    title: String(signal.title || ''),\n    url: String(signal.url || ''),\n    published_at: String(signal.published_at || ''),\n    summary: String(signal.summary || ''),\n    key_points: [pointA, pointB].filter(Boolean),\n    icp_fit_score: isReddit ? 0.62 : 0.74,\n    product_relevance_score: isReddit ? 0.58 : 0.71,\n    evidence_strength: String(signal.url || '').startsWith('http') ? 0.69 : 0.48,\n    risk_notes: [isReddit ? 'community_signal' : 'web_signal'],\n  };\n});\n\nctx.artifacts.evidence_packets = evidencePackets;\naddStage(\n  2,\n  'build_evidence_paket',\n  'ok',\n  'run/' + ctx.run_id + '/stage2/input',\n  'run/' + ctx.run_id + '/stage2/evidence_packets',\n  avg(evidencePackets.map((p) => p.evidence_strength)),\n  'packets=' + evidencePackets.length,\n);\nctx.stage_summaries.push({\n  step: 2,\n  stage: 'build_evidence_paket',\n  summary: await callQwenSummary.call(this, JSON.stringify(evidencePackets.slice(0, 4))),\n});\n\nreturn [{ json: ctx }];\n"
       },
-      "id": "http-search",
-      "name": "Search SearXNG",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        -520,
-        260
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const out = [];\nfor (const item of items) {\n  const payload = item.json;\n  const results = Array.isArray(payload.results) ? payload.results : [];\n  for (const r of results.slice(0, 5)) {\n    out.push({\n      json: {\n        query: item.json.query || '',\n        source_type: item.json.source_type || 'web',\n        title: r.title || '',\n        url: r.url || '',\n        summary: r.content || r.snippet || '',\n        published_at: r.publishedDate || '',\n        icp_fit_score: 0.5,\n        product_relevance_score: 0.5,\n        evidence_strength: 0.5\n      }\n    });\n  }\n}\nreturn out;"
-      },
-      "id": "code-normalize",
-      "name": "Normalize Evidence Packet",
+      "id": "code-research",
+      "name": "Search Web Quellen",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -260,
+        -420,
         260
       ]
     }
   ],
   "connections": {
-    "Manual Trigger": {
+    "Start Manual": {
       "main": [
         [
           {
-            "node": "Build Queries",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Queries": {
-      "main": [
-        [
-          {
-            "node": "Search SearXNG",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Search SearXNG": {
-      "main": [
-        [
-          {
-            "node": "Normalize Evidence Packet",
+            "node": "Search Web Quellen",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "wf10-research-intake-v1"
+  }
 }

@@ -1,25 +1,17 @@
 {
-  "name": "WF20_Content_Pipeline_Qwen",
+  "name": "WF20 Qwen Entwurf",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1c902a6f-a43f-42c4-8ee1-66a2c4027c71",
   "nodes": [
     {
       "parameters": {},
-      "id": "manual-1",
-      "name": "Manual Trigger",
+      "id": "trigger-sub",
+      "name": "Start Manual",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [
-        -980,
-        260
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "return [{ json: {\n  topic: 'GA4 Reporting fuer Agenturen',\n  platform: 'linkedin',\n  angle: 'Haeufige Reporting-Fehler und wie Sandbank sie reduziert',\n  brand_tone: 'natuerlich, klar, authentisch, auf den Punkt'\n}}];"
-      },
-      "id": "code-input",
-      "name": "Build Topic Input",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "position": [
         -760,
         260
@@ -27,100 +19,29 @@
     },
     {
       "parameters": {
-        "jsCode": "const i = items[0].json;\nconst userPrompt = [\n  `Topic: ${i.topic}`,\n  `Platform: ${i.platform}`,\n  `Angle: ${i.angle}`,\n  `Tone: ${i.brand_tone}`,\n  'Erstelle einen strukturierten Post mit Hook, Problem, Insight, Beispiel und CTA.',\n  'Gib nur JSON mit Feldern title, body, cta und hashtags zurueck.'\n].join('\\n');\nreturn [{ json: { userPrompt } }];"
+        "jsCode": "const ctx = items[0].json;\n\nfunction nowIso() { return new Date().toISOString(); }\nfunction ensureArray(value) { return Array.isArray(value) ? value : []; }\nfunction clamp(value, min, max, fallback) {\n  const n = Number(value);\n  if (!Number.isFinite(n)) return fallback;\n  if (n < min) return min;\n  if (n > max) return max;\n  return n;\n}\nfunction shortText(value, maxLen = 320) {\n  const text = typeof value === 'string' ? value : JSON.stringify(value || '');\n  return text.length <= maxLen ? text : text.slice(0, maxLen - 3) + '...';\n}\nfunction sanitizeSlug(value) {\n  return String(value || 'workflow').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'workflow';\n}\nfunction yamlEscape(value) { return String(value || '').replace(/\\n/g, ' ').replace(/\"/g, '\\\\\"'); }\n\nfunction addStage(step, stage, status, inputRef, outputRef, quality, notes, issueCount = 0) {\n  ctx.stage_logs.push({\n    step,\n    stage,\n    status,\n    input_ref: inputRef,\n    output_ref: outputRef,\n    quality_score: Number.isFinite(Number(quality)) ? Number(quality) : 0,\n    notes: String(notes || ''),\n    issues: Number.isFinite(Number(issueCount)) ? Number(issueCount) : 0,\n    model_used: ctx.model_used,\n    ts: nowIso(),\n  });\n  ctx.model_trace = ensureArray(ctx.model_trace);\n  ctx.model_trace.push({ step, stage, model_used: ctx.model_used, ts: nowIso() });\n}\n\nfunction extractJsonCandidate(rawText) {\n  if (typeof rawText !== 'string') throw new Error('Model output is not a string');\n  const fenced = rawText.match(/```(?:json)?\\s*([\\s\\S]*?)```/i);\n  const text = (fenced ? fenced[1] : rawText).trim();\n  try { return JSON.parse(text); } catch {}\n  const objStart = text.indexOf('{');\n  const arrStart = text.indexOf('[');\n  const starts = [objStart, arrStart].filter((v) => v >= 0);\n  if (!starts.length) throw new Error('No JSON start found');\n  const start = Math.min(...starts);\n  const openChar = text[start];\n  const closeChar = openChar === '{' ? '}' : ']';\n  let depth = 0, inString = false, escaped = false;\n  for (let i = start; i < text.length; i++) {\n    const ch = text[i];\n    if (inString) {\n      if (escaped) escaped = false;\n      else if (ch === '\\\\') escaped = true;\n      else if (ch === '\"') inString = false;\n      continue;\n    }\n    if (ch === '\"') { inString = true; continue; }\n    if (ch === openChar) depth += 1;\n    if (ch === closeChar) {\n      depth -= 1;\n      if (depth === 0) return JSON.parse(text.slice(start, i + 1));\n    }\n  }\n  throw new Error('Could not extract valid JSON payload');\n}\n\nasync function callOllamaRaw(systemPrompt, userPrompt, options = {}) {\n  const temperature = Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.3;\n  const numPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 180;\n  const numCtx = Number.isFinite(Number(options.num_ctx)) ? Number(options.num_ctx) : 768;\n  const timeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 900000;\n  const maxAttempts = Number.isFinite(Number(options.max_attempts)) ? Number(options.max_attempts) : 3;\n  const keepAlive = String(options.keep_alive || '30m');\n\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      const data = await this.helpers.httpRequest({\n        method: 'POST',\n        url: (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\\/+$/, '') + '/api/chat'),\n        body: {\n          model: ctx.model_used,\n          stream: false,\n          keep_alive: keepAlive,\n          messages: [\n            { role: 'system', content: systemPrompt },\n            { role: 'user', content: userPrompt },\n          ],\n          options: { temperature, num_predict: numPredict, num_ctx: numCtx },\n        },\n        json: true,\n        timeout,\n      });\n      const text = data?.message?.content || data?.response;\n      if (!text) throw new Error('Ollama response has no content');\n      return { text: String(text), model_used: ctx.model_used };\n    } catch (error) {\n      const details = [error?.message || '', error?.response?.data?.error || ''].filter(Boolean).join(' | ');\n      const retryable = /status code\\s+5[0-9]{2}|runner process has terminated|llama runner|timed out|socket hang up|econnreset|context canceled|connection reset|no content|response has no content|empty response/i.test(details);\n      if (retryable && attempt < maxAttempts) {\n        await new Promise((resolve) => setTimeout(resolve, 2500 * attempt));\n        continue;\n      }\n      throw new Error('Ollama call failed (attempt=' + attempt + '/' + maxAttempts + '): ' + (details || 'unknown'));\n    }\n  }\n}\nasync function callOllamaJson(systemPrompt, userPrompt, options = {}) {\n  const raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);\n  return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, model_used: raw.model_used };\n}\nasync function callOllamaText(systemPrompt, userPrompt, options = {}) {\n  const raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);\n  return { text: raw.text, model_used: raw.model_used };\n}\n\nasync function addStageSummary(step, stage, payload) {\n  const summaryPrompt = [ctx.prompts.qwen_step_summary, 'Schritt: ' + step + ' - ' + stage, 'Payload: ' + shortText(payload, 2500), 'Antworte nur mit einer kompakten Zusammenfassung.'].join('\\n\\n');\n  let summary = '';\n  try {\n    const res = await callOllamaText.call(this, 'Du schreibst knappe Workflow-Zusammenfassungen. Keine Markdown-Listen.', summaryPrompt, { temperature: 0.1, num_predict: 40, num_ctx: 256, timeout: 90000, max_attempts: 2 });\n    summary = shortText(res.text.replace(/\\s+/g, ' ').trim(), 280);\n  } catch (error) {\n    summary = 'Zusammenfassung fehlgeschlagen: ' + shortText(error.message || 'unknown', 180);\n  }\n  ctx.stage_summaries.push({ step, stage, summary });\n}\n\nfunction assertType(label, value, type) {\n  if (type === 'array') { if (!Array.isArray(value)) throw new Error(label + ' must be an array'); return; }\n  if (type === 'object') { if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(label + ' must be an object'); return; }\n  if (typeof value !== type) throw new Error(label + ' must be type ' + type);\n}\nfunction assertStringArray(label, arr, minLen = 0) {\n  assertType(label, arr, 'array');\n  if (arr.length < minLen) throw new Error(label + ' requires at least ' + minLen + ' item(s)');\n  for (let i = 0; i < arr.length; i++) if (typeof arr[i] !== 'string') throw new Error(label + '[' + i + '] must be string');\n}\nfunction validatePlatformResearch(label, payload) {\n  assertType(label, payload, 'object');\n  for (const key of ['core_problem', 'proof_points']) if (!(key in payload)) throw new Error(label + ' missing key: ' + key);\n  assertType(label + '.core_problem', payload.core_problem, 'string');\n  assertStringArray(label + '.proof_points', payload.proof_points, 1);\n}\nfunction validateTopicBrief(data) {\n  const required = ['topic', 'angle', 'why_now', 'platform_recommendation', 'confidence'];\n  for (const key of required) if (!(key in data)) throw new Error('topic_brief missing key: ' + key);\n}\nfunction validateDraftPackageStrict(payload) {\n  assertType('draft_package', payload, 'object');\n  if (!('topic' in payload) || !('drafts' in payload)) throw new Error('draft_package missing required keys');\n  assertType('draft_package.topic', payload.topic, 'string');\n  assertType('draft_package.drafts', payload.drafts, 'array');\n  if (payload.drafts.length < 2) throw new Error('draft_package.drafts requires at least 2 drafts');\n}\n\nfunction compactEvidence(packets, limit = 6) {\n  return ensureArray(packets).slice(0, limit).map((packet) => ({\n    query: shortText(packet.query || '', 80),\n    title: shortText(packet.title || '', 100),\n    url: shortText(packet.url || '', 180),\n    summary: shortText(packet.summary || '', 140),\n    key_points: ensureArray(packet.key_points).slice(0, 1).map((p) => shortText(p, 90)),\n    source_type: shortText(packet.source_type || '', 40),\n  }));\n}\nfunction compactDraftPackage(pkg) {\n  const draftPackage = pkg && typeof pkg === 'object' ? pkg : {};\n  return {\n    topic: shortText(draftPackage.topic || '', 120),\n    drafts: ensureArray(draftPackage.drafts).slice(0, 2).map((draft) => ({\n      platform: shortText(draft.platform || '', 20),\n      title: shortText(draft.title || '', 120),\n      body: shortText(draft.body || '', 900),\n      cta: shortText(draft.cta || '', 140),\n      hashtags: ensureArray(draft.hashtags).slice(0, 8).map((tag) => shortText(tag, 30)),\n    })),\n  };\n}\nfunction normalizeDraftPackage(candidate, fallbackTopic) {\n  if (!candidate || !Array.isArray(candidate.drafts)) throw new Error('draft_package invalid: drafts missing');\n  const drafts = candidate.drafts.map((draft, index) => ({\n    platform: String(draft.platform || '').toLowerCase() || (index === 0 ? 'linkedin' : 'reddit'),\n    title: String(draft.title || ('Draft ' + (index + 1))),\n    body: String(draft.body || ''),\n    cta: String(draft.cta || ''),\n    hashtags: ensureArray(draft.hashtags).map((h) => String(h)),\n    notes: ensureArray(draft.notes).map((n) => String(n)),\n  }));\n  return { topic: String(candidate.topic || fallbackTopic || 'Workflow Thema'), drafts };\n}\nfunction normalizeCritique(candidate, stage) {\n  const src = candidate?.critique_report ? candidate.critique_report : candidate;\n  if (!src || typeof src !== 'object') throw new Error(stage + ' critique invalid');\n  const issues = ensureArray(src.issues).map((issue) => ({\n    severity: ['low', 'medium', 'high'].includes(issue?.severity) ? issue.severity : 'medium',\n    message: String(issue?.message || 'unspecified issue'),\n  }));\n  return { stage: String(src.stage || stage), score: clamp(src.score, 0, 10, 6), issues, improved_draft: src.improved_draft || {} };\n}\n\nconst evidencePackets = ensureArray(ctx.artifacts?.evidence_packets);\nif (!evidencePackets.length) throw new Error('Missing evidence packets from WF10');\n\nconst stage3Prompt = [ctx.prompts.agent2_topic_fit, 'Return JSON only.', 'Evidence packets: ' + JSON.stringify(compactEvidence(evidencePackets, 4))].join('\\n\\n');\nconst stage3 = await callOllamaJson.call(this, 'You are a product strategy reviewer. Return valid JSON only.', stage3Prompt, { temperature: 0.2, num_predict: 110, num_ctx: 768, timeout: 180000, max_attempts: 3 });\nconst topicBrief = stage3.parsed;\nvalidateTopicBrief(topicBrief);\ntopicBrief.confidence = clamp(topicBrief.confidence, 0, 1, 0.5);\nif (!Array.isArray(topicBrief.platform_recommendation) || !topicBrief.platform_recommendation.length) topicBrief.platform_recommendation = ['linkedin', 'reddit'];\nctx.artifacts.topic_brief = topicBrief;\naddStage(3, 'build_topic_brief', 'ok', 'run/' + ctx.run_id + '/stage3/input', 'run/' + ctx.run_id + '/stage3/topic_brief', topicBrief.confidence, shortText(topicBrief.angle, 160));\nawait addStageSummary.call(this, 3, 'build_topic_brief', JSON.stringify(topicBrief));\n\nconst stage4Prompt = [ctx.prompts.platform_linkedin, 'Return JSON only.', 'Topic brief: ' + shortText(JSON.stringify(topicBrief), 1200), 'Evidence packets: ' + JSON.stringify(compactEvidence(evidencePackets, 3))].join('\\n\\n');\nconst stage4 = await callOllamaJson.call(this, 'You format research for LinkedIn. Return valid JSON only.', stage4Prompt, { temperature: 0.2, num_predict: 110, num_ctx: 768, timeout: 150000, max_attempts: 3 });\nconst linkedinResearch = stage4.parsed;\nvalidatePlatformResearch('linkedin_research', linkedinResearch);\nctx.artifacts.linkedin_research = linkedinResearch;\naddStage(4, 'build_linkedin_fokus', 'ok', 'run/' + ctx.run_id + '/stage4/input', 'run/' + ctx.run_id + '/stage4/linkedin_research', 8.4, shortText(linkedinResearch.core_problem || 'linkedin_research_ready', 160));\nawait addStageSummary.call(this, 4, 'build_linkedin_fokus', JSON.stringify(linkedinResearch));\n\nconst stage5Prompt = [ctx.prompts.platform_reddit, 'Return JSON only.', 'Topic brief: ' + shortText(JSON.stringify(topicBrief), 1200), 'Evidence packets: ' + JSON.stringify(compactEvidence(evidencePackets, 3))].join('\\n\\n');\nconst stage5 = await callOllamaJson.call(this, 'You format research for Reddit. Return valid JSON only.', stage5Prompt, { temperature: 0.2, num_predict: 110, num_ctx: 768, timeout: 150000, max_attempts: 3 });\nconst redditResearch = stage5.parsed;\nvalidatePlatformResearch('reddit_research', redditResearch);\nctx.artifacts.reddit_research = redditResearch;\naddStage(5, 'build_reddit_fokus', 'ok', 'run/' + ctx.run_id + '/stage5/input', 'run/' + ctx.run_id + '/stage5/reddit_research', 8.4, shortText(redditResearch.core_problem || 'reddit_research_ready', 160));\nawait addStageSummary.call(this, 5, 'build_reddit_fokus', JSON.stringify(redditResearch));\n\nconst stage6Prompt = [ctx.prompts.agent3_draft, 'Return JSON only.', 'Topic brief: ' + shortText(JSON.stringify(topicBrief), 1200), 'LinkedIn prep: ' + shortText(JSON.stringify(linkedinResearch), 2200), 'Reddit prep: ' + shortText(JSON.stringify(redditResearch), 2200), 'Evidence packets: ' + JSON.stringify(compactEvidence(evidencePackets, 3))].join('\\n\\n');\nconst stage6 = await callOllamaJson.call(this, 'You are a senior B2B social copywriter. Return valid JSON only.', stage6Prompt, { temperature: 0.25, num_predict: 140, num_ctx: 768, timeout: 180000, max_attempts: 3 });\nlet draftPackage = normalizeDraftPackage(stage6.parsed, topicBrief.topic);\nvalidateDraftPackageStrict(draftPackage);\nconst linkedinDraft = draftPackage.drafts.find((d) => d.platform === 'linkedin') || draftPackage.drafts[0];\nconst redditDraft = draftPackage.drafts.find((d) => d.platform === 'reddit') || draftPackage.drafts[1] || draftPackage.drafts[0];\ndraftPackage.drafts = [linkedinDraft, redditDraft];\nctx.artifacts.draft_package = draftPackage;\naddStage(6, 'build_draft_entwuerfe', 'ok', 'run/' + ctx.run_id + '/stage6/input', 'run/' + ctx.run_id + '/stage6/draft_package', 8.1, 'drafts=' + draftPackage.drafts.length);\nawait addStageSummary.call(this, 6, 'build_draft_entwuerfe', JSON.stringify(draftPackage));\n\nconst stage7Prompt = [ctx.prompts.agent4_ai_sounding_critic, 'Return JSON only.', 'Draft package: ' + JSON.stringify(compactDraftPackage(draftPackage))].join('\\n\\n');\nconst stage7 = await callOllamaJson.call(this, 'You improve text naturalness while preserving meaning. Return valid JSON only.', stage7Prompt, { temperature: 0.2, num_predict: 110, num_ctx: 768, timeout: 150000, max_attempts: 3 });\nconst critique7 = normalizeCritique(stage7.parsed, 'ai_kritik');\nif (critique7.improved_draft?.drafts) draftPackage = normalizeDraftPackage(critique7.improved_draft, draftPackage.topic);\nctx.artifacts.critique_ai = critique7;\naddStage(7, 'run_ai_kritik', 'ok', 'run/' + ctx.run_id + '/stage7/input', 'run/' + ctx.run_id + '/stage7/critique', critique7.score, 'issues=' + critique7.issues.length, critique7.issues.length);\nawait addStageSummary.call(this, 7, 'run_ai_kritik', JSON.stringify(critique7));\n\nconst stage8Prompt = [ctx.prompts.agent6_strategy_critic, 'Return JSON only.', 'Draft package: ' + JSON.stringify(compactDraftPackage(draftPackage)), 'Topic brief: ' + shortText(JSON.stringify(topicBrief), 1200)].join('\\n\\n');\nconst stage8 = await callOllamaJson.call(this, 'You review strategy quality and improve weak assumptions. Return valid JSON only.', stage8Prompt, { temperature: 0.2, num_predict: 110, num_ctx: 768, timeout: 150000, max_attempts: 3 });\nconst critique8 = normalizeCritique(stage8.parsed, 'strategie_kritik_1');\nif (critique8.improved_draft?.drafts) draftPackage = normalizeDraftPackage(critique8.improved_draft, draftPackage.topic);\nctx.artifacts.critique_strategy_1 = critique8;\naddStage(8, 'run_strategie_kritik_1', 'ok', 'run/' + ctx.run_id + '/stage8/input', 'run/' + ctx.run_id + '/stage8/critique', critique8.score, 'issues=' + critique8.issues.length, critique8.issues.length);\nawait addStageSummary.call(this, 8, 'run_strategie_kritik_1', JSON.stringify(critique8));\n\nconst stage9Prompt = [ctx.prompts.agent7_strategy_critic, 'Return JSON only.', 'Draft package: ' + JSON.stringify(compactDraftPackage(draftPackage)), 'Topic brief: ' + shortText(JSON.stringify(topicBrief), 1200)].join('\\n\\n');\nconst stage9 = await callOllamaJson.call(this, 'You run the strict final quality review. Return valid JSON only.', stage9Prompt, { temperature: 0.2, num_predict: 110, num_ctx: 768, timeout: 150000, max_attempts: 3 });\nconst critique9 = normalizeCritique(stage9.parsed, 'strategie_kritik_2');\nif (critique9.improved_draft?.drafts) draftPackage = normalizeDraftPackage(critique9.improved_draft, draftPackage.topic);\nctx.artifacts.critique_strategy_2 = critique9;\nctx.artifacts.final_draft_package = draftPackage;\naddStage(9, 'run_strategie_kritik_2', 'ok', 'run/' + ctx.run_id + '/stage9/input', 'run/' + ctx.run_id + '/stage9/critique', critique9.score, 'issues=' + critique9.issues.length, critique9.issues.length);\nawait addStageSummary.call(this, 9, 'run_strategie_kritik_2', JSON.stringify(critique9));\n\nconst topic = String(draftPackage.topic || topicBrief.topic || 'Workflow Thema');\nconst slug = sanitizeSlug(topic);\nconst date = nowIso().slice(0, 10);\nconst linkedinFinalDraft = draftPackage.drafts.find((d) => d.platform === 'linkedin') || draftPackage.drafts[0];\nconst redditFinalDraft = draftPackage.drafts.find((d) => d.platform === 'reddit') || draftPackage.drafts[1] || draftPackage.drafts[0];\nconst evidenceRefs = evidencePackets.map((p) => String(p.url || '').trim()).filter(Boolean).slice(0, 8);\n\nconst linkedinResearchPath = ctx.workflow_results_dir + '/' + ctx.run_id + ' - linkedin-ausarbeitung.md';\nconst redditResearchPath = ctx.workflow_results_dir + '/' + ctx.run_id + ' - reddit-ausarbeitung.md';\nconst linkedinDraftPath = ctx.workflow_drafts_dir + '/LinkedIn/' + date + ' - linkedin - ' + slug + '.md';\nconst redditDraftPath = ctx.workflow_drafts_dir + '/Reddit/' + date + ' - reddit - ' + slug + '.md';\n\nconst linkedinResearchMarkdown = ['# LinkedIn Ausarbeitung', '', '- run_id: ' + ctx.run_id, '- topic: ' + topic, '- platform: linkedin', '- model_used: ' + ctx.model_used, '', '## Kernproblem', String(linkedinResearch.core_problem || ''), '', '## Insight Angles', ensureArray(linkedinResearch.insight_angles).map((v) => '- ' + String(v)).join('\\n') || '- n/a', '', '## Proof Points', ensureArray(linkedinResearch.proof_points).map((v) => '- ' + String(v)).join('\\n') || '- n/a', '', '## Hook Optionen', ensureArray(linkedinResearch.hook_options).map((v) => '- ' + String(v)).join('\\n') || '- n/a', '', '## CTA Optionen', ensureArray(linkedinResearch.cta_options).map((v) => '- ' + String(v)).join('\\n') || '- n/a'].join('\\n');\nconst redditResearchMarkdown = ['# Reddit Ausarbeitung', '', '- run_id: ' + ctx.run_id, '- topic: ' + topic, '- platform: reddit', '- model_used: ' + ctx.model_used, '', '## Kernproblem', String(redditResearch.core_problem || ''), '', '## Praktische Takeaways', ensureArray(redditResearch.practical_takeaways).map((v) => '- ' + String(v)).join('\\n') || '- n/a', '', '## Proof Points', ensureArray(redditResearch.proof_points).map((v) => '- ' + String(v)).join('\\n') || '- n/a', '', '## Titel Optionen', ensureArray(redditResearch.title_options).map((v) => '- ' + String(v)).join('\\n') || '- n/a', '', '## Discussion Prompts', ensureArray(redditResearch.discussion_prompts).map((v) => '- ' + String(v)).join('\\n') || '- n/a'].join('\\n');\n\nconst linkedinDraftMarkdown = ['---', 'Datum: ' + date, 'run_id: ' + ctx.run_id, 'Plattform: LinkedIn', 'Zielgruppe: B2B Marketing und Data Teams', 'Beitragstyp: Textbeitrag', 'Thema: \"' + yamlEscape(topic) + '\"', 'Hook: \"' + yamlEscape(linkedinFinalDraft.title || '') + '\"', 'Status: draft', 'model_used: ' + ctx.model_used, 'quality_score: ' + clamp(critique9.score, 0, 10, 6), 'evidence_refs:', evidenceRefs.map((url) => '  - ' + url).join('\\n') || '  - n/a', '---', '', '# ' + String(linkedinFinalDraft.title || topic), '', '## Beitrag', String(linkedinFinalDraft.body || ''), '', '## CTA', String(linkedinFinalDraft.cta || ''), '', '## Hashtags', ensureArray(linkedinFinalDraft.hashtags).join(' ')].join('\\n');\nconst redditDraftMarkdown = ['---', 'Datum: ' + date, 'run_id: ' + ctx.run_id, 'Plattform: Reddit', 'Zielgruppe: Tech und Builder Community', 'Beitragstyp: Diskussionsthread', 'Thema: \"' + yamlEscape(topic) + '\"', 'Hook: \"' + yamlEscape(redditFinalDraft.title || '') + '\"', 'Status: draft', 'model_used: ' + ctx.model_used, 'quality_score: ' + clamp(critique9.score, 0, 10, 6), 'evidence_refs:', evidenceRefs.map((url) => '  - ' + url).join('\\n') || '  - n/a', '---', '', '# ' + String(redditFinalDraft.title || topic), '', '## Beitrag', String(redditFinalDraft.body || ''), '', '## CTA', String(redditFinalDraft.cta || ''), '', '## Hashtags', ensureArray(redditFinalDraft.hashtags).join(' ')].join('\\n');\n\nconst minQualityScore = Number.isFinite(Number($env.WF90_MIN_QUALITY_SCORE)) ? Number($env.WF90_MIN_QUALITY_SCORE) : 6.5;\nconst minEvidenceRefs = Number.isFinite(Number($env.WF90_MIN_EVIDENCE_REFS)) ? Number($env.WF90_MIN_EVIDENCE_REFS) : 3;\nconst minDraftBodyLen = Number.isFinite(Number($env.WF90_MIN_DRAFT_BODY_LEN)) ? Number($env.WF90_MIN_DRAFT_BODY_LEN) : 180;\nconst qualityFailures = [];\nif (Number(critique9.score || 0) < minQualityScore) qualityFailures.push('quality_score<' + minQualityScore);\nif (evidenceRefs.length < minEvidenceRefs) qualityFailures.push('evidence_refs<' + minEvidenceRefs);\nif (String(linkedinFinalDraft.body || '').trim().length < minDraftBodyLen) qualityFailures.push('linkedin_body_too_short');\nif (String(redditFinalDraft.body || '').trim().length < minDraftBodyLen) qualityFailures.push('reddit_body_too_short');\nif (qualityFailures.length) throw new Error('Quality gate failed: ' + qualityFailures.join(', '));\n\nctx.topic = topic;\nctx.completed_at = nowIso();\nctx.status = 'pipeline_ok';\nctx.output_paths = {\n  linkedin_research: linkedinResearchPath,\n  reddit_research: redditResearchPath,\n  linkedin_draft: linkedinDraftPath,\n  reddit_draft: redditDraftPath,\n  workflow_log: ctx.workflow_logs_dir + '/' + ctx.run_id + '.md',\n};\nctx.generated = {\n  linkedin_research_markdown: linkedinResearchMarkdown,\n  reddit_research_markdown: redditResearchMarkdown,\n  linkedin_draft_markdown: linkedinDraftMarkdown,\n  reddit_draft_markdown: redditDraftMarkdown,\n};\n\nreturn [{ json: ctx }];\n"
       },
-      "id": "code-prompt",
-      "name": "Build Qwen Prompt",
+      "id": "code-pipeline",
+      "name": "Generate Draft Paket",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -540,
-        260
-      ]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://ollama:11434/api/chat",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ {\n  model: $env.OLLAMA_MODEL || 'qwen3.5:27b',\n  stream: false,\n  messages: [\n    { role: 'system', content: 'Du bist ein deutscher B2B-Social-Media-Copywriter. Kein Buzzword-Text. Nur belastbare Aussagen. Keine Gedankenkette, nur das Ergebnis.' },\n    { role: 'user', content: $json.userPrompt }\n  ],\n  options: { temperature: 0.3, num_predict: 180, num_ctx: 1024 }\n} }}",
-        "options": {
-          "timeout": 1200000
-        }
-      },
-      "id": "http-ollama",
-      "name": "Draft via Qwen",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        -260,
-        260
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const j = items[0].json;\nconst content = j.message?.content || j.response || '';\nreturn [{ json: { raw_model_output: content } }];"
-      },
-      "id": "code-output",
-      "name": "Collect Draft Output",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -20,
+        -420,
         260
       ]
     }
   ],
   "connections": {
-    "Manual Trigger": {
+    "Start Manual": {
       "main": [
         [
           {
-            "node": "Build Topic Input",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Topic Input": {
-      "main": [
-        [
-          {
-            "node": "Build Qwen Prompt",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Qwen Prompt": {
-      "main": [
-        [
-          {
-            "node": "Draft via Qwen",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Draft via Qwen": {
-      "main": [
-        [
-          {
-            "node": "Collect Draft Output",
+            "node": "Generate Draft Paket",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "wf20-content-qwen-v1"
+  }
 }

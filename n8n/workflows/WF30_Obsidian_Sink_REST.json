@@ -1,25 +1,17 @@
 {
-  "name": "WF30_Obsidian_Sink_REST",
+  "name": "WF30 Obsidian Schreiben",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e2e12fd7-f5fd-4ec6-a11f-02f70dd2fc6f",
   "nodes": [
     {
       "parameters": {},
-      "id": "manual-1",
-      "name": "Manual Trigger",
+      "id": "trigger-sub",
+      "name": "Start Manual",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [
-        -1040,
-        260
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const date = new Date().toISOString().slice(0, 10);\nconst title = `${date} - LinkedIn - GA4 Reporting ohne Chaos`;\nconst fileName = `${title}.md`;\nconst notePath = `${$env.OBSIDIAN_NOTES_DIR}/${fileName}`;\nconst markdown = [\n  '---',\n  'description: So reduzierst du Reporting-Chaos in Agenturprojekten.',\n  'channel: linkedin',\n  'format: text-post',\n  'status: draft',\n  'link: ',\n  '---',\n  '',\n  '# ' + title,\n  '',\n  '## Hook',\n  'GA4-Dashboards scheitern selten an Datenmangel, sondern an unklaren Standards.',\n  '',\n  '## Beitrag',\n  'Viele Teams bauen Reports, aber nicht dieselbe Wahrheit. Entscheidend ist ein klarer Daten- und KPI-Vertrag.',\n  '',\n  '## CTA',\n  'Wenn du willst, teile ich eine pragmatische Checkliste fuer Agentur-Setups.'\n].join('\\n');\n\nreturn [{\n  json: {\n    notePath,\n    markdown\n  }\n}];"
-      },
-      "id": "code-note",
-      "name": "Build Obsidian Note",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "position": [
         -760,
         260
@@ -27,34 +19,12 @@
     },
     {
       "parameters": {
-        "method": "PUT",
-        "url": "={{$env.OBSIDIAN_REST_URL + '/vault/' + $json.notePath}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "={{'Bearer ' + $env.OBSIDIAN_REST_API_KEY}}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "text/markdown"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "text/markdown",
-        "body": "={{$json.markdown}}",
-        "options": {
-          "allowUnauthorizedCerts": true,
-          "ignoreResponseCode": true
-        }
+        "jsCode": "const ctx = items[0].json;\n\nif (!ctx.obsidian_rest_url || !ctx.obsidian_rest_api_key) {\n  throw new Error('Missing OBSIDIAN_REST_URL or OBSIDIAN_REST_API_KEY');\n}\n\nconst baseUrl = String(ctx.obsidian_rest_url).replace(/\\/+$/, '');\n\nfunction vaultUrl(path) {\n  return baseUrl + '/vault/' + encodeURI(path);\n}\n\nasync function obsidianGet(path) {\n  return await this.helpers.httpRequest({\n    method: 'GET',\n    url: vaultUrl(path),\n    headers: {\n      Authorization: 'Bearer ' + ctx.obsidian_rest_api_key,\n    },\n    json: false,\n    skipSslCertificateValidation: !!ctx.allow_insecure_tls,\n  });\n}\n\nasync function obsidianPut(path, body) {\n  return await this.helpers.httpRequest({\n    method: 'PUT',\n    url: vaultUrl(path),\n    headers: {\n      Authorization: 'Bearer ' + ctx.obsidian_rest_api_key,\n      'Content-Type': 'text/markdown',\n    },\n    body,\n    json: false,\n    skipSslCertificateValidation: !!ctx.allow_insecure_tls,\n  });\n}\n\nasync function readOrEmpty(path) {\n  try {\n    const content = await obsidianGet.call(this, path);\n    return String(content || '');\n  } catch (error) {\n    const status = Number(\n      (error && (error.statusCode || error.status || error.httpCode)) ||\n      (error && error.response ? (error.response.status || error.response.statusCode || 0) : 0)\n    );\n    const isNotFound = status === 404 || /status code 404|\\b404\\b/i.test(String(error && error.message ? error.message : ''));\n    if (isNotFound) {\n      return '';\n    }\n    throw new Error('Obsidian read failed for \"' + path + '\": ' + (error.message || 'unknown error'));\n  }\n}\n\nasync function ensureFile(path, fallbackBody) {\n  const current = await readOrEmpty.call(this, path);\n  if (current.trim()) {\n    return current;\n  }\n  const content = String(fallbackBody || '').trimEnd() + '\\n';\n  await obsidianPut.call(this, path, content);\n  return content;\n}\n\nfunction tableCell(value) {\n  return String(value == null ? '' : value).replace(/\\|/g, '/').replace(/\\n/g, ' ').trim();\n}\n\nfunction wiki(path, label) {\n  return '[[' + String(path) + '|' + String(label) + ']]';\n}\n\nfunction stageTable(stageLogs) {\n  const head = [\n    '| step | stage | status | input_ref | output_ref | quality_score | issues | model_used | notes | ts |',\n    '|---|---|---|---|---|---:|---:|---|---|---|',\n  ];\n  const rows = stageLogs.map((row) => {\n    return [\n      '| ' + tableCell(row.step),\n      tableCell(row.stage),\n      tableCell(row.status),\n      tableCell(row.input_ref),\n      tableCell(row.output_ref),\n      Number(row.quality_score || 0).toFixed(2),\n      tableCell(row.issues || 0),\n      tableCell(row.model_used || ''),\n      tableCell(row.notes || ''),\n      tableCell(row.ts || '') + ' |',\n    ].join(' | ');\n  });\n  return head.concat(rows).join('\\n');\n}\n\n// 1) Write platform-specific results and drafts\nawait obsidianPut.call(this, ctx.output_paths.linkedin_research, ctx.generated.linkedin_research_markdown.trimEnd() + '\\n');\nawait obsidianPut.call(this, ctx.output_paths.reddit_research, ctx.generated.reddit_research_markdown.trimEnd() + '\\n');\nawait obsidianPut.call(this, ctx.output_paths.linkedin_draft, ctx.generated.linkedin_draft_markdown.trimEnd() + '\\n');\nawait obsidianPut.call(this, ctx.output_paths.reddit_draft, ctx.generated.reddit_draft_markdown.trimEnd() + '\\n');\n\n// 2) Write workflow log (successful runs are always logged)\nconst workflowLogMarkdown = [\n  '---',\n  'type: workflow-log',\n  'run_id: ' + ctx.run_id,\n  'execution_id: ' + ctx.execution_id,\n  'created_at: ' + ctx.created_at,\n  'completed_at: ' + ctx.completed_at,\n  'status: completed',\n  'topic: \"' + tableCell(ctx.topic) + '\"',\n  'model_used: ' + tableCell(ctx.model_used),\n  '---',\n  '',\n  '# Workflow Log ' + ctx.run_id,\n  '',\n  stageTable(ctx.stage_logs || []),\n  '',\n  '## Ergebnisse',\n  '- linkedin_ausarbeitung: ' + ctx.output_paths.linkedin_research,\n  '- reddit_ausarbeitung: ' + ctx.output_paths.reddit_research,\n  '- linkedin_draft: ' + ctx.output_paths.linkedin_draft,\n  '- reddit_draft: ' + ctx.output_paths.reddit_draft,\n  '',\n  '## Modellverlauf',\n  '- model_used: ' + tableCell(ctx.model_used),\n].join('\\n');\nawait obsidianPut.call(this, ctx.output_paths.workflow_log, workflowLogMarkdown.trimEnd() + '\\n');\n\n// 3) Update 00-Workflow-Ergebnisse index\nconst resultsHeader = [\n  '# 00-Workflow-Ergebnisse',\n  '',\n  '| run_id | datum | thema | linkedin_ausarbeitung | reddit_ausarbeitung | linkedin_draft | reddit_draft | workflow_log |',\n  '|---|---|---|---|---|---|---|---|',\n].join('\\n');\n\nlet resultsIndex = await ensureFile.call(this, ctx.workflow_results_index, resultsHeader);\n\nconst resultRow = [\n  '| ' + tableCell(ctx.run_id),\n  tableCell(ctx.completed_at.slice(0, 10)),\n  tableCell(ctx.topic),\n  wiki(ctx.output_paths.linkedin_research, 'LinkedIn Ausarbeitung'),\n  wiki(ctx.output_paths.reddit_research, 'Reddit Ausarbeitung'),\n  wiki(ctx.output_paths.linkedin_draft, 'LinkedIn Draft'),\n  wiki(ctx.output_paths.reddit_draft, 'Reddit Draft'),\n  wiki(ctx.output_paths.workflow_log, 'Workflow Log') + ' |',\n].join(' | ');\n\nif (!resultsIndex.includes('| ' + ctx.run_id + ' |')) {\n  if (!resultsIndex.endsWith('\\n')) resultsIndex += '\\n';\n  resultsIndex += resultRow + '\\n';\n  await obsidianPut.call(this, ctx.workflow_results_index, resultsIndex);\n}\n\n// 4) Update Workflow Zwischenergebnisse with Qwen summaries per step\nconst intermediateHeader = [\n  '# Workflow Zwischenergebnisse',\n  '',\n  '| run_id | ts | step | stage | status | model_used | input_ref | output_ref | qwen_summary | quality_score | issues |',\n  '|---|---|---|---|---|---|---|---|---|---:|---|',\n].join('\\n');\n\nlet intermediate = await ensureFile.call(this, ctx.workflow_intermediate_file, intermediateHeader);\nconst summaryByStep = {};\nfor (const summary of (ctx.stage_summaries || [])) {\n  summaryByStep[String(summary.step)] = summary;\n}\n\nconst rows = [];\nfor (const row of (ctx.stage_logs || [])) {\n  const key = '| ' + ctx.run_id + ' | ' + row.ts + ' | ' + row.step + ' |';\n  if (intermediate.includes(key)) continue;\n  const summary = summaryByStep[String(row.step)] || { summary: '' };\n  rows.push([\n    '| ' + tableCell(ctx.run_id),\n    tableCell(row.ts),\n    tableCell(row.step),\n    tableCell(row.stage),\n    tableCell(row.status),\n    tableCell(row.model_used || ctx.model_used),\n    tableCell(row.input_ref),\n    tableCell(row.output_ref),\n    tableCell(summary.summary || ''),\n    Number(row.quality_score || 0).toFixed(2),\n    tableCell(row.issues || 0) + ' |',\n  ].join(' | '));\n}\n\nif (rows.length) {\n  if (!intermediate.endsWith('\\n')) intermediate += '\\n';\n  intermediate += rows.join('\\n') + '\\n';\n  await obsidianPut.call(this, ctx.workflow_intermediate_file, intermediate);\n}\n\n// 5) Ensure Workflow Schritte (detailed schema for every workflow)\nconst workflowSchritteContent = [\n  '# Workflow Schritte',\n  '',\n  '## Name: WF00 System Checks',\n  '### Tools: n8n, HTTP Request, SearXNG, Ollama, Obsidian REST',\n  '### Schritte:',\n  '1. Start Manual - startet den manuellen Checklauf.',\n  '2. Check SearXNG - prueft Suchdienst erreichbar und antwortfaehig.',\n  '3. Check Ollama - prueft lokale Modellverfuegbarkeit.',\n  '4. Check Obsidian - prueft Obsidian REST Erreichbarkeit.',\n  '### Ergebnis: Infrastrukturstatus fuer lokalen Betrieb.',\n  '',\n  '## Name: WF10 Research Sammeln',\n  '### Tools: n8n, Code Node, SearXNG',\n  '### Schritte:',\n  '1. Build Queries - definiert priorisierte Rechercheanfragen.',\n  '2. Search SearXNG - sammelt Suchtreffer pro Anfrage.',\n  '3. Normalize Evidence - normalisiert Treffer ins Evidence-Format.',\n  '### Ergebnis: Rohrecherche fuer den Hauptworkflow.',\n  '',\n  '## Name: WF20 Qwen Entwurf',\n  '### Tools: n8n, Code Node, Ollama Qwen',\n  '### Schritte:',\n  '1. Build Topic Input - setzt Thema, Plattform und Tonalitaet.',\n  '2. Build Qwen Prompt - erstellt den Modell-Prompt.',\n  '3. Draft via Qwen - erzeugt den Entwurf.',\n  '4. Collect Output - sammelt Modellantwort fuer Nachbearbeitung.',\n  '### Ergebnis: Basisentwurf als JSON/Rohtext.',\n  '',\n  '## Name: WF30 Obsidian Schreiben',\n  '### Tools: n8n, Code Node, Obsidian REST',\n  '### Schritte:',\n  '1. Build Note Payload - baut Markdown-Nutzlast.',\n  '2. Write Note - schreibt Datei in den Obsidian-Vault.',\n  '### Ergebnis: Persistierte Notiz im Vault.',\n  '',\n  '## Name: WF90 Workflow Orchestrator',\n  '### Tools: n8n, SearXNG, Ollama Qwen, Obsidian REST',\n  '### Schritte:',\n  '1. Init Run Kontext - initialisiert run_id, Pfade, Modell und Laufkontext.',\n  '2. Load Prompt Dateien - laedt Prompt-Dateien aus Obsidian und legt Defaults an.',\n  '3. Collect Research Daten - sammelt Suchsignale mit SearXNG.',\n  '4. Build Evidence Paket - verdichtet Signale in strukturierte Evidenz.',\n  '5. Build Topic Brief - waehlt Thema/Angle mit Relevanzbegruendung.',\n  '6. Build LinkedIn Fokus - bereitet Recherche explizit fuer LinkedIn auf.',\n  '7. Build Reddit Fokus - bereitet Recherche explizit fuer Reddit auf.',\n  '8. Build Draft Entwuerfe - erzeugt Entwuerfe fuer LinkedIn und Reddit.',\n  '9. Run AI Kritik - entfernt KI-artige Formulierungen ohne Faktenverlust.',\n  '10. Run Strategie Kritik 1 - optimiert Hook/Relevanz/CTA aus Strategieperspektive.',\n  '11. Run Strategie Kritik 2 - finaler strenger Plausibilitaets- und Qualitaetscheck.',\n  '12. Write Workflow Outputs - schreibt Logs, Ergebnisse, Zwischenergebnisse und Drafts.',\n  '### Ergebnis: Vollstaendig geloggter Run mit verlinkten LinkedIn/Reddit-Artefakten.',\n  '',\n  '## Name: WF95 Fehler Logger',\n  '### Tools: n8n, Error Trigger, Obsidian REST',\n  '### Schritte:',\n  '1. Error Trigger - reagiert auf fehlgeschlagene Workflows.',\n  '2. Build Error Log - normalisiert Fehlerkontext in Logstruktur.',\n  '3. Write Error Log - schreibt Fehlerlauf in Workflow Logs.',\n  '### Ergebnis: Fehlgeschlagene Runs sind nachvollziehbar dokumentiert.',\n].join('\\n');\nawait obsidianPut.call(this, ctx.workflow_steps_file, workflowSchritteContent.trimEnd() + '\\n');\n\n// 6) Ensure Workflow Übersicht (all workflows + all steps)\nconst workflowOverviewContent = [\n  '# Workflow Übersicht',\n  '',\n  '## Alle Workflows',\n  '- WF00 System Checks',\n  '- WF10 Research Sammeln',\n  '- WF20 Qwen Entwurf',\n  '- WF30 Obsidian Schreiben',\n  '- WF90 Workflow Orchestrator',\n  '- WF95 Fehler Logger',\n  '',\n  '## Schritte je Workflow',\n  '### WF00 System Checks',\n  '1. Start Manual',\n  '2. Check SearXNG',\n  '3. Check Ollama',\n  '4. Check Obsidian',\n  '',\n  '### WF10 Research Sammeln',\n  '1. Start Manual',\n  '2. Search Web Quellen',\n  '3. Build Evidence Paket',\n  '4. Return Research Data',\n  '',\n  '### WF20 Qwen Entwurf',\n  '1. Start Manual',\n  '2. Generate Draft Paket',\n    '',\n  '### WF30 Obsidian Schreiben',\n  '1. Start Manual',\n  '2. Persist Workflow Output',\n  '3. Return Sink Summary',\n  '',\n  '### WF90 Workflow Orchestrator',\n  '1. Start Manual',\n  '2. Init Run Kontext',\n  '3. Load Prompt Dateien',\n  '4. Run KI Pipeline',\n  '5. Write Workflow Outputs',\n  '6. Return Summary',\n  '',\n  '### WF95 Fehler Logger',\n  '1. Catch Workflow Fehler',\n  '2. Build Fehler Log',\n  '3. Write Fehler Log',\n  '4. Return Fehler Summary',\n].join('\\n');\nawait obsidianPut.call(this, ctx.workflow_overview_file, workflowOverviewContent.trimEnd() + '\\n');\n\nctx.status = 'completed';\nctx.completed_at = ctx.completed_at || new Date().toISOString();\n\nreturn [{ json: ctx }];\n\n"
       },
-      "id": "http-write",
-      "name": "Write Note via Obsidian REST",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "id": "code-write",
+      "name": "Persist Workflow Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         -420,
         260
@@ -62,32 +32,16 @@
     }
   ],
   "connections": {
-    "Manual Trigger": {
+    "Start Manual": {
       "main": [
         [
           {
-            "node": "Build Obsidian Note",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Obsidian Note": {
-      "main": [
-        [
-          {
-            "node": "Write Note via Obsidian REST",
+            "node": "Persist Workflow Output",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "wf30-obsidian-sink-v1"
+  }
 }

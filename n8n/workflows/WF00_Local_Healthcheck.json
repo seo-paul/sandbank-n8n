@@ -1,10 +1,11 @@
 {
-  "name": "WF00_Local_Healthcheck",
+  "name": "WF00 System Checks",
+  "active": false,
   "nodes": [
     {
       "parameters": {},
       "id": "manual-1",
-      "name": "Manual Trigger",
+      "name": "Start Manual",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -31,7 +32,7 @@
         }
       },
       "id": "http-searx",
-      "name": "SearXNG Check",
+      "name": "Check SearXNG",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -42,10 +43,10 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://ollama:11434/api/tags"
+        "url": "={{ ($env.OLLAMA_BASE_URL || \"http://host.docker.internal:11434\").replace(/\\/+$/, \"\") + \"/api/tags\" }}"
       },
       "id": "http-ollama",
-      "name": "Ollama Tags",
+      "name": "Check Ollama",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -72,7 +73,7 @@
         }
       },
       "id": "http-obsidian",
-      "name": "Obsidian Ping (Best Effort)",
+      "name": "Check Obsidian",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -82,21 +83,21 @@
     }
   ],
   "connections": {
-    "Manual Trigger": {
+    "Start Manual": {
       "main": [
         [
           {
-            "node": "SearXNG Check",
+            "node": "Check SearXNG",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Ollama Tags",
+            "node": "Check Ollama",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Obsidian Ping (Best Effort)",
+            "node": "Check Obsidian",
             "type": "main",
             "index": 0
           }
@@ -104,9 +105,8 @@
       ]
     }
   },
-  "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "wf00-local-healthcheck-v1"
+  "versionId": "302ee957-699d-4839-b18f-4db81a2cdb7b"
 }
