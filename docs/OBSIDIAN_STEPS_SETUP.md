@@ -1,41 +1,42 @@
-# Obsidian Steps Setup
+# Obsidian Workflow Setup
 
-This stack logs stage-by-stage pipeline traces directly into Obsidian.
+Diese Instanz schreibt keine Run-Notizen mehr nach `01-Beitraege-Steps`.
+Stattdessen nutzt sie die Workflow-Struktur unter:
+`Marketing/Social-Media/Workflow`
 
-## Folder setup
-Create this folder in your vault:
+## Minimale Ordnerstruktur
+- `Marketing/Social-Media/Workflow/Workflow Logs`
+- `Marketing/Social-Media/Workflow/Workflow Ergebnisse`
+- `Marketing/Social-Media/Workflow/Drafts/LinkedIn`
+- `Marketing/Social-Media/Workflow/Drafts/Reddit`
+- `Marketing/Social-Media/Workflow/Prompts`
 
-`Marketing/Social-Media/Beitraege/01-Beitraege-Steps`
+## Relevante `.env`-Variablen
+- `OBSIDIAN_WORKFLOW_DIR`
+- `OBSIDIAN_WORKFLOW_LOGS_DIR`
+- `OBSIDIAN_WORKFLOW_RESULTS_DIR`
+- `OBSIDIAN_WORKFLOW_DRAFTS_DIR`
+- `OBSIDIAN_WORKFLOW_PROMPTS_DIR`
+- `OBSIDIAN_WORKFLOW_RESULTS_INDEX`
+- `OBSIDIAN_WORKFLOW_STEPS_FILE`
+- `OBSIDIAN_WORKFLOW_INTERMEDIATE_FILE`
+- `OBSIDIAN_WORKFLOW_OVERVIEW_FILE`
 
-## Environment variable
-In `.env`:
-
-`OBSIDIAN_STEPS_DIR=Marketing/Social-Media/Beitraege/01-Beitraege-Steps`
-
-If missing, run:
-
+Defaults werden mit folgendem Script gesetzt:
 ```bash
 ./n8n/scripts/env-local-init.sh
 ```
 
-## What gets written per run
-Workflow `WF90_Orchestrator_7Stage_Obsidian` writes one run note:
+## Was pro Run geschrieben wird
+`WF90 Workflow Orchestrator` schreibt:
+- Workflow-Log in `Workflow Logs/<run_id>.md`
+- LinkedIn-/Reddit-Ausarbeitung in `Workflow Ergebnisse/`
+- Link-Row in `Workflow Ergebnisse/00-Workflow-Ergebnisse.md`
+- Zwischenergebnisse pro Schritt in `Workflow Zwischenergebnisse.md`
+- Draft-Dateien in `Drafts/LinkedIn` und `Drafts/Reddit`
+- Workflow-Meta-Dateien:
+  - `Workflow Schritte.md`
+  - `Workflow Übersicht.md`
 
-`Marketing/Social-Media/Beitraege/01-Beitraege-Steps/<run_id>.md`
-
-The run note contains:
-- frontmatter (`run_id`, timestamps, model, topic)
-- stage table:
-  `step | agent | status | input_ref | output_ref | quality_score | notes | ts`
-- final output references
-- model selection trace:
-  - `model_requested`
-  - `model_used`
-  - fallback switch log (if applied)
-
-## Template
-Base template is versioned at:
-
-`local-files/_managed/templates/01-Beitraege-Steps-Run-Template.md`
-
-Use it for manual run notes or UI views if needed.
+## Fehlgeschlagene Runs
+`WF95 Fehler Logger` schreibt Fehlerlaeufe ebenfalls in `Workflow Logs`.

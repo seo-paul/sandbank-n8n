@@ -1,68 +1,66 @@
-# Local Social Content Architecture (Sandbank n8n)
+# Architektur (Workflow Cutover)
 
 ## Scope
-- Fully local execution.
-- No paid external content APIs.
-- Qwen model via Ollama (primary `qwen3.5:27b`, fallback `qwen2.5:3b`).
-- Final post artifacts written into Obsidian using Local REST API.
+- Vollstaendig lokal.
+- Keine Pflicht zu externen Paid APIs.
+- Qwen via Ollama ohne automatischen Modell-Fallback.
+- Obsidian als SSOT fuer Prompt-Steuerung und Run-Artefakte.
 
-## Components
-- `n8n`: workflow orchestration and stage control.
-- `postgres`: n8n persistence.
-- `redis`: queue/cache support.
-- `ollama`: local LLM inference.
-- `searxng + valkey`: local search aggregation.
+## Komponenten
+- `n8n`: Orchestrierung und Workflow-Logik.
+- `postgres`: Persistenz fuer Workflows/Executions.
+- `redis`: Queue/Runtime Support.
+- `ollama` (Host): lokale LLM Inferenz ausserhalb von Docker.
+- `searxng + valkey`: lokale Web-Recherche.
 
-## Stage Model (7 agents, orchestrated)
-Entry workflow: `WF90_Orchestrator_7Stage_Obsidian`
+## Workflow-Landschaft
+- `WF00 System Checks`: Infrastruktur-Checks.
+- `WF10 Research Sammeln`: isolierte Recherche-Extraktion.
+- `WF20 Qwen Entwurf`: isolierter Entwurfstest.
+- `WF30 Obsidian Schreiben`: isolierter Schreibtest.
+- `WF90 Workflow Orchestrator`: produktiver End-to-End-Flow.
+- `WF95 Fehler Logger`: Error Trigger fuer fehlgeschlagene Runs.
 
-1. `research_intake`
-2. `topic_fit`
-3. `draft_factory`
-4. `ai_sounding_critic`
-5. `visual_brief`
-6. `strategy_critic_1`
-7. `strategy_critic_2`
+## Schichten / Boundaries
+- UI: n8n + Obsidian.
+- Application: Workflow-Orchestrierung (WF90/WF95).
+- Domain: Research, Topic Fit, Plattformaufbereitung, Drafting, Kritik.
+- Infrastructure: SearXNG, Ollama, Obsidian REST.
+- Data: JSON-Artefakte + Markdown-Logs in Obsidian.
 
-Each stage:
-- consumes structured input from previous stage
-- returns JSON validated against local schema contracts
-- writes a stage event into in-memory run log
-- contributes to final Obsidian step table
+## Obsidian Datenziele
+Root:
+`Marketing/Social-Media/Workflow`
 
-## Contracts
-- All stage payloads must validate against JSON schemas in:
-  `local-files/_managed/schemas/`
-- Prompts are versioned in:
-  `local-files/_managed/prompts/`
-- Brand SSOT in:
-  `local-files/_managed/brand/`
+Artefakte:
+- Logs: `Workflow Logs/<run_id>.md`
+- Ergebnisse: `Workflow Ergebnisse/<run_id>-*.md`
+- Ergebnisindex: `Workflow Ergebnisse/00-Workflow-Ergebnisse.md`
+- Zwischenergebnisse: `Workflow Zwischenergebnisse.md`
+- Drafts:
+  - `Drafts/LinkedIn/*.md`
+  - `Drafts/Reddit/*.md`
+- Workflow-Dokumentation:
+  - `Workflow Schritte.md`
+  - `Workflow Übersicht.md`
+- Prompt-SSOT:
+  - `Prompts/*.md`
 
-## Observer and Trace
-- Final post note sink:
-  `OBSIDIAN_NOTES_DIR` (default: `Marketing/Social-Media/Beitraege`)
-- Stage trace sink:
-  `OBSIDIAN_STEPS_DIR` (default: `Marketing/Social-Media/Beitraege/01-Beitraege-Steps`)
-- A run note is written per execution with a markdown table:
-  `step | agent | status | input_ref | output_ref | quality_score | notes | ts`
+## Modellstrategie
+- Primär: `qwen3.5:27b`
+- Kein automatischer Modellwechsel; Fehler im Primärmodell brechen den Run transparent ab.
+- Pro Modell-Call sind nur begrenzte Retries auf transiente Fehler aktiv (`max_attempts=3`, z. B. `5xx`/Runner-Neustart).
+- Laufprotokoll: `model_used` (ohne separates requested-Modellfeld).
+- Runner-Timeout: `N8N_RUNNERS_TASK_TIMEOUT=1800` fuer lange Multi-Stage-KI-Laeufe.
 
-## Source Policy
-- Allowed: SearXNG, RSS, Hacker News, Reddit fallback.
-- Disabled: X.
-- Reddit API optional; fallback path active until credentials exist.
+## Run- und Fehlerlogging
+- Success: WF90 schreibt immer einen Eintrag in `Workflow Logs`.
+- Error: WF95 schreibt Fehlerlaeufe in `Workflow Logs`.
+- Zwischenergebnisse: pro Schritt wird eine Qwen-Zusammenfassung in Tabellenform abgelegt.
 
-## Obsidian Sink
-- Sink target: `Marketing/Social-Media/Beitraege`
-- Note metadata keys:
-  - `description`
-  - `channel`
-  - `format`
-  - `status`
-  - `link`
-## Model policy
-- Requested primary model: `qwen3.5:27b`.
-- Runtime fallback: `qwen2.5:3b` when Ollama returns memory-capacity errors.
-- Fallback decision is made inside workflow stage calls (no external API fallback).
-- Run notes store both values:
-  - `model_requested`
-  - `model_used`
+## Plattformaufbereitung
+WF90 erzeugt explizit zwei Recherche-Ausarbeitungen:
+- LinkedIn
+- Reddit
+
+Diese sind in `00-Workflow-Ergebnisse.md` verlinkt, zusammen mit den zugehoerigen Draft-Dateien.

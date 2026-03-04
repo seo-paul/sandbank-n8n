@@ -1,34 +1,41 @@
-# sandbank-n8n (local-only social content automation)
+# sandbank-n8n (lokale Social-Workflow-Automation)
 
-Local-first stack for social content workflows with no API costs:
-- n8n orchestration
-- Qwen via Ollama (primary `qwen3.5:27b`, fallback `qwen2.5:3b`)
-- SearXNG web research (no X integration)
-- Obsidian Local REST API sink + stage trace log
+Lokaler Stack fuer Social-Content-Workflows ohne externe API-Kosten:
+- n8n Orchestrierung
+- Qwen via lokal installiertem Ollama (Host, primaer `qwen3.5:27b`, kein aktiver Modell-Fallback)
+- SearXNG Recherche
+- Obsidian Local REST als Senke fuer Logs, Zwischenergebnisse, Ergebnisse und Drafts
 
-## Goals
-- Local generation and review workflow for social posts.
-- Structured, inspectable intermediate artifacts.
-- Strict schemas and role-separated workflow stages.
-- Direct write target into Obsidian path:
-  `Marketing/Social-Media/Beitraege`
-- Stage-by-stage run trace in:
-  `Marketing/Social-Media/Beitraege/01-Beitraege-Steps`
+Voraussetzung:
+- Ollama laeuft nativ auf dem Host (`ollama serve`, Standard `http://localhost:11434`)
+- n8n greift darauf ueber `OLLAMA_BASE_URL` zu (Default: `http://host.docker.internal:11434`)
 
-## What is included
-- Hardened local docker stack in `docker-compose.yml`.
-- Prompt and schema SSOT under `local-files/_managed/`.
-- Brand-guideline extraction pipeline from PDF.
-- n8n workflow blueprints under `n8n/workflows/`.
-- Operational scripts under `n8n/scripts/`.
-- Obsidian run template under `local-files/_managed/templates/`.
+## Zielbild
+- Klar steuerbarer Workflow mit expliziten Schritten.
+- Prompt-Steuerung ueber Obsidian-Dateien (ohne Workflow-Code-Edit).
+- Vollstaendige Run-Nachvollziehbarkeit (success + error).
+- Getrennte Ausgaben fuer:
+  - `Workflow Logs`
+  - `Workflow Ergebnisse`
+  - `Workflow Zwischenergebnisse`
+  - `Drafts/LinkedIn` und `Drafts/Reddit`
 
-## Prerequisites
-- Docker + Docker Compose
-- Obsidian running locally with `obsidian-local-rest-api` plugin enabled
+## Obsidian Zielstruktur
+Alle automatischen Ausgaben laufen unter:
+`Marketing/Social-Media/Workflow`
 
-Note: This stack runs Ollama inside Docker and does not expose `11434` on the host,
-so it can coexist with a host-local Ollama installation.
+Wichtige Pfade:
+- `Marketing/Social-Media/Workflow/Workflow Logs`
+- `Marketing/Social-Media/Workflow/Workflow Ergebnisse`
+- `Marketing/Social-Media/Workflow/Workflow Ergebnisse/00-Workflow-Ergebnisse.md`
+- `Marketing/Social-Media/Workflow/Workflow Zwischenergebnisse.md`
+- `Marketing/Social-Media/Workflow/Workflow Schritte.md`
+- `Marketing/Social-Media/Workflow/Workflow Übersicht.md`
+- `Marketing/Social-Media/Workflow/Drafts/LinkedIn`
+- `Marketing/Social-Media/Workflow/Drafts/Reddit`
+- `Marketing/Social-Media/Workflow/Prompts`
+
+Hinweis: `Marketing/Social-Media/Beitraege` bleibt als manuell gepflegte Base bestehen und wird nicht mehr als automatisches Run-Ziel genutzt.
 
 ## Setup
 ```bash
@@ -36,88 +43,76 @@ cd /Users/zweigen/Sites/sandbank-n8n
 ./dev.sh bootstrap
 ```
 
-This runs one-shot bootstrap:
-- `.env` generation
-- automatic key/secret generation
-- Obsidian REST key auto-load (if plugin config exists)
-- stack start
-- Qwen primary + fallback model pull
-- workflow import
-- health check
+`bootstrap` erledigt:
+- `.env` initialisieren
+- Secrets generieren
+- Stack starten
+- Modelle ziehen
+- Workflows importieren (Clean-Cutover)
+- Healthcheck ausfuehren
 
-You do not need to run separate step 3/4/5/6 commands manually.
-`./dev.sh bootstrap` handles initialization end-to-end.
-
-After bootstrap, ensure this folder exists in your Obsidian vault:
-`Marketing/Social-Media/Beitraege/01-Beitraege-Steps`
-
-## Orchestrator commands
+## Kommandos
 ```bash
-./dev.sh bootstrap   # full one-shot setup
-./dev.sh up          # start + health
-./dev.sh down        # stop stack
-./dev.sh status      # health check
-./dev.sh import      # import workflow json files
-./dev.sh export      # export workflows from n8n
+./dev.sh bootstrap
+./dev.sh up
+./dev.sh down
+./dev.sh status
+./dev.sh import
+./dev.sh export
 ```
 
-## Runtime model
-- Infrastructure lifecycle (`up`, `down`, model pull, imports) runs via `./dev.sh`.
-- Workflow execution and scheduling runs in the n8n UI (`http://localhost:5678`).
-- Normal daily usage is usually:
-  1) `./dev.sh up`
-  2) run `WF90_Orchestrator_7Stage_Obsidian` in n8n UI
-  3) `./dev.sh down` when done
+## Aktive Workflows (Blueprints)
+- `WF00 System Checks`
+- `WF10 Research Sammeln`
+- `WF20 Qwen Entwurf`
+- `WF30 Obsidian Schreiben`
+- `WF90 Workflow Orchestrator`
+- `WF95 Fehler Logger`
 
-## Model sizing and fallback
-- Primary model is `qwen3.5:27b` as requested.
-- `qwen3.5:27b` needs roughly ~21 GiB available runtime memory in Ollama.
-- Current stack auto-detects insufficient memory and switches to `qwen2.5:3b`.
-- This switch is logged per run in `01-Beitraege-Steps` under "Model Selection".
-- To run `qwen3.5:27b` end-to-end, increase Docker Desktop memory accordingly.
+## Prompt-Steuerung in Obsidian
+`WF90` laedt Prompts aus:
+`Marketing/Social-Media/Workflow/Prompts`
 
-## Workflow entry points
-- `WF00_Local_Healthcheck`: checks SearXNG, Ollama, Obsidian REST.
-- `WF90_Orchestrator_7Stage_Obsidian`: production pipeline.
-  - Agent 1 Research Intake
-  - Agent 2 Topic Fit
-  - Agent 3 Draft Factory
-  - Agent 4 AI-Sounding Critic
-  - Agent 5 Visual Brief
-  - Agent 6 Strategy Critic 1
-  - Agent 7 Strategy Critic 2
-  - writes final post note + step log note to Obsidian
+Bei fehlenden Dateien werden Defaults automatisch angelegt:
+- `agent1_research.md`
+- `agent2_topic_fit.md`
+- `agent3_draft.md`
+- `agent4_ai_sounding_critic.md`
+- `agent6_strategy_critic.md`
+- `agent7_strategy_critic.md`
+- `platform_linkedin.md`
+- `platform_reddit.md`
+- `qwen_step_summary.md`
 
-Legacy helper workflows stay available for isolated debugging:
-- `WF10_Research_Intake_Local`
-- `WF20_Content_Pipeline_Qwen`
-- `WF30_Obsidian_Sink_REST`
+## Laufverhalten WF90
+- run_id ist deterministisch: `run-<execution_id>-<timestamp>`.
+- Primaermodell bleibt fest auf `OLLAMA_MODEL` (kein Modellwechsel im Workflow).
+- Bei transienten Ollama-Fehlern (`5xx`, Runner-Reset) werden Calls begrenzt erneut versucht (`max_attempts=3` je Modell-Call).
+- Erfolgreiche Runs werden immer in `Workflow Logs` geschrieben.
+- Fehlgeschlagene Runs werden durch `WF95 Fehler Logger` ebenfalls in `Workflow Logs` geschrieben.
+- Plattform-spezifische Rechercheausarbeitungen (LinkedIn/Reddit) landen in `Workflow Ergebnisse`.
+- Drafts landen in `Drafts/LinkedIn` und `Drafts/Reddit` mit einheitlichem Frontmatter-Schema.
+- Fuer lange KI-Laeufe ist `N8N_RUNNERS_TASK_TIMEOUT=1800` gesetzt (sonst bricht `Run KI Pipeline` nach 300s ab).
 
-## Export workflows after edits in UI
-```bash
-./n8n/scripts/export_workflows.sh
-```
+## Re-Import / Export
+- Import loescht Legacy-/Ziel-Workflows vor dem Import (Clean-Cutover), um Duplikate zu verhindern.
+- Export schreibt deterministisch in die Dateien unter `n8n/workflows/`.
 
-## Local-only source policy
-- Enabled research sources: SearXNG, RSS, Hacker News, Reddit prep.
-- Explicitly excluded: X/Twitter paid API.
-- Reddit API credentials are optional. Until available, use SearXNG (`site:reddit.com`) and subreddit RSS.
+## Lauf-Monitoring
+- Live-Status mit Stage-basierter Progress-Anzeige und Hang-Hinweis:
+  - `./n8n/scripts/watch_active_run.sh 5`
+  - Optional feintuning:
+    - `HANG_ALERT_SEC=240` (Standard)
+    - `WF90_EXPECTED_CHAT_CALLS=16` (Standard fuer Modell-Call-Fortschritt)
+  - Falls keine Node-Stage-Events verfuegbar sind, faellt der Monitor automatisch auf Modell-Call- und Zeit-Progress zurueck.
+- Live-Logs fuer aktiven Run + Ollama:
+  - `./n8n/scripts/tail_active_run.sh`
+- Aktiven One-Off-Run sofort stoppen:
+  - `./n8n/scripts/stop_active_run.sh`
+- Optional vor langen WF90-Runs RAM freimachen:
+  - `./n8n/scripts/prepare_ollama_runtime.sh --apply`
 
-## Obsidian sink behavior
-- Primary path: Obsidian REST API (`/vault/{path}` family).
-- Final post note metadata aligns with your base fields:
-  - `description`
-  - `channel`
-  - `format`
-  - `status`
-  - `link`
-- Per-run step log note is written to `OBSIDIAN_STEPS_DIR`.
-
-## Filesystem contracts
-- Managed config/prompts/schemas: `local-files/_managed/`
-- Runtime artifacts: `local-files/_runtime/`
-- Workflow JSON: `n8n/workflows/`
-
-## Legacy note
-Existing `n8n_data/` from old bootstrap is left untouched for safety.
-Use `./n8n/scripts/legacy_cleanup.sh` after successful cutover.
+## Dateien
+- Managed Prompts/Schemas/Templates: `local-files/_managed/`
+- Workflows: `n8n/workflows/`
+- Betriebsskripte: `n8n/scripts/`

@@ -1,26 +1,31 @@
-# Obsidian REST Adapter Notes
+# Obsidian REST Adapter
 
-## Preconditions
-- Obsidian app running on local machine.
-- Community plugin `obsidian-local-rest-api` enabled.
-- API key configured in `.env` (`OBSIDIAN_REST_API_KEY`).
+## Voraussetzungen
+- Obsidian Desktop laeuft lokal.
+- Plugin `obsidian-local-rest-api` ist aktiviert.
+- API-Key ist in `.env` gesetzt (`OBSIDIAN_REST_API_KEY`).
 
-## Current n8n integration
-- Workflow: `WF30_Obsidian_Sink_REST.json`
-- Method: `PUT`
-- Path pattern: `{$OBSIDIAN_REST_URL}/vault/{notePath}`
-- Auth header: `Authorization: Bearer <apiKey>`
+## n8n Integration
+- Hauptschreibpfad: `/vault/{path}`
+- Auth: `Authorization: Bearer <apiKey>`
+- Schreibformat: `text/markdown`
 
-## Health check
+Verwendet in:
+- `WF30 Obsidian Schreiben`
+- `WF90 Workflow Orchestrator`
+- `WF95 Fehler Logger`
+
+## Healthcheck
 ```bash
 ./n8n/scripts/healthcheck.sh
 ```
 
-If Obsidian endpoint is not reachable:
-- Ensure Obsidian desktop app is open.
-- Re-check plugin port and API key.
-- Keep `OBSIDIAN_ALLOW_INSECURE_TLS=true` for plugin self-signed cert.
+Bei Problemen:
+- Obsidian offen?
+- Plugin-Port korrekt?
+- API-Key gueltig?
+- `OBSIDIAN_ALLOW_INSECURE_TLS=true` fuer self-signed TLS gesetzt?
 
-## Base compatibility
-Generated notes map to your base fields in:
-`40_System/Bases/Social-Media-Beitraege-Uebersicht.base`
+## Base-Hinweis
+`Marketing/Social-Media/Beitraege` bleibt eine manuell gepflegte Base.
+Automatische Workflow-Artefakte werden unter `Marketing/Social-Media/Workflow` geschrieben.

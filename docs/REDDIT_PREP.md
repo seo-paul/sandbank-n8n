@@ -1,14 +1,22 @@
-# Reddit Prep (without API credentials)
+# Reddit Prep
 
-## Current mode
-- No Reddit API credentials required.
-- Use fallback sources only:
-  - `site:reddit.com` queries through SearXNG
-  - Subreddit RSS feeds
+## Aktueller Modus
+- Keine Reddit API Credentials erforderlich.
+- Recherche ueber:
+  - SearXNG mit `site:reddit.com`
+  - lokale Query-Strategie im Workflow
 
-## Why this mode
-- Keeps setup local-first and cost-free.
-- Avoids blocking implementation until API credentials exist.
+## Warum
+- Lokaler, kostenfreier Betrieb.
+- Kein Blocker durch externe Credentials.
 
-## Optional future switch
-When credentials are available, add dedicated Reddit node credentials in n8n and a parallel source branch in the research workflow.
+## Plattform-Ausarbeitung
+`WF90 Workflow Orchestrator` erzeugt pro Run:
+- `.../Workflow Ergebnisse/<run_id> - reddit-ausarbeitung.md`
+- Reddit Draft in `.../Drafts/Reddit/`
+
+## Beobachtete externe Signale (optional)
+- Diskussion zu OpenRouter+Exa als SERP-Alternative:
+  - https://www.reddit.com/r/SideProject/comments/1p883es/openrouter_exa_just_killed_google_serp/
+
+Diese Signale sind fuer strategische Einordnung relevant, werden aber im Zielbild nicht als Pflicht-Integration verwendet.

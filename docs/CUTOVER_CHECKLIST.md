@@ -1,21 +1,37 @@
-# One-Shot Cutover Checklist
+# Cutover Checklist (Workflow Zielbild)
 
-## Before cutover
-- [ ] `.env` complete and secure values set.
-- [ ] Stack healthy via `./n8n/scripts/healthcheck.sh`.
-- [ ] Qwen primary + fallback models pulled (`./n8n/scripts/pull-model.sh`).
-- [ ] Healthcheck confirms at least one local model is runnable.
-- [ ] If primary `qwen3.5:27b` is required in production: Docker memory is sized to >= ~21 GiB runtime requirement.
-- [ ] Workflow blueprints imported.
-- [ ] Obsidian REST endpoint reachable.
-- [ ] Obsidian folder exists: `21_Marketing/Social-Media/01-Beitraege-Steps`
+## Vor dem Cutover
+- [ ] `.env` ist vollstaendig und sicher gesetzt.
+- [ ] Stack ist gesund (`./n8n/scripts/healthcheck.sh`).
+- [ ] Modelle sind verfuegbar (`./n8n/scripts/pull-model.sh`).
+- [ ] Obsidian REST ist erreichbar.
+- [ ] Obsidian Workflow-Ordner existiert: `Marketing/Social-Media/Workflow`.
+- [ ] Backup wurde erstellt (`./n8n/scripts/backup_postgres.sh`).
 
-## Validation run
-- [ ] Run WF00 healthcheck.
-- [ ] Run WF90 orchestrator.
-- [ ] Verify final post note appears in `21_Marketing/Social-Media/Beitraege`.
-- [ ] Verify run step note appears in `21_Marketing/Social-Media/01-Beitraege-Steps`.
+## Import / Aktivierung
+- [ ] `./dev.sh import` ausgefuehrt (Clean-Cutover, keine Duplikate).
+- [ ] In n8n sind die Ziel-Workflows vorhanden:
+  - `WF00 System Checks`
+  - `WF10 Research Sammeln`
+  - `WF20 Qwen Entwurf`
+  - `WF30 Obsidian Schreiben`
+  - `WF90 Workflow Orchestrator`
+  - `WF95 Fehler Logger`
 
-## Legacy cleanup
-- [ ] Archive old `n8n_data` folder only after successful validation.
-- [ ] Keep a Postgres backup from new stack.
+## Validierungslauf
+- [ ] `WF00 System Checks` erfolgreich.
+- [ ] `WF90 Workflow Orchestrator` erfolgreich.
+- [ ] Workflow-Log liegt unter `Workflow Logs/`.
+- [ ] LinkedIn/Reddit Ausarbeitungen liegen unter `Workflow Ergebnisse/`.
+- [ ] `00-Workflow-Ergebnisse.md` enthaelt verlinkte Zeile mit beiden Ausarbeitungen.
+- [ ] Draft-Dateien liegen in `Drafts/LinkedIn` und `Drafts/Reddit`.
+- [ ] `Workflow Zwischenergebnisse.md` wurde pro Schritt erweitert.
+
+## Fehlerpfad
+- [ ] Fehlerfall erzeugt und geprueft (z. B. Obsidian oder Ollama kurz unterbrechen).
+- [ ] `WF95 Fehler Logger` schreibt den Fehlerlauf in `Workflow Logs`.
+
+## Nach dem Cutover
+- [ ] Alte Workflow-Namen sind nicht mehr in n8n vorhanden.
+- [ ] `01-Beitraege-Steps` wird nicht mehr automatisch beschrieben.
+- [ ] Export funktioniert deterministisch (`./dev.sh export`).
