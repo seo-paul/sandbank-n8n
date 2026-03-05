@@ -1,22 +1,11 @@
 # Reddit Prep
 
-## Aktueller Modus
-- Keine Reddit API Credentials erforderlich.
-- Recherche ueber:
-  - SearXNG mit `site:reddit.com`
-  - lokale Query-Strategie im Workflow
+## Modus
+- Keine Reddit API Credentials
+- Recherche ueber SearXNG mit `site:reddit.com`
 
-## Warum
-- Lokaler, kostenfreier Betrieb.
-- Kein Blocker durch externe Credentials.
+## Run-Artefakte
+Reddit-Aufbereitung und Reddit-Entwurf liegen im Laufdetail:
+- `Ergebnisse/Laufdetails/<run_id>.md`
 
-## Plattform-Ausarbeitung
-`WF90 Orchestrator Subflows` erzeugt pro Run:
-- `.../Workflow Ergebnisse/<run_id> - reddit-ausarbeitung.md`
-- Reddit Draft in `.../Drafts/Reddit/`
-
-## Beobachtete externe Signale (optional)
-- Diskussion zu OpenRouter+Exa als SERP-Alternative:
-  - https://www.reddit.com/r/SideProject/comments/1p883es/openrouter_exa_just_killed_google_serp/
-
-Diese Signale sind fuer strategische Einordnung relevant, werden aber im Zielbild nicht als Pflicht-Integration verwendet.
+Kein separates Draft-Verzeichnis.

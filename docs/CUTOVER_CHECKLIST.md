@@ -1,41 +1,34 @@
-# Cutover Checklist (Workflow Zielbild)
+# Cutover Checklist
 
 ## Vor dem Cutover
-- [ ] `.env` ist vollstaendig und sicher gesetzt.
-- [ ] Stack ist gesund (`./n8n/scripts/healthcheck.sh`).
-- [ ] Modelle sind verfuegbar (`./n8n/scripts/pull-model.sh`).
+- [ ] `.env` ist gesetzt und ohne Platzhalter.
+- [ ] `OLLAMA_MODEL=qwen3.5:27b` ist aktiv.
+- [ ] `PIPELINE_MIN_QUALITY_SCORE` ist auf 0-100 Skala gesetzt (Default 70).
 - [ ] Obsidian REST ist erreichbar.
-- [ ] Obsidian Workflow-Ordner existiert: `Marketing/Social-Media/Workflow`.
-- [ ] Backup wurde erstellt (`./n8n/scripts/backup_postgres.sh`).
 
-## Import / Aktivierung
-- [ ] `./dev.sh import` ausgefuehrt (Clean-Cutover, keine Duplikate).
-- [ ] In n8n sind die Ziel-Workflows vorhanden:
-  - `WF00 System Checks`
-  - `WF10 Research Evidenz`
-  - `WF20 Topic Draft Kritik`
-  - `WF30 Logs Ergebnisse`
-  - `WF90 Orchestrator Subflows`
-  - `WF95 Workflow Fehlerlog`
+## Import
+- [ ] `./dev.sh import` ausgefuehrt.
+- [ ] In n8n sind exakt diese Workflows vorhanden:
+  - `System Verbindungen pruefen`
+  - `Thema und Quellen sammeln`
+  - `Beitrag aus Quellen erstellen`
+  - `Ergebnisse in Obsidian speichern`
+  - `Ablauf automatisch steuern`
+  - `Fehlerlauf klar dokumentieren`
 
-## Validierungslauf
-- [ ] `WF00 System Checks` erfolgreich.
-- [ ] `WF90 Orchestrator Subflows` erfolgreich.
-- [ ] Waehrend Lauf: `./n8n/scripts/watch_active_run.sh 5` ohne Hang-Hinweis.
-- [ ] Workflow-Log liegt unter `Workflow Logs/`.
-- [ ] LinkedIn/Reddit Ausarbeitungen liegen unter `Workflow Ergebnisse/`.
-- [ ] `00-Workflow-Ergebnisse.md` enthaelt verlinkte Zeile mit beiden Ausarbeitungen.
-- [ ] Draft-Dateien liegen in `Drafts/LinkedIn` und `Drafts/Reddit`.
-- [ ] `Workflow Zwischenergebnisse.md` wurde pro Schritt erweitert.
-- [ ] `Workflow Übersicht.md` enthaelt alle Workflows und ihre Node-Schritte.
+## Erfolgslauf
+- [ ] Orchestrator laeuft erfolgreich durch.
+- [ ] Detaildatei vorhanden: `Ergebnisse/Laufdetails/<run_id>.md`.
+- [ ] Runs-Tabelle aktualisiert: `Ergebnisse/00-Runs.md`.
+- [ ] Vollstaendige Workflow-Zwischenergebnisse aktualisiert: `Zwischenergebnisse/<workflow-slug>.md`.
+- [ ] Keine separaten Draft-Dateien erzeugt.
+- [ ] Keine separaten Success-Logs erzeugt.
 
-## Fehlerpfad
-- [ ] Fehlerfall erzeugt und geprueft (z. B. Obsidian oder Ollama kurz unterbrechen).
-- [ ] `WF95 Workflow Fehlerlog` schreibt den Fehlerlauf in `Workflow Logs`.
+## Fehlerlauf
+- [ ] Fehlerfall getestet.
+- [ ] Fehlerdetail vorhanden: `Ergebnisse/Fehlerdetails/<run_id>.md`.
 
 ## Nach dem Cutover
-- [ ] Alte Workflow-Namen sind nicht mehr in n8n vorhanden.
-- [ ] `01-Beitraege-Steps` wird nicht mehr automatisch beschrieben.
-- [ ] Export funktioniert deterministisch (`./dev.sh export`).
-- [ ] `./n8n/scripts/security_check.sh` ohne Blocking-Issues.
-- [ ] `./n8n/scripts/cleanup_stale_runs.sh --stale-sec 900` meldet keine stale Runs (oder wurde bereinigt).
+- [ ] Alte Draft-Verzeichnisse sind entfernt.
+- [ ] Alte Workflow-Log-Struktur wird nicht mehr beschrieben.
+- [ ] `./n8n/scripts/validate_cutover.sh` erfolgreich.

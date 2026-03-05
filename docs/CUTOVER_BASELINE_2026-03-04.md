@@ -9,12 +9,12 @@
 - Aktive Compose-Services: n8n, postgres, redis, ollama, searxng, valkey
 
 ## Workflow-Bestand in DB
-- WF00 System Checks: 1
-- WF10 Research Sammeln: 1
-- WF20 Qwen Entwurf: 1
-- WF30 Obsidian Schreiben: 1
-- WF90 Workflow Orchestrator: 1
-- WF95 Fehler Logger: 1
+- System Verbindungen pruefen (legacy Alias): 1
+- Thema und Quellen sammeln (legacy Alias): 1
+- Beitrag aus Quellen erstellen (legacy Alias): 1
+- Ergebnisse in Obsidian speichern (legacy Alias): 1
+- Ablauf automatisch steuern (legacy Alias): 1
+- Fehlerlauf klar dokumentieren (legacy Alias): 1
 
 ## Festgestellter Zustand
 - Keine Duplikate je Workflow-Name in der DB.
