@@ -1,0 +1,116 @@
+{
+  "name": "Fehlerlauf klar dokumentieren",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "error-trigger",
+      "name": "Bei Fehler starten",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -860,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = (items[0] && items[0].json) ? items[0].json : {};\n\nfunction firstString(...values) {\n  for (const value of values) {\n    if (value != null && String(value).trim()) return String(value);\n  }\n  return '';\n}\n\nfunction yamlEscape(value) {\n  return String(value || '').replace(/\"/g, '\\\\\"').replace(/\\n/g, ' ');\n}\n\nconst now = new Date();\nconst stamp = now.toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);\n\nconst execution = payload.execution || {};\nconst workflow = payload.workflow || {};\nconst error = payload.error || payload;\n\nconst executionId = firstString(payload.executionId, execution.id, payload.id, 'unknown');\nconst workflowName = firstString(workflow.name, payload.workflowName, 'unknown_workflow');\nconst workflowId = firstString(workflow.id, payload.workflowId, 'unknown_id');\nconst errorMessage = firstString(error.message, payload.message, payload.lastNodeExecuted, 'unknown error');\nconst errorStack = firstString(error.stack, payload.stack, '');\nconst lastNode = firstString(payload.lastNodeExecuted, error.node && error.node.name, 'unknown_node');\n\nconst runId = 'error-' + executionId + '-' + stamp;\nconst errorDir = $env.OBSIDIAN_WORKFLOW_ERROR_DIR || 'Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/Fehlerdetails';\nconst detailPath = errorDir + '/' + runId + '.md';\n\nconst markdown = [\n  '---',\n  'type: workflow-error',\n  'run_id: ' + runId,\n  'execution_id: ' + executionId,\n  'status: failed',\n  'workflow_name: \"' + yamlEscape(workflowName) + '\"',\n  'workflow_id: ' + workflowId,\n  'failed_at: ' + now.toISOString(),\n  'model_used: n/a',\n  '---',\n  '',\n  '# Fehlerdetail ' + runId,\n  '',\n  '- workflow: ' + workflowName + ' (' + workflowId + ')',\n  '- execution_id: ' + executionId,\n  '- last_node: ' + lastNode,\n  '- message: ' + errorMessage,\n  '',\n  '## Fehlerdetails',\n  '```text',\n  errorStack || errorMessage,\n  '```',\n].join('\\n');\n\nreturn [{\n  json: {\n    run_id: runId,\n    execution_id: executionId,\n    workflow_name: workflowName,\n    workflow_id: workflowId,\n    error_message: errorMessage,\n    last_node: lastNode,\n    detailPath,\n    markdown,\n  },\n}];\n"
+      },
+      "id": "build-fehler-log",
+      "name": "Fehlerdaten aufbereiten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{$env.OBSIDIAN_REST_URL + '/vault/' + $json.detailPath}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $env.OBSIDIAN_REST_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "text/markdown"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/markdown",
+        "body": "={{$json.markdown}}",
+        "options": {
+          "allowUnauthorizedCerts": "={{($env.OBSIDIAN_ALLOW_INSECURE_TLS || \"false\") === \"true\"}}"
+        }
+      },
+      "id": "write-fehler-log",
+      "name": "Fehlerdetails speichern",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -280,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    run_id: $json.run_id,\n    execution_id: $json.execution_id,\n    workflow_name: $json.workflow_name,\n    workflow_id: $json.workflow_id,\n    status: 'failed_logged',\n    workflow_error_path: $json.detailPath,\n    error_message: $json.error_message,\n    last_node: $json.last_node,\n  },\n}];\n"
+      },
+      "id": "return-fehler-summary",
+      "name": "Fehler Ergebnis ausgeben",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Bei Fehler starten": {
+      "main": [
+        [
+          {
+            "node": "Fehlerdaten aufbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fehlerdaten aufbereiten": {
+      "main": [
+        [
+          {
+            "node": "Fehlerdetails speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fehlerdetails speichern": {
+      "main": [
+        [
+          {
+            "node": "Fehler Ergebnis ausgeben",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9f310fe0-7da5-47e1-86ea-c1efea518147"
+}

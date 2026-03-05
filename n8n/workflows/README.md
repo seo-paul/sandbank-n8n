@@ -3,12 +3,12 @@
 Diese JSON-Dateien sind fuer den lokalen n8n-Import vorbereitet.
 
 ## Workflows
-- `WF00_Local_Healthcheck.json` -> `WF00 System Checks`
-- `WF10_Research_Intake_Local.json` -> `WF10 Research Evidenz`
-- `WF20_Content_Pipeline_Qwen.json` -> `WF20 Topic Draft Kritik`
-- `WF30_Obsidian_Sink_REST.json` -> `WF30 Logs Ergebnisse`
-- `WF90_Orchestrator_7Stage_Obsidian.json` -> `WF90 Orchestrator Subflows`
-- `WF95_Workflow_Error_Logger.json` -> `WF95 Workflow Fehlerlog`
+- `system-verbindungen-pruefen.json` -> `System Verbindungen pruefen`
+- `thema-und-quellen-sammeln.json` -> `Thema und Quellen sammeln`
+- `beitrag-aus-quellen-erstellen.json` -> `Beitrag aus Quellen erstellen`
+- `ergebnisse-in-obsidian-speichern.json` -> `Ergebnisse in Obsidian speichern`
+- `ablauf-automatisch-steuern.json` -> `Ablauf automatisch steuern`
+- `fehlerlauf-klar-dokumentieren.json` -> `Fehlerlauf klar dokumentieren`
 
 ## Import
 ```bash
@@ -27,4 +27,9 @@ Export schreibt deterministisch in die oben genannten Dateinamen.
 ## Hinweise
 - Keine X/Twitter-API enthalten.
 - Reddit wird lokal ueber SearXNG/`site:reddit.com` abgedeckt.
-- Prompt-SSOT liegt in Obsidian unter `Marketing/Social-Media/Workflow/Prompts`.
+- Prompt-SSOT liegt in Obsidian unter `Marketing/Social-Media/Beitraege/Workflow/Prompts`.
+- Ergebnisstruktur in Obsidian:
+  - `Ergebnisse/00-Runs.md`
+  - `Ergebnisse/Laufdetails/<run_id>.md`
+  - `Ergebnisse/Fehlerdetails/<run_id>.md`
+  - `Zwischenergebnisse/<workflow-slug>.md`

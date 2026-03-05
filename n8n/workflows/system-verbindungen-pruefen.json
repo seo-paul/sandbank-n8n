@@ -1,11 +1,11 @@
 {
-  "name": "WF00 System Checks",
+  "name": "System Verbindungen pruefen",
   "active": false,
   "nodes": [
     {
       "parameters": {},
       "id": "manual-1",
-      "name": "Start Manuell",
+      "name": "Manuell starten",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -32,7 +32,7 @@
         }
       },
       "id": "http-searx",
-      "name": "Pruefe SearXNG",
+      "name": "Websuche Verbindung pruefen",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -46,7 +46,7 @@
         "url": "={{ ($env.OLLAMA_BASE_URL || \"http://host.docker.internal:11434\").replace(/\\/+$/, \"\") + \"/api/tags\" }}"
       },
       "id": "http-ollama",
-      "name": "Pruefe Ollama",
+      "name": "KI Modell erreichbar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -73,7 +73,7 @@
         }
       },
       "id": "http-obsidian",
-      "name": "Pruefe Obsidian",
+      "name": "Obsidian API erreichbar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -83,21 +83,21 @@
     }
   ],
   "connections": {
-    "Start Manuell": {
+    "Manuell starten": {
       "main": [
         [
           {
-            "node": "Pruefe SearXNG",
+            "node": "Websuche Verbindung pruefen",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Pruefe Ollama",
+            "node": "KI Modell erreichbar",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Pruefe Obsidian",
+            "node": "Obsidian API erreichbar",
             "type": "main",
             "index": 0
           }
@@ -108,5 +108,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "492a7271-0f67-48e5-ad3b-1f1febc56499"
+  "versionId": "732fbcf4-4a51-4d26-83a7-0c180461e30a"
 }
