@@ -9,6 +9,7 @@ Letzte dokumentierte Vollausfuehrung:
 - [ ] Obsidian REST ist erreichbar.
 - [ ] `OBSIDIAN_WORKFLOW_SCHEMA_DIR` gesetzt.
 - [ ] `OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE` gesetzt.
+- [ ] `OBSIDIAN_WORKFLOW_ARCHIVE_DIR` gesetzt und ausserhalb von `OBSIDIAN_WORKFLOW_DIR`.
 
 ## Import
 - [ ] `./dev.sh import` ausgefuehrt.
@@ -45,6 +46,7 @@ Letzte dokumentierte Vollausfuehrung:
 
 ## Nach dem Cutover
 - [ ] Legacy-Schemafiles entfernt.
+- [ ] Kein `_legacy` mehr unter `Marketing/Social-Media/Beitraege/Workflow`.
 - [ ] Performance-Feedback-Workflow getestet (`Ergebnisse/Performance/<run_id>.md`).
 - [ ] Prompt-Change-Log aktualisiert (`Evaluations/prompt-change-log.md`).
 - [ ] Evaluationslauf getestet (`Evaluations/reports/<run_id>.md`).

@@ -4,6 +4,7 @@
 - Vollstaendig lokal
 - Kein automatischer Modell-Fallback
 - Obsidian ist SSOT fuer Prompts, Kontext, Schemas und Ergebnisdokumentation
+- Legacy-Archive liegen ausserhalb des aktiven Workflow-Root
 
 ## Komponenten
 - `n8n`: Orchestrierung und Quality Gates
@@ -57,6 +58,11 @@
   - `artifacts.strategy_critique`
   - `artifacts.final_gate`
   - `artifacts.human_review`
+
+## Pfadgrenzen Obsidian
+- Aktiv: `Marketing/Social-Media/Beitraege/Workflow`
+- Archiv: `Marketing/Social-Media/Beitraege/_Archiv/Workflow`
+- Keine `_legacy`-Ablage innerhalb des aktiven Workflow-Ordners
 
 ## Modellstrategie
 - Zulassiges Modell: `qwen3.5:27b`

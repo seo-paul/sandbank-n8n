@@ -114,3 +114,10 @@
 - Cutover status: completed
 - Remaining blockers: none
 - Operational note: current orchestrator success ends in `hold` because research evidence was intentionally weak/empty in smoke conditions; this is expected fail-closed behavior.
+
+## Addendum (2026-03-05, cleanup hardening)
+- Reset-/Cleanup-Policy aktualisiert:
+  - Legacy-Artefakte werden nach `Marketing/Social-Media/Beitraege/_Archiv/Workflow` ausgelagert.
+  - `_legacy` wird nicht mehr im aktiven Workflow-Pfad gehalten.
+- SSOT-Sync haertet gegen leere oder fehlende Quelldateien (`prompts/context/schemas`) ab.
+- `.env`-Standard um `OBSIDIAN_WORKFLOW_ARCHIVE_DIR` ergaenzt.

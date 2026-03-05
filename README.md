@@ -26,8 +26,11 @@ Relevante Pfade:
 - `Kontext/`
 - `Schemas/`
 - `SSOT/manifest.json`
-- `Evaluations/`
 - `Workflow Übersicht.md` (Ein-Tabelle mit Schritten, Zwischenergebnissen, Zweck, Beschreibung)
+
+Archiv (ausserhalb aktivem Workflow-Pfad):
+- `Marketing/Social-Media/Beitraege/_Archiv/Workflow/`
+- `_legacy` bleibt **nicht** unter `.../Workflow/`.
 
 ## Modell- und Qualitaetsregeln
 - Modell ist hart gepinnt: `qwen3.5:27b`.
@@ -60,6 +63,8 @@ cd /Users/zweigen/Sites/sandbank-n8n
 ./dev.sh export
 make workflow-build
 make sync-ssot
+./n8n/scripts/reset_obsidian_workflow_artifacts.sh
+./n8n/scripts/legacy_cleanup.sh --apply
 ```
 
 ## Aktive Workflows
@@ -71,7 +76,6 @@ make sync-ssot
 - `Ablauf automatisch steuern`
 - `Fehlerlauf klar dokumentieren`
 - `Performance zurueckfuehren`
-- `Evaluationslauf ausfuehren`
 
 ## Prompt-Steuerung
 Prompt-SSOT liegt unter:

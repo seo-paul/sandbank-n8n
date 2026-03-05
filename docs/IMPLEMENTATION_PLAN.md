@@ -28,5 +28,6 @@
 ## Phase 6 Hardening + Cutover
 - Retry-Logik fuer kritische Obsidian-IO
 - Sync-Guard: Eval-Dataset nur mit `SEED_EVAL_DATASET=true`
+- Legacy-Archivierung ausserhalb aktivem Workflow-Root (`OBSIDIAN_WORKFLOW_ARCHIVE_DIR`)
 - URL-Allowlist-Hardening in Retrieval
 - Cutover-Validierung erweitert

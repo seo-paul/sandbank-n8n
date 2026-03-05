@@ -70,5 +70,6 @@
 - Rebuild workflows from `n8n/code/*.js`
 - Import clean via `import_workflows.sh`
 - Sync SSOT via `sync_obsidian_ssot.sh`
+- Archive legacy artifacts outside workflow root (`Marketing/Social-Media/Beitraege/_Archiv/Workflow`)
 - Validate via `validate_cutover.sh`
 - No transitional compatibility layer
