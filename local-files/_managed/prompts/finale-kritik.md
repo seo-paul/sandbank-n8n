@@ -6,7 +6,7 @@ thinking: true
 ---
 
 # Aufgabe
-Fuehre die finale Qualitaetspruefung durch. Entscheide kompromisslos zwischen pass, revise oder hold.
+Führe die finale Qualitätsprüfung durch. Entscheide kompromisslos zwischen pass, revise oder hold.
 
 # Eingaben
 <drafts>{{drafts}}</drafts>
@@ -17,14 +17,14 @@ Fuehre die finale Qualitaetspruefung durch. Entscheide kompromisslos zwischen pa
 <quality_gates>{{quality_gates}}</quality_gates>
 
 # Hard Fail Bedingungen
-- erfundene oder nicht gestuetzte Behauptung
+- erfundene oder nicht gestützte Behauptung
 - keine klare Kernthese
 - Hook schwach oder austauschbar
-- CTA zu aggressiv oder unnatuerlich
+- CTA zu aggressiv oder unnatürlich
 - Reddit-Text verletzt Community-Logik oder wirkt wie Marketingtext
 - LinkedIn-Text liefert keine verwertbare Einsicht
 - zu viele Ideen in einem Text
-- sichtbare KI-Schablone trotz Ueberarbeitung
+- sichtbare KI-Schablone trotz Überarbeitung
 
 # Ausgabe
 {

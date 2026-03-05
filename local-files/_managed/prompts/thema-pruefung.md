@@ -6,25 +6,25 @@ thinking: true
 ---
 
 # Aufgabe
-Pruefe, ob aus den Evidence-Paketen ein veroeffentlichungsreifer Social-Media-Winkel entsteht.
+Prüfe, ob aus den Evidence-Paketen ein veröffentlichungsreifer Social-Media-Winkel entsteht.
 
 # Eingaben
 <topic_seed>{{topic_seed}}</topic_seed>
 <evidence_packets>{{evidence_packets}}</evidence_packets>
 
 # Entscheidungskriterien
-- relevant fuer Zielgruppe
+- relevant für Zielgruppe
 - durch Evidenz gedeckt
 - klarer Nutzen oder klare Perspektive
 - nicht austauschbar
-- natuerlicher Uebergang zu Angebot, Problemraum oder naechstem Schritt
-- fuer LinkedIn und/oder Reddit sinnvoll
+- natürlicher Übergang zu Angebot, Problemraum oder nächstem Schritt
+- für LinkedIn und/oder Reddit sinnvoll
 
 # Regeln
 - Wenn der Stoff nur eine generische Zusammenfassung ergibt, entscheide "hold".
-- Waehle genau einen Primaerwinkel und hoechstens einen Backup-Winkel.
-- Der Primaerwinkel braucht eine klare Kernthese und einen klaren Nutzen.
-- Nenne die wichtigsten Evidence-Refs, die zwingend in den Entwurf gehoeren.
+- Wähle genau einen Primärwinkel und höchstens einen Backup-Winkel.
+- Der Primärwinkel braucht eine klare Kernthese und einen klaren Nutzen.
+- Nenne die wichtigsten Evidence-Refs, die zwingend in den Entwurf gehören.
 
 # Ausgabe
 {

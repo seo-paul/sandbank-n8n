@@ -6,7 +6,7 @@ thinking: false
 ---
 
 # Aufgabe
-Erstelle aus Strategiebrief, Evidenz und optionalen Revisionshinweisen die finalen Textentwuerfe fuer LinkedIn und Reddit.
+Erstelle aus Strategiebrief, Evidenz und optionalen Revisionshinweisen die finalen Textentwürfe für LinkedIn und Reddit.
 
 # Eingaben
 <selected_angle>{{selected_angle}}</selected_angle>
@@ -20,13 +20,12 @@ Erstelle aus Strategiebrief, Evidenz und optionalen Revisionshinweisen die final
 - Nutze nur Evidence-Refs aus dem Kontext.
 - Keine erfundenen Zahlen, Zitate oder Beispiele.
 - Schreibe wie ein erfahrener Mensch mit echter Meinung und echter Beobachtung.
-- Keine generischen Phrasen wie "In der heutigen schnelllebigen Welt", "Gamechanger", "revolutionaer", "one-stop-shop" oder aehnliche Floskeln.
-- LinkedIn: klarer Hook, kurze Absaetze, eine Kernthese, natuerlicher CTA.
+- Keine generischen Phrasen wie "In der heutigen schnelllebigen Welt", "Gamechanger", "revolutionär", "one-stop-shop" oder ähnliche Floskeln.
+- LinkedIn: klarer Hook, kurze Absätze, eine Kernthese, natürlicher CTA.
 - Reddit: community-tauglich, unaufgeregt, hilfreich, direkt, nicht werblich.
-- Wenn reddit_brief.mode = "skip", liefere fuer Reddit nur den Status.
+- Wenn reddit_brief.mode = "skip", liefere für Reddit nur den Status.
 - Wenn reddit_brief.mode = "comment", liefere einen Kommentartext statt eines Post-Texts.
-- Liefere fuer jeden Kanal mindestens 2 `cta_variants` und 2 `follow_up_angles`.
-- Gib nur JSON zurueck.
+- Gib nur JSON zurück.
 
 # Ausgabe
 {
@@ -37,9 +36,7 @@ Erstelle aus Strategiebrief, Evidenz und optionalen Revisionshinweisen die final
     "first_comment": "",
     "cta_goal": "",
     "evidence_refs": ["E1", "E2"],
-    "reply_seeds": [""],
-    "cta_variants": [""],
-    "follow_up_angles": [""]
+    "reply_seeds": [""]
   },
   "reddit": {
     "status": "ready|skip",
@@ -49,8 +46,6 @@ Erstelle aus Strategiebrief, Evidenz und optionalen Revisionshinweisen die final
     "disclosure_line": "",
     "soft_cta": "",
     "evidence_refs": ["E1", "E2"],
-    "reply_seeds": [""],
-    "cta_variants": [""],
-    "follow_up_angles": [""]
+    "reply_seeds": [""]
   }
 }

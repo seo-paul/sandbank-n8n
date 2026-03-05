@@ -1,5 +1,6 @@
-# Workflow Übersicht
+# Workflow Uebersicht
 
 | Workflow | Schritt | Zwischenergebnis | Zweck | Beschreibung |
 |---|---|---|---|---|
-| <Workflowname> | 1. <Schrittname> | <artefakt oder -> | <kurzer zweck> | <2-4 saetze: was passiert konkret, welcher prompt, wo gespeichert> |
+| <Workflowname> | 1. <Schrittname> | <artefakt oder -> | <kurzer Zweck> | <konkrete Beschreibung der Aktion und des Outputs> |
+|  | 2. <Schrittname> | <artefakt> | <kurzer Zweck> | <konkrete Beschreibung der Aktion und des Outputs> |

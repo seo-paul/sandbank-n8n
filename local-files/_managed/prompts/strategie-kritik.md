@@ -6,7 +6,7 @@ thinking: true
 ---
 
 # Aufgabe
-Kritisiere die Entwuerfe auf Strategie, Plattform-Fit, Evidenznutzung, Engagement-Wahrscheinlichkeit und Conversion-Bruecke.
+Kritisiere die Entwürfe auf Strategie, Plattform-Fit, Evidenznutzung, Engagement-Wahrscheinlichkeit und Conversion-Brücke.
 
 # Eingaben
 <drafts>{{drafts}}</drafts>
@@ -15,14 +15,14 @@ Kritisiere die Entwuerfe auf Strategie, Plattform-Fit, Evidenznutzung, Engagemen
 <linkedin_brief>{{linkedin_brief}}</linkedin_brief>
 <reddit_brief>{{reddit_brief}}</reddit_brief>
 
-# Bewertungsmassstab
+# Bewertungsmaßstab
 Bewerte streng:
 - klare Kernthese
 - passender Hook
 - Wertdichte
 - stimmige Evidenznutzung
-- Kommentar- und Gespraechspotenzial
-- natuerliche CTA
+- Kommentar- und Gesprächspotenzial
+- natürliche CTA
 - LinkedIn-Fit
 - Reddit-Fit und Regelrisiko
 
@@ -38,15 +38,6 @@ Bewerte streng:
   "linkedin": {
     "score": 0,
     "pass": true,
-    "dimension_scores": {
-      "evidence_strength": 0,
-      "hook_strength": 0,
-      "platform_fit": 0,
-      "commentability": 0,
-      "cta_naturalness": 0,
-      "rule_risk": 0,
-      "clarity": 0
-    },
     "must_fix": [""],
     "should_fix": [""],
     "risk_flags": [""],
@@ -55,15 +46,6 @@ Bewerte streng:
   "reddit": {
     "score": 0,
     "pass": true,
-    "dimension_scores": {
-      "evidence_strength": 0,
-      "hook_strength": 0,
-      "platform_fit": 0,
-      "commentability": 0,
-      "cta_naturalness": 0,
-      "rule_risk": 0,
-      "clarity": 0
-    },
     "must_fix": [""],
     "should_fix": [""],
     "risk_flags": [""],

@@ -6,7 +6,7 @@ thinking: false
 ---
 
 # Aufgabe
-Erzeuge eine kompakte, nuechterne Markdown-Zusammenfassung fuer die Workflow-Dokumentation.
+Erzeuge eine kompakte, nüchterne Markdown-Zusammenfassung für die Workflow-Dokumentation.
 
 # Eingaben
 <workflow_name>{{workflow_name}}</workflow_name>
@@ -19,15 +19,15 @@ Erzeuge eine kompakte, nuechterne Markdown-Zusammenfassung fuer die Workflow-Dok
 
 # Regeln
 - Maximal 8 knappe Bullet Points.
-- Keine Ausschmueckung, keine Meta-Erklaerung.
+- Keine Ausschmückung, keine Meta-Erklärung.
 - Nur konkrete Informationen, Entscheidungen und Risiken.
 
 # Ausgabeformat
-## {{workflow_name}} - {{step_name}}
+## {{workflow_name}} — {{step_name}}
 - Ziel:
 - Wichtigster Input:
 - Wichtigster Output:
 - Entscheidung:
 - Scores:
 - Risiken:
-- Naechster Schritt:
+- Nächster Schritt:

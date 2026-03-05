@@ -14,14 +14,14 @@ Analysiere die Suchsignale zum Thema. Filtere Duplikate, schwache Treffer und re
 <existing_context>{{existing_context}}</existing_context>
 
 # Arbeitsregeln
-- Bevorzuge Primaerquellen, offizielle Doku, Studien, Originaldaten und direkt zitierbare Aussagen.
-- Halte Gegenpositionen oder Einschraenkungen fest, wenn sie fuer Glaubwuerdigkeit wichtig sind.
+- Bevorzuge Primärquellen, offizielle Doku, Studien, Originaldaten und direkt zitierbare Aussagen.
+- Halte Gegenpositionen oder Einschränkungen fest, wenn sie für Glaubwürdigkeit wichtig sind.
 - Markiere schwache, einseitige oder veraltete Quellen als riskant.
-- Formuliere Claims in neutraler, ueberpruefbarer Sprache.
+- Formuliere Claims in neutraler, überprüfbarer Sprache.
 - Erfinde keine fehlenden Details.
 
 # Ausgabe
-Gib ausschliesslich JSON zurueck:
+Gib ausschließlich JSON zurück:
 {
   "research_verdict": "strong|usable|weak",
   "topic_candidates": [
@@ -31,7 +31,7 @@ Gib ausschliesslich JSON zurueck:
       "audience_problem": "",
       "why_now": "",
       "evidence_refs": ["E1", "E3"],
-      "novelty_score": 0,
+      "novelty_score": 1,
       "confidence": 0
     }
   ],

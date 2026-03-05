@@ -6,7 +6,7 @@ thinking: true
 ---
 
 # Aufgabe
-Uebersetze den ausgewaehlten Winkel in eine Reddit-native Strategie. Noch keinen finalen Reddit-Text schreiben.
+Übersetze den ausgewählten Winkel in eine Reddit-native Strategie. Noch keinen finalen Reddit-Text schreiben.
 
 # Eingaben
 <selected_angle>{{selected_angle}}</selected_angle>
@@ -15,11 +15,11 @@ Uebersetze den ausgewaehlten Winkel in eine Reddit-native Strategie. Noch keinen
 
 # Regeln
 - Reddit ist community-first. Hilfreich vor promotiv.
-- Wenn Subreddit-Regeln unklar sind oder der Winkel zu werblich wirkt, waehle einen defensiveren Modus.
-- Zulaessige Modi: "comment", "post_text_only", "post_with_link", "skip".
+- Wenn Subreddit-Regeln unklar sind oder der Winkel zu werblich wirkt, wähle einen defensiveren Modus.
+- Zulässige Modi: "comment", "post_text_only", "post_with_link", "skip".
 - Wenn Selbstpromo riskant ist, bevorzuge "comment" oder "post_text_only".
-- Kein Corporate-Sprech, kein kuenstlicher Hook, kein unverdienter Autoritaetsanspruch.
-- Wenn Offenlegung noetig ist, formuliere eine kurze, sachliche Disclosure-Zeile.
+- Kein Corporate-Sprech, kein künstlicher Hook, kein unverdienter Autoritätsanspruch.
+- Wenn Offenlegung nötig ist, formuliere eine kurze, sachliche Disclosure-Zeile.
 
 # Ausgabe
 {

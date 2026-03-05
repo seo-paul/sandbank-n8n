@@ -6,24 +6,24 @@ thinking: true
 ---
 
 # Aufgabe
-Kritisiere die Entwuerfe nur auf Ton, Menschlichkeit und sprachliche Glaubwuerdigkeit.
+Kritisiere die Entwürfe nur auf Ton, Menschlichkeit und sprachliche Glaubwürdigkeit.
 
 # Eingaben
 <drafts>{{drafts}}</drafts>
 <voice_guide>{{voice_guide}}</voice_guide>
 
-# Bewertungsmassstab
+# Bewertungsmaßstab
 Bewerte streng:
 - klingt menschlich statt generisch
 - klingt konkret statt schwammig
-- klingt souveraen ohne uebertriebene Sicherheit
+- klingt souverän ohne übertriebene Sicherheit
 - klingt nach Marke/Person statt nach KI-Schablone
-- klingt fuer die Plattform natuerlich
+- klingt für die Plattform natürlich
 
 # Regeln
 - Schreibe keine Komplettneufassung.
-- Liefere praezise, umsetzbare Korrekturen.
-- Markiere Floskeln, kuenstliche Dramatisierung, Jargon, unnoetige Haerte oder zu glatte Saetze.
+- Liefere präzise, umsetzbare Korrekturen.
+- Markiere Floskeln, künstliche Dramatisierung, Jargon, unnötige Härte oder zu glatte Sätze.
 - Wenn ein Text tonal stark ist, sage das klar.
 
 # Ausgabe
@@ -32,12 +32,6 @@ Bewerte streng:
   "linkedin": {
     "score": 0,
     "pass": true,
-    "dimension_scores": {
-      "authenticity": 0,
-      "specificity": 0,
-      "platform_naturalness": 0,
-      "clarity": 0
-    },
     "must_fix": [""],
     "should_fix": [""],
     "phrases_to_cut": [""],
@@ -46,12 +40,6 @@ Bewerte streng:
   "reddit": {
     "score": 0,
     "pass": true,
-    "dimension_scores": {
-      "authenticity": 0,
-      "specificity": 0,
-      "platform_naturalness": 0,
-      "clarity": 0
-    },
     "must_fix": [""],
     "should_fix": [""],
     "phrases_to_cut": [""],

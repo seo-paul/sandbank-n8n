@@ -6,7 +6,7 @@ thinking: true
 ---
 
 # Aufgabe
-Analysiere reale Performance-Daten und leite konkrete Learnings fuer Hooks, Formate, CTA-Typen, Themen und Kanal-Fit ab.
+Analysiere reale Performance-Daten und leite konkrete Learnings für Hooks, Formate, CTA-Typen, Themen und Kanal-Fit ab.
 
 # Eingaben
 <content_package>{{content_package}}</content_package>
@@ -15,9 +15,9 @@ Analysiere reale Performance-Daten und leite konkrete Learnings fuer Hooks, Form
 <comments>{{comments}}</comments>
 
 # Regeln
-- Trenne Beobachtung, Interpretation und naechsten Test sauber.
-- Leite nur Learnings ab, die von Daten plausibel gestuetzt werden.
-- Formuliere konkrete Prompt- oder Workflow-Aenderungen, keine allgemeinen Marketingweisheiten.
+- Trenne Beobachtung, Interpretation und nächsten Test sauber.
+- Leite nur Learnings ab, die von Daten plausibel gestützt werden.
+- Formuliere konkrete Prompt- oder Workflow-Änderungen, keine allgemeinen Marketingweisheiten.
 
 # Ausgabe
 {
