@@ -42,6 +42,13 @@ function clamp(value, min, max, fallback) {
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
 }
+function parseBool(value, fallback = false) {
+  if (value === true || value === false) return value;
+  const normalized = String(value == null ? '' : value).trim().toLowerCase();
+  if (normalized === 'true') return true;
+  if (normalized === 'false') return false;
+  return fallback;
+}
 
 function isAllowedExternalUrl(urlValue) {
   try {
@@ -71,6 +78,7 @@ ctx.model_trace = ensureArray(ctx.model_trace);
 ctx.artifacts = (ctx.artifacts && typeof ctx.artifacts === 'object') ? ctx.artifacts : {};
 ctx.context = (ctx.context && typeof ctx.context === 'object') ? ctx.context : {};
 ctx.schemas = (ctx.schemas && typeof ctx.schemas === 'object') ? ctx.schemas : {};
+const stageSummaryEnabled = parseBool($env.PIPELINE_STAGE_SUMMARY_ENABLED, false);
 
 function validateSchema(schema, value, path = 'value') {
   const type = schema.type;
@@ -190,13 +198,78 @@ function extractJsonCandidate(rawText) {
   throw new Error('Could not extract valid JSON payload');
 }
 
+function pickEnumFallback(enumValues) {
+  const values = ensureArray(enumValues);
+  if (!values.length) return '';
+  const preferred = ['weak', 'hold', 'skip', 'pending', 'comment', 'post_text_only', 'post_with_link', 'usable', 'strong'];
+  for (const token of preferred) {
+    const found = values.find((value) => String(value).toLowerCase() === token);
+    if (found !== undefined) return found;
+  }
+  return values[0];
+}
+
+function fallbackFromSchema(schema, depth = 0) {
+  if (!schema || typeof schema !== 'object' || depth > 20) return null;
+
+  if (schema.const !== undefined) return schema.const;
+  if (Array.isArray(schema.enum) && schema.enum.length) return pickEnumFallback(schema.enum);
+
+  const schemaType = Array.isArray(schema.type)
+    ? schema.type.find((t) => t !== 'null') || schema.type[0]
+    : schema.type;
+
+  if (schemaType === 'object' || schema.properties || schema.required) {
+    const out = {};
+    const required = ensureArray(schema.required);
+    const props = schema.properties || {};
+    for (const key of required) {
+      if (props[key]) out[key] = fallbackFromSchema(props[key], depth + 1);
+      else out[key] = 'n/a';
+    }
+    return out;
+  }
+
+  if (schemaType === 'array') {
+    const out = [];
+    const minItems = Number.isFinite(schema.minItems) ? Number(schema.minItems) : 0;
+    const itemSchema = schema.items || {};
+    for (let i = 0; i < minItems; i++) out.push(fallbackFromSchema(itemSchema, depth + 1));
+    return out;
+  }
+
+  if (schemaType === 'boolean') return false;
+
+  if (schemaType === 'number' || schemaType === 'integer') {
+    let value = 0;
+    if (Number.isFinite(schema.minimum)) value = Number(schema.minimum);
+    if (Number.isFinite(schema.maximum) && value > Number(schema.maximum)) value = Number(schema.maximum);
+    return schemaType === 'integer' ? Math.round(value) : value;
+  }
+
+  if (schemaType === 'string' || !schemaType) {
+    const minLength = Number.isFinite(schema.minLength) ? Number(schema.minLength) : 0;
+    let value = 'n/a';
+    if (minLength > value.length) value = value + 'x'.repeat(minLength - value.length);
+    return value;
+  }
+
+  return null;
+}
+
 async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
   const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\/+$/, ''));
   const temperature = Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.2;
-  const numPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 400;
+  const maxPredict = clamp($env.OLLAMA_NUM_PREDICT_CAP, 80, 2000, 900);
+  const requestedPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 360;
+  const numPredict = clamp(requestedPredict, 80, maxPredict, 360);
   const numCtx = Number.isFinite(Number(options.num_ctx)) ? Math.max(1024, Number(options.num_ctx)) : 4096;
-  const timeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 300000;
-  const maxAttempts = Number.isFinite(Number(options.max_attempts)) ? Number(options.max_attempts) : 3;
+  const maxTimeout = clamp($env.OLLAMA_TIMEOUT_CAP_MS, 30000, 900000, 360000);
+  const requestedTimeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 240000;
+  const timeout = clamp(Math.min(requestedTimeout, maxTimeout), 30000, maxTimeout, 240000);
+  const attemptsCap = clamp($env.OLLAMA_MAX_ATTEMPTS_CAP, 1, 5, 2);
+  const requestedAttempts = Number.isFinite(Number(options.max_attempts)) ? Number(options.max_attempts) : 2;
+  const maxAttempts = clamp(requestedAttempts, 1, attemptsCap, 2);
   const thinking = options.thinking !== false;
 
   const messages = [
@@ -239,7 +312,20 @@ async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
 }
 
 async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
-  const raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);
+  let raw;
+  try {
+    raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);
+  } catch (rawError) {
+    if (options.format_schema) {
+      return {
+        parsed: fallbackFromSchema(options.format_schema),
+        raw_text: '[FALLBACK:model_error] ' + shortText(rawError.message || 'unknown', 240),
+        model_used: ctx.model_used,
+      };
+    }
+    throw rawError;
+  }
+
   try {
     return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, model_used: raw.model_used };
   } catch (firstError) {
@@ -251,22 +337,33 @@ async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
       raw.text,
     ].filter(Boolean).join('\n\n');
 
-    const repaired = await callOllamaRaw.call(
-      this,
-      'You are a strict JSON formatter. Output valid JSON only.',
-      repairPrompt,
-      {
-        format_schema: options.format_schema || null,
-        temperature: 0,
-        num_predict: 520,
-        num_ctx: 4096,
-        timeout: 240000,
-        max_attempts: 2,
-        thinking: false,
-      }
-    );
+    try {
+      const repaired = await callOllamaRaw.call(
+        this,
+        'You are a strict JSON formatter. Output valid JSON only.',
+        repairPrompt,
+        {
+          format_schema: options.format_schema || null,
+          temperature: 0,
+          num_predict: 520,
+          num_ctx: 4096,
+          timeout: 240000,
+          max_attempts: 2,
+          thinking: false,
+        }
+      );
 
-    return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text, model_used: repaired.model_used };
+      return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text, model_used: repaired.model_used };
+    } catch (repairError) {
+      if (options.format_schema) {
+        return {
+          parsed: fallbackFromSchema(options.format_schema),
+          raw_text: '[FALLBACK:repair_error] ' + shortText(repairError.message || 'unknown', 240),
+          model_used: ctx.model_used,
+        };
+      }
+      throw repairError;
+    }
   }
 }
 
@@ -295,6 +392,11 @@ function buildPrompt(stagePrompt, sections) {
 }
 
 async function addStageSummary(step, stage, payload) {
+  if (!stageSummaryEnabled) {
+    ctx.stage_summaries.push({ step, stage, summary: shortText(compact(payload, 300), 400) });
+    return;
+  }
+
   const summaryPrompt = buildPrompt(
     String(ctx.prompts.schritt_zusammenfassung || ''),
     {
@@ -390,6 +492,7 @@ await addStageSummary.call(this, 1, 'Query Planung', queryPlan);
 const rawSignals = [];
 const blockedSignals = [];
 const failedQueries = [];
+let retrievalFallbackUsed = false;
 for (const row of queryPlan) {
   const query = String(row.query || '').trim();
   if (!query) continue;
@@ -421,7 +524,25 @@ for (const row of queryPlan) {
 }
 
 if (!rawSignals.length) {
-  throw new Error('No research signals collected. Failed queries: ' + JSON.stringify(failedQueries));
+  const fallbackSummary = sanitizeExternalText(
+    String(ctx.context.proof_library || ctx.context.linkedin_context || ctx.context.reddit_context || ctx.context.brand_profile || ''),
+    700
+  );
+  if (fallbackSummary) {
+    retrievalFallbackUsed = true;
+    rawSignals.push({
+      query: String((queryPlan[0] && queryPlan[0].query) || ctx.topic_hint || 'context-fallback'),
+      source_type: 'context',
+      title: 'Kontextbasierter Fallback ohne externe Treffer',
+      url: 'context://workflow-context',
+      summary: fallbackSummary,
+      published_at: '',
+    });
+  }
+}
+
+if (!rawSignals.length) {
+  throw new Error('No research signals collected and no context fallback available. Failed queries: ' + JSON.stringify(failedQueries));
 }
 
 ctx.artifacts.raw_signals = rawSignals;
@@ -432,8 +553,8 @@ addStage(
   'ok',
   'run/' + ctx.run_id + '/research/query_plan',
   'run/' + ctx.run_id + '/research/raw_signals',
-  rawSignals.length >= 8 ? 85 : 70,
-  'signals=' + rawSignals.length + '; failed=' + failedQueries.length + '; blocked=' + blockedSignals.length,
+  retrievalFallbackUsed ? 55 : (rawSignals.length >= 8 ? 85 : 70),
+  'signals=' + rawSignals.length + '; failed=' + failedQueries.length + '; blocked=' + blockedSignals.length + '; fallback=' + (retrievalFallbackUsed ? 'context' : 'none'),
   failedQueries.length + blockedSignals.length
 );
 await addStageSummary.call(this, 2, 'Retrieval', rawSignals.slice(0, 6));
@@ -472,9 +593,9 @@ const stage4 = await callOllamaJson.call(
   {
     format_schema: researchOutputSchema,
     temperature: 0.1,
-    num_predict: 1200,
+    num_predict: 700,
     num_ctx: 8192,
-    timeout: 420000,
+    timeout: 300000,
     max_attempts: 3,
     thinking: true,
   }

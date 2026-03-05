@@ -42,6 +42,13 @@ function clamp(value, min, max, fallback) {
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
 }
+function parseBool(value, fallback = false) {
+  if (value === true || value === false) return value;
+  const normalized = String(value == null ? '' : value).trim().toLowerCase();
+  if (normalized === 'true') return true;
+  if (normalized === 'false') return false;
+  return fallback;
+}
 function yamlEscape(value) {
   return String(value || '').replace(/"/g, '\\"').replace(/\n/g, ' ');
 }
@@ -56,8 +63,29 @@ ctx.model_trace = ensureArray(ctx.model_trace);
 ctx.artifacts = (ctx.artifacts && typeof ctx.artifacts === 'object') ? ctx.artifacts : {};
 ctx.context = (ctx.context && typeof ctx.context === 'object') ? ctx.context : {};
 ctx.schemas = (ctx.schemas && typeof ctx.schemas === 'object') ? ctx.schemas : {};
+const stageSummaryEnabled = parseBool($env.PIPELINE_STAGE_SUMMARY_ENABLED, false);
 
-function validateSchema(schema, value, path = 'value') {
+function resolveJsonPointer(rootSchema, pointer) {
+  if (typeof pointer !== 'string' || !pointer.startsWith('#/')) return null;
+  const parts = pointer.slice(2).split('/').map((part) => part.replace(/~1/g, '/').replace(/~0/g, '~'));
+  let node = rootSchema;
+  for (const part of parts) {
+    if (!node || typeof node !== 'object' || !(part in node)) return null;
+    node = node[part];
+  }
+  return node;
+}
+
+function validateSchema(schema, value, path = 'value', rootSchema = schema) {
+  if (!schema || typeof schema !== 'object') return;
+
+  if (schema.$ref) {
+    const resolved = resolveJsonPointer(rootSchema, String(schema.$ref));
+    if (!resolved) throw new Error(path + ' unresolved $ref ' + String(schema.$ref));
+    validateSchema(resolved, value, path, rootSchema);
+    return;
+  }
+
   const type = schema.type;
   if (type === 'object') {
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(path + ' must be object');
@@ -66,7 +94,7 @@ function validateSchema(schema, value, path = 'value') {
     }
     const properties = schema.properties || {};
     for (const [key, child] of Object.entries(properties)) {
-      if (key in value) validateSchema(child, value[key], path + '.' + key);
+      if (key in value) validateSchema(child, value[key], path + '.' + key, rootSchema);
     }
     return;
   }
@@ -74,7 +102,7 @@ function validateSchema(schema, value, path = 'value') {
     if (!Array.isArray(value)) throw new Error(path + ' must be array');
     if (Number.isFinite(schema.minItems) && value.length < schema.minItems) throw new Error(path + ' minItems=' + schema.minItems);
     if (schema.items) {
-      for (let i = 0; i < value.length; i++) validateSchema(schema.items, value[i], path + '[' + i + ']');
+      for (let i = 0; i < value.length; i++) validateSchema(schema.items, value[i], path + '[' + i + ']', rootSchema);
     }
     return;
   }
@@ -167,13 +195,86 @@ function extractJsonCandidate(rawText) {
   throw new Error('Could not extract valid JSON payload');
 }
 
+function pickEnumFallback(enumValues) {
+  const values = ensureArray(enumValues);
+  if (!values.length) return '';
+  const preferred = ['hold', 'skip', 'revise', 'weak', 'pending', 'deny', 'comment', 'post_text_only', 'post_with_link', 'ready', 'pass', 'publish'];
+  for (const token of preferred) {
+    const found = values.find((value) => String(value).toLowerCase() === token);
+    if (found !== undefined) return found;
+  }
+  return values[0];
+}
+
+function fallbackFromSchema(schema, rootSchema = schema, depth = 0) {
+  if (!schema || typeof schema !== 'object' || depth > 20) return null;
+
+  if (schema.$ref) {
+    const resolved = resolveJsonPointer(rootSchema, String(schema.$ref));
+    if (resolved) return fallbackFromSchema(resolved, rootSchema, depth + 1);
+  }
+
+  if (schema.const !== undefined) return schema.const;
+  if (Array.isArray(schema.enum) && schema.enum.length) return pickEnumFallback(schema.enum);
+
+  const schemaType = Array.isArray(schema.type)
+    ? schema.type.find((t) => t !== 'null') || schema.type[0]
+    : schema.type;
+
+  if (schemaType === 'object' || schema.properties || schema.required) {
+    const out = {};
+    const required = ensureArray(schema.required);
+    const props = schema.properties || {};
+    for (const key of required) {
+      if (props[key]) out[key] = fallbackFromSchema(props[key], rootSchema, depth + 1);
+      else out[key] = 'n/a';
+    }
+    return out;
+  }
+
+  if (schemaType === 'array') {
+    const out = [];
+    const minItems = Number.isFinite(schema.minItems) ? Number(schema.minItems) : 0;
+    const itemSchema = schema.items || {};
+    for (let i = 0; i < minItems; i++) {
+      out.push(fallbackFromSchema(itemSchema, rootSchema, depth + 1));
+    }
+    return out;
+  }
+
+  if (schemaType === 'boolean') return false;
+
+  if (schemaType === 'number' || schemaType === 'integer') {
+    let value = 0;
+    if (Number.isFinite(schema.minimum)) value = Number(schema.minimum);
+    if (Number.isFinite(schema.maximum) && value > Number(schema.maximum)) value = Number(schema.maximum);
+    return schemaType === 'integer' ? Math.round(value) : value;
+  }
+
+  if (schemaType === 'string' || !schemaType) {
+    const minLength = Number.isFinite(schema.minLength) ? Number(schema.minLength) : 0;
+    const format = String(schema.format || '').toLowerCase();
+    let value = format === 'uri' ? 'https://example.invalid' : 'n/a';
+    if (minLength > value.length) value = value + 'x'.repeat(minLength - value.length);
+    return value;
+  }
+
+  return null;
+}
+
 async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
   const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\/+$/, ''));
   const temperature = Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.2;
-  const numPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 600;
+  const maxPredict = clamp($env.OLLAMA_NUM_PREDICT_CAP, 80, 3000, 900);
+  const requestedPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 420;
+  const numPredict = clamp(requestedPredict, 80, maxPredict, 420);
   const numCtx = Number.isFinite(Number(options.num_ctx)) ? Math.max(1024, Number(options.num_ctx)) : 8192;
-  const timeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 420000;
-  const maxAttempts = Number.isFinite(Number(options.max_attempts)) ? Number(options.max_attempts) : 3;
+  const maxTimeout = clamp($env.OLLAMA_TIMEOUT_CAP_MS, 30000, 900000, 360000);
+  const requestedTimeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 300000;
+  const timeout = clamp(Math.min(requestedTimeout, maxTimeout), 30000, maxTimeout, 300000);
+  const attemptsCap = clamp($env.OLLAMA_MAX_ATTEMPTS_CAP, 1, 5, 2);
+  const requestedAttempts = Number.isFinite(Number(options.max_attempts)) ? Number(options.max_attempts) : 2;
+  const maxAttempts = clamp(requestedAttempts, 1, attemptsCap, 2);
   const thinking = options.thinking !== false;
 
   const userContent = thinking
@@ -219,7 +320,20 @@ async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
 }
 
 async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
-  const raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);
+  let raw;
+  try {
+    raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);
+  } catch (rawError) {
+    if (options.format_schema) {
+      return {
+        parsed: fallbackFromSchema(options.format_schema),
+        raw_text: '[FALLBACK:model_error] ' + shortText(rawError.message || 'unknown', 240),
+        model_used: ctx.model_used,
+      };
+    }
+    throw rawError;
+  }
+
   try {
     return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, model_used: raw.model_used };
   } catch (firstError) {
@@ -231,22 +345,33 @@ async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
       raw.text,
     ].filter(Boolean).join('\n\n');
 
-    const repaired = await callOllamaRaw.call(
-      this,
-      'You are a strict JSON formatter. Output valid JSON only.',
-      repairPrompt,
-      {
-        format_schema: options.format_schema || null,
-        temperature: 0,
-        num_predict: 900,
-        num_ctx: 8192,
-        timeout: 300000,
-        max_attempts: 2,
-        thinking: false,
-      }
-    );
+    try {
+      const repaired = await callOllamaRaw.call(
+        this,
+        'You are a strict JSON formatter. Output valid JSON only.',
+        repairPrompt,
+        {
+          format_schema: options.format_schema || null,
+          temperature: 0,
+          num_predict: 700,
+          num_ctx: 8192,
+          timeout: 240000,
+          max_attempts: 2,
+          thinking: false,
+        }
+      );
 
-    return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text, model_used: repaired.model_used };
+      return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text, model_used: repaired.model_used };
+    } catch (repairError) {
+      if (options.format_schema) {
+        return {
+          parsed: fallbackFromSchema(options.format_schema),
+          raw_text: '[FALLBACK:repair_error] ' + shortText(repairError.message || 'unknown', 240),
+          model_used: ctx.model_used,
+        };
+      }
+      throw repairError;
+    }
   }
 }
 
@@ -272,6 +397,11 @@ function buildPrompt(stagePrompt, sections) {
 }
 
 async function addStageSummary(step, stage, payload) {
+  if (!stageSummaryEnabled) {
+    ctx.stage_summaries.push({ step, stage, summary: shortText(typeof payload === 'string' ? payload : JSON.stringify(payload), 500) });
+    return;
+  }
+
   const summaryPrompt = buildPrompt(
     String(ctx.prompts.schritt_zusammenfassung || ''),
     {
@@ -462,60 +592,39 @@ function markdownRedditDraft(pkg, topic, score) {
   ].join('\n');
 }
 
-const evidencePackets = ensureArray(ctx.artifacts && ctx.artifacts.evidence_packets);
-if (!evidencePackets.length) {
-  throw new Error('Missing evidence_packets from research workflow');
-}
+function applyHoldResult(reason, priorityFixes = []) {
+  const holdReason = shortText(String(reason || 'hold_decision'), 220);
+  const fixes = ensureArray(priorityFixes).map((x) => shortText(String(x || ''), 180)).filter(Boolean);
+  const uniqueFixes = Array.from(new Set(fixes.length ? fixes : ['collect stronger evidence']));
 
-const topicSeed = String(ctx.topic_hint || '');
-const step5Prompt = buildPrompt(
-  String(ctx.prompts.thema_pruefung || ''),
-  {
-    topic_seed: topicSeed,
-    evidence_packets: JSON.stringify(compactEvidence(evidencePackets, 10)),
+  if (!ctx.artifacts.topic_gate || typeof ctx.artifacts.topic_gate !== 'object') {
+    ctx.artifacts.topic_gate = {
+      decision: 'hold',
+      reason: holdReason,
+      selected_angle: {
+        title: 'Hold - insufficient evidence',
+        core_thesis: 'Insufficient evidence for publish-ready claim.',
+        audience_problem: 'Audience-relevant pain point not evidence-backed yet.',
+        why_this_angle_wins: 'No reliable angle selected.',
+        why_now: 'Need stronger source coverage first.',
+        conversion_bridge: 'Pause publication and collect better proof.',
+        must_use_evidence_refs: [],
+        counterpoint_or_caveat: 'Evidence gap detected.',
+      },
+      backup_angle: {
+        title: 'Hold fallback',
+        core_thesis: 'Evidence first, then publish.',
+      },
+      linkedin_fit: 0,
+      reddit_fit: 0,
+      must_have_in_draft: [],
+      must_avoid: [],
+      open_risks: uniqueFixes,
+    };
   }
-);
 
-const step5 = await callOllamaJson.call(
-  this,
-  'You are a strict topic gate evaluator. Return valid JSON only.',
-  step5Prompt,
-  {
-    format_schema: topicGateSchema,
-    temperature: 0.1,
-    num_predict: 900,
-    num_ctx: 8192,
-    timeout: 420000,
-    max_attempts: 3,
-    thinking: true,
-  }
-);
-
-const topicGate = step5.parsed;
-validateSchema(topicGateSchema, topicGate, 'topic_gate');
-ctx.artifacts.topic_gate = topicGate;
-
-addStage(5, 'Thema Gate', 'ok', 'run/' + ctx.run_id + '/content/input', 'run/' + ctx.run_id + '/content/topic_gate', topicGate.decision === 'publish' ? 88 : 62, shortText(topicGate.reason, 180), ensureArray(topicGate.open_risks).length);
-await addStageSummary.call(this, 5, 'Thema Gate', topicGate);
-
-if (topicGate.decision === 'hold') {
-  const holdGate = {
-    status: 'hold',
-    human_review_required: true,
-    blocking_issues: ['Topic gate decision = hold'],
-    release_notes: ['No content drafted due to weak or non-distinct angle'],
-    final_checks: {
-      evidence_ok: false,
-      tone_ok: false,
-      platform_fit_ok: false,
-      conversion_ok: false,
-      clarity_ok: false,
-    },
-    priority_fixes: ensureArray(topicGate.open_risks).length ? topicGate.open_risks : ['collect stronger evidence'],
-  };
-
-  ctx.artifacts.linkedin_brief = {};
-  ctx.artifacts.reddit_brief = { mode: 'skip', risk_flags: ['hold_decision'] };
+  ctx.artifacts.linkedin_brief = ctx.artifacts.linkedin_brief && typeof ctx.artifacts.linkedin_brief === 'object' ? ctx.artifacts.linkedin_brief : {};
+  ctx.artifacts.reddit_brief = ctx.artifacts.reddit_brief && typeof ctx.artifacts.reddit_brief === 'object' ? ctx.artifacts.reddit_brief : { mode: 'skip', risk_flags: ['hold_decision'] };
   ctx.artifacts.content_package = {
     linkedin: { status: 'skip', hook_used: '', post_markdown: '', first_comment: '', cta_goal: '', evidence_refs: [], reply_seeds: [], cta_variants: [], follow_up_angles: [] },
     reddit: { status: 'skip', mode: 'skip', title: '', body_markdown: '', disclosure_line: '', soft_cta: '', evidence_refs: [], reply_seeds: [], cta_variants: [], follow_up_angles: [] },
@@ -564,9 +673,27 @@ if (topicGate.decision === 'hold') {
     },
     cross_platform: [],
   };
-  ctx.artifacts.final_gate = holdGate;
+  ctx.artifacts.final_gate = {
+    status: 'hold',
+    human_review_required: true,
+    blocking_issues: [holdReason],
+    release_notes: ['No content drafted due to hold decision'],
+    final_checks: {
+      evidence_ok: false,
+      tone_ok: false,
+      platform_fit_ok: false,
+      conversion_ok: false,
+      clarity_ok: false,
+    },
+    priority_fixes: uniqueFixes,
+  };
 
-  ctx.topic = String(topicGate.selected_angle && topicGate.selected_angle.title ? topicGate.selected_angle.title : (ctx.topic_hint || 'hold'));
+  const topic = String(
+    (ctx.artifacts.topic_gate && ctx.artifacts.topic_gate.selected_angle && ctx.artifacts.topic_gate.selected_angle.title)
+      ? ctx.artifacts.topic_gate.selected_angle.title
+      : (ctx.topic_hint || 'hold')
+  );
+  ctx.topic = topic;
   ctx.completed_at = nowIso();
   ctx.status = 'hold';
   ctx.generated = {
@@ -576,8 +703,74 @@ if (topicGate.decision === 'hold') {
     reddit_research_markdown: '### Reddit Ausarbeitung\n\n- skipped due to hold decision',
     linkedin_draft_markdown: '### LinkedIn Entwurf\n\n- skipped due to hold decision',
     reddit_draft_markdown: '### Reddit Entwurf\n\n- skipped due to hold decision',
+    decision_markdown: '### Entscheidung\n\n- status: hold\n- reason: ' + holdReason,
   };
+}
 
+const evidencePackets = ensureArray(ctx.artifacts && ctx.artifacts.evidence_packets);
+if (!evidencePackets.length) {
+  ctx.artifacts.topic_gate = {
+    decision: 'hold',
+    reason: 'No evidence_packets from research workflow',
+    selected_angle: {
+      title: 'Hold - evidence missing',
+      core_thesis: 'No publishable thesis without evidence.',
+      audience_problem: 'No validated audience problem from research output.',
+      why_this_angle_wins: 'No reliable angle available.',
+      why_now: 'Research must be completed first.',
+      conversion_bridge: 'Collect evidence before drafting.',
+      must_use_evidence_refs: [],
+      counterpoint_or_caveat: 'Evidence extraction returned zero packets.',
+    },
+    backup_angle: {
+      title: 'Research rerun required',
+      core_thesis: 'Collect and validate evidence packets before drafting.',
+    },
+    linkedin_fit: 0,
+    reddit_fit: 0,
+    must_have_in_draft: [],
+    must_avoid: [],
+    open_risks: ['missing_evidence_packets'],
+  };
+  addStage(5, 'Thema Gate', 'hold', 'run/' + ctx.run_id + '/content/input', 'run/' + ctx.run_id + '/content/topic_gate', 0, 'missing evidence_packets', 1);
+  await addStageSummary.call(this, 5, 'Thema Gate', ctx.artifacts.topic_gate);
+  applyHoldResult('Missing evidence_packets from research workflow', ['collect stronger evidence', 're-run research retrieval']);
+  return [{ json: ctx }];
+}
+
+const topicSeed = String(ctx.topic_hint || '');
+const step5Prompt = buildPrompt(
+  String(ctx.prompts.thema_pruefung || ''),
+  {
+    topic_seed: topicSeed,
+    evidence_packets: JSON.stringify(compactEvidence(evidencePackets, 10)),
+  }
+);
+
+const step5 = await callOllamaJson.call(
+  this,
+  'You are a strict topic gate evaluator. Return valid JSON only.',
+  step5Prompt,
+  {
+    format_schema: topicGateSchema,
+    temperature: 0.1,
+    num_predict: 600,
+    num_ctx: 8192,
+    timeout: 240000,
+    max_attempts: 3,
+    thinking: true,
+  }
+);
+
+const topicGate = step5.parsed;
+validateSchema(topicGateSchema, topicGate, 'topic_gate');
+ctx.artifacts.topic_gate = topicGate;
+
+addStage(5, 'Thema Gate', 'ok', 'run/' + ctx.run_id + '/content/input', 'run/' + ctx.run_id + '/content/topic_gate', topicGate.decision === 'publish' ? 88 : 62, shortText(topicGate.reason, 180), ensureArray(topicGate.open_risks).length);
+await addStageSummary.call(this, 5, 'Thema Gate', topicGate);
+
+if (topicGate.decision === 'hold') {
+  applyHoldResult('Topic gate decision = hold', ensureArray(topicGate.open_risks));
   return [{ json: ctx }];
 }
 
@@ -597,9 +790,9 @@ const step6 = await callOllamaJson.call(
   {
     format_schema: linkedinBriefSchema,
     temperature: 0.1,
-    num_predict: 900,
+    num_predict: 600,
     num_ctx: 8192,
-    timeout: 420000,
+    timeout: 240000,
     max_attempts: 3,
     thinking: true,
   }
@@ -627,9 +820,9 @@ const step7 = await callOllamaJson.call(
   {
     format_schema: redditBriefSchema,
     temperature: 0.1,
-    num_predict: 900,
+    num_predict: 600,
     num_ctx: 8192,
-    timeout: 420000,
+    timeout: 240000,
     max_attempts: 3,
     thinking: true,
   }
@@ -660,9 +853,9 @@ const step8 = await callOllamaJson.call(
   {
     format_schema: contentPackageSchema,
     temperature: 0.2,
-    num_predict: 2000,
+    num_predict: 900,
     num_ctx: 12288,
-    timeout: 480000,
+    timeout: 300000,
     max_attempts: 3,
     thinking: false,
   }
@@ -695,9 +888,9 @@ const step9 = await callOllamaJson.call(
   {
     format_schema: toneCritiqueSchema,
     temperature: 0.1,
-    num_predict: 900,
+    num_predict: 600,
     num_ctx: 8192,
-    timeout: 420000,
+    timeout: 240000,
     max_attempts: 3,
     thinking: true,
   }
@@ -727,9 +920,9 @@ const step10 = await callOllamaJson.call(
   {
     format_schema: strategyCritiqueSchema,
     temperature: 0.1,
-    num_predict: 900,
+    num_predict: 600,
     num_ctx: 8192,
-    timeout: 420000,
+    timeout: 240000,
     max_attempts: 3,
     thinking: true,
   }
@@ -760,9 +953,9 @@ const step11 = await callOllamaJson.call(
   {
     format_schema: finalGateSchema,
     temperature: 0.1,
-    num_predict: 1000,
+    num_predict: 700,
     num_ctx: 8192,
-    timeout: 420000,
+    timeout: 240000,
     max_attempts: 3,
     thinking: true,
   }

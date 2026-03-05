@@ -7,7 +7,7 @@ const finalGate = (ctx.artifacts && ctx.artifacts.final_gate && typeof ctx.artif
 const unloadOnComplete = String($env.OLLAMA_UNLOAD_ON_COMPLETE || 'false').toLowerCase() === 'true';
 if (unloadOnComplete) {
   try {
-    const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\\/+$/, ''));
+    const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\/+$/, ''));
     await this.helpers.httpRequest({
       method: 'POST',
       url: baseUrl + '/api/chat',

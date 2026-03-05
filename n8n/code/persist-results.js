@@ -77,7 +77,9 @@ async function obsidianPut(path, body, contentType = 'text/markdown') {
 
 async function readOrEmpty(path) {
   try {
-    return String(await obsidianGet.call(this, path) || '');
+    const raw = await obsidianGet.call(this, path);
+    if (typeof raw === 'string') return raw;
+    return JSON.stringify(raw || '');
   } catch (error) {
     const status = Number(
       (error && (error.statusCode || error.status || error.httpCode)) ||
@@ -187,6 +189,17 @@ function jsonBlock(value) {
 }
 
 function parseEvalDatasetDocument(rawText) {
+  if (rawText && typeof rawText === 'object') {
+    const parsed = rawText;
+    if (Array.isArray(parsed)) return { metadata: {}, cases: parsed };
+    if (parsed && typeof parsed === 'object') {
+      return {
+        metadata: parsed.metadata && typeof parsed.metadata === 'object' ? parsed.metadata : {},
+        cases: ensureArray(parsed.cases),
+      };
+    }
+  }
+
   if (!String(rawText || '').trim()) {
     return { metadata: {}, cases: [] };
   }

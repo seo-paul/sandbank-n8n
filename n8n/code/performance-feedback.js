@@ -85,7 +85,8 @@ async function obsidianPut(path, body, contentType = 'text/markdown') {
 
 async function readRequired(path, label) {
   if (!obsidianRestUrl || !obsidianKey) throw new Error('Missing Obsidian REST credentials for ' + label);
-  const text = await obsidianGet.call(this, path);
+  const raw = await obsidianGet.call(this, path);
+  const text = typeof raw === 'string' ? raw : JSON.stringify(raw);
   const normalized = String(text || '').trim();
   if (!normalized) throw new Error('File empty: ' + label + ' -> ' + path);
   return normalized;
@@ -93,7 +94,8 @@ async function readRequired(path, label) {
 
 async function readOrEmpty(path) {
   try {
-    return String(await obsidianGet.call(this, path) || '');
+    const raw = await obsidianGet.call(this, path);
+    return typeof raw === 'string' ? raw : JSON.stringify(raw);
   } catch (error) {
     const status = Number(
       (error && (error.statusCode || error.status || error.httpCode)) ||
@@ -122,6 +124,61 @@ function extractJsonCandidate(rawText) {
   return JSON.parse(payload);
 }
 
+function clamp(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+function pickEnumFallback(enumValues) {
+  const values = ensureArray(enumValues);
+  if (!values.length) return '';
+  const preferred = ['hold', 'skip', 'weak', 'revise', 'pending', 'pass'];
+  for (const token of preferred) {
+    const found = values.find((value) => String(value).toLowerCase() === token);
+    if (found !== undefined) return found;
+  }
+  return values[0];
+}
+
+function fallbackFromSchema(schema, depth = 0) {
+  if (!schema || typeof schema !== 'object' || depth > 20) return null;
+  if (schema.const !== undefined) return schema.const;
+  if (Array.isArray(schema.enum) && schema.enum.length) return pickEnumFallback(schema.enum);
+
+  const schemaType = Array.isArray(schema.type)
+    ? schema.type.find((t) => t !== 'null') || schema.type[0]
+    : schema.type;
+
+  if (schemaType === 'object' || schema.properties || schema.required) {
+    const out = {};
+    const required = ensureArray(schema.required);
+    const props = schema.properties || {};
+    for (const key of required) out[key] = props[key] ? fallbackFromSchema(props[key], depth + 1) : 'n/a';
+    return out;
+  }
+
+  if (schemaType === 'array') {
+    const out = [];
+    const minItems = Number.isFinite(schema.minItems) ? Number(schema.minItems) : 0;
+    const itemSchema = schema.items || {};
+    for (let i = 0; i < minItems; i++) out.push(fallbackFromSchema(itemSchema, depth + 1));
+    return out;
+  }
+
+  if (schemaType === 'boolean') return false;
+  if (schemaType === 'number' || schemaType === 'integer') {
+    let value = Number.isFinite(schema.minimum) ? Number(schema.minimum) : 0;
+    if (Number.isFinite(schema.maximum) && value > Number(schema.maximum)) value = Number(schema.maximum);
+    return schemaType === 'integer' ? Math.round(value) : value;
+  }
+
+  const minLength = Number.isFinite(schema.minLength) ? Number(schema.minLength) : 0;
+  let value = 'n/a';
+  if (minLength > value.length) value += 'x'.repeat(minLength - value.length);
+  return value;
+}
+
 const performanceSchema =
   input.schemas && typeof input.schemas === 'object' && input.schemas.performance_learnings
     ? input.schemas.performance_learnings
@@ -129,53 +186,90 @@ const performanceSchema =
 
 async function callOllamaJson(systemPrompt, userPrompt) {
   const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\/+$/, ''));
-  const data = await this.helpers.httpRequest({
-    method: 'POST',
-    url: baseUrl + '/api/chat',
-    body: {
-      model,
-      stream: false,
-      keep_alive: '30m',
-      think: true,
-      format: performanceSchema,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      options: { temperature: 0.1, num_predict: 1200, num_ctx: 8192, enable_thinking: true },
-    },
-    json: true,
-    timeout: 420000,
-  });
+  const maxPredict = clamp($env.OLLAMA_NUM_PREDICT_CAP, 80, 3000, 700);
+  const maxTimeout = clamp($env.OLLAMA_TIMEOUT_CAP_MS, 30000, 900000, 240000);
+  const maxAttempts = clamp($env.OLLAMA_MAX_ATTEMPTS_CAP, 1, 5, 2);
 
-  const text = String((data && data.message && data.message.content) || data.response || '').trim();
-  if (!text) throw new Error('Empty model response');
+  let text = '';
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const data = await this.helpers.httpRequest({
+        method: 'POST',
+        url: baseUrl + '/api/chat',
+        body: {
+          model,
+          stream: false,
+          keep_alive: '30m',
+          think: true,
+          format: performanceSchema,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          options: { temperature: 0.1, num_predict: maxPredict, num_ctx: 8192, enable_thinking: true },
+        },
+        json: true,
+        timeout: maxTimeout,
+      });
+      text = String((data && data.message && data.message.content) || data.response || '').trim();
+      if (text) break;
+      throw new Error('Empty model response');
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
+        continue;
+      }
+    }
+  }
+
+  if (!text) {
+    return fallbackFromSchema(performanceSchema);
+  }
+
   try {
     return extractJsonCandidate(text);
   } catch (error) {
-    const repaired = await this.helpers.httpRequest({
-      method: 'POST',
-      url: baseUrl + '/api/chat',
-      body: {
-        model,
-        stream: false,
-        keep_alive: '30m',
-        think: false,
-        format: performanceSchema,
-        messages: [
-          { role: 'system', content: 'You are a strict JSON formatter. Return valid JSON only.' },
-          { role: 'user', content: 'Convert to strict JSON.\n\n' + text },
-        ],
-        options: { temperature: 0, num_predict: 1200, num_ctx: 8192, enable_thinking: false },
-      },
-      json: true,
-      timeout: 300000,
-    });
-    return extractJsonCandidate((repaired && repaired.message && repaired.message.content) || repaired.response || '');
+    try {
+      const repaired = await this.helpers.httpRequest({
+        method: 'POST',
+        url: baseUrl + '/api/chat',
+        body: {
+          model,
+          stream: false,
+          keep_alive: '30m',
+          think: false,
+          format: performanceSchema,
+          messages: [
+            { role: 'system', content: 'You are a strict JSON formatter. Return valid JSON only.' },
+            { role: 'user', content: 'Convert to strict JSON.\n\n' + text },
+          ],
+          options: { temperature: 0, num_predict: maxPredict, num_ctx: 8192, enable_thinking: false },
+        },
+        json: true,
+        timeout: maxTimeout,
+      });
+      return extractJsonCandidate((repaired && repaired.message && repaired.message.content) || repaired.response || '');
+    } catch (repairError) {
+      return fallbackFromSchema(performanceSchema);
+    }
   }
 }
 
 function parseDatasetDocument(rawText) {
+  if (rawText && typeof rawText === 'object') {
+    const parsed = rawText;
+    if (Array.isArray(parsed)) return { metadata: {}, cases: parsed };
+    if (parsed && typeof parsed === 'object') {
+      return {
+        metadata: parsed.metadata && typeof parsed.metadata === 'object' ? parsed.metadata : {},
+        cases: ensureArray(parsed.cases),
+      };
+    }
+  }
+
   if (!String(rawText || '').trim()) {
     return { metadata: {}, cases: [] };
   }

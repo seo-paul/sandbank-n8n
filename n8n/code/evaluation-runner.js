@@ -72,7 +72,9 @@ async function obsidianRequest(params) {
 }
 
 function parseDataset(text) {
-  const parsed = JSON.parse(String(text || '[]'));
+  const parsed = (text && typeof text === 'object')
+    ? text
+    : JSON.parse(String(text || '[]'));
   if (Array.isArray(parsed)) return { cases: parsed, metadata: {} };
   if (parsed && typeof parsed === 'object') {
     return {
