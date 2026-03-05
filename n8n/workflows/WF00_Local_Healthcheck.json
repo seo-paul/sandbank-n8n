@@ -5,7 +5,7 @@
     {
       "parameters": {},
       "id": "manual-1",
-      "name": "Start Manual",
+      "name": "Start Manuell",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -32,7 +32,7 @@
         }
       },
       "id": "http-searx",
-      "name": "Check SearXNG",
+      "name": "Pruefe SearXNG",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -46,7 +46,7 @@
         "url": "={{ ($env.OLLAMA_BASE_URL || \"http://host.docker.internal:11434\").replace(/\\/+$/, \"\") + \"/api/tags\" }}"
       },
       "id": "http-ollama",
-      "name": "Check Ollama",
+      "name": "Pruefe Ollama",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -69,11 +69,11 @@
         },
         "options": {
           "ignoreResponseCode": true,
-          "allowUnauthorizedCerts": true
+          "allowUnauthorizedCerts": "={{($env.OBSIDIAN_ALLOW_INSECURE_TLS || \"false\") === \"true\"}}"
         }
       },
       "id": "http-obsidian",
-      "name": "Check Obsidian",
+      "name": "Pruefe Obsidian",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -83,21 +83,21 @@
     }
   ],
   "connections": {
-    "Start Manual": {
+    "Start Manuell": {
       "main": [
         [
           {
-            "node": "Check SearXNG",
+            "node": "Pruefe SearXNG",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Check Ollama",
+            "node": "Pruefe Ollama",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Check Obsidian",
+            "node": "Pruefe Obsidian",
             "type": "main",
             "index": 0
           }
@@ -108,5 +108,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "302ee957-699d-4839-b18f-4db81a2cdb7b"
+  "versionId": "492a7271-0f67-48e5-ad3b-1f1febc56499"
 }

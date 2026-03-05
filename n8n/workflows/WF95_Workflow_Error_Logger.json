@@ -1,11 +1,11 @@
 {
-  "name": "WF95 Fehler Logger",
+  "name": "WF95 Workflow Fehlerlog",
   "active": false,
   "nodes": [
     {
       "parameters": {},
       "id": "error-trigger",
-      "name": "Catch Workflow Fehler",
+      "name": "Fehler Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
@@ -15,10 +15,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const payload = (items[0] && items[0].json) ? items[0].json : {};\n\nfunction firstString(...values) {\n  for (const value of values) {\n    if (value != null && String(value).trim()) return String(value);\n  }\n  return '';\n}\n\nfunction yamlEscape(value) {\n  return String(value || '').replace(/\"/g, '\\\\\"').replace(/\\n/g, ' ');\n}\n\nconst now = new Date();\nconst stamp = now.toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);\n\nconst execution = payload.execution || {};\nconst workflow = payload.workflow || {};\nconst error = payload.error || payload;\n\nconst executionId = firstString(payload.executionId, execution.id, payload.id, 'unknown');\nconst workflowName = firstString(workflow.name, payload.workflowName, 'unknown_workflow');\nconst workflowId = firstString(workflow.id, payload.workflowId, 'unknown_id');\nconst errorMessage = firstString(error.message, payload.message, payload.lastNodeExecuted, 'unknown error');\nconst errorStack = firstString(error.stack, payload.stack, '');\nconst lastNode = firstString(payload.lastNodeExecuted, error.node && error.node.name, 'unknown_node');\n\nconst runId = 'run-error-' + executionId + '-' + stamp;\nconst logsDir = $env.OBSIDIAN_WORKFLOW_LOGS_DIR || 'Marketing/Social-Media/Workflow/Workflow Logs';\nconst logPath = logsDir + '/' + runId + '.md';\n\nconst markdown = [\n  '---',\n  'type: workflow-log',\n  'run_id: ' + runId,\n  'execution_id: ' + executionId,\n  'status: failed',\n  'workflow_name: \"' + yamlEscape(workflowName) + '\"',\n  'workflow_id: ' + workflowId,\n  'failed_at: ' + now.toISOString(),\n  'model_used: n/a',\n  '---',\n  '',\n  '# Workflow Fehler ' + runId,\n  '',\n  '- workflow: ' + workflowName + ' (' + workflowId + ')',\n  '- execution_id: ' + executionId,\n  '- last_node: ' + lastNode,\n  '- message: ' + errorMessage,\n  '',\n  '## Fehlerdetails',\n  '```text',\n  errorStack || errorMessage,\n  '```',\n].join('\\n');\n\nreturn [{\n  json: {\n    run_id: runId,\n    execution_id: executionId,\n    workflow_name: workflowName,\n    workflow_id: workflowId,\n    error_message: errorMessage,\n    last_node: lastNode,\n    logPath,\n    markdown,\n  },\n}];\n"
+        "jsCode": "const payload = (items[0] && items[0].json) ? items[0].json : {};\n\nfunction firstString(...values) {\n  for (const value of values) {\n    if (value != null && String(value).trim()) return String(value);\n  }\n  return '';\n}\n\nfunction yamlEscape(value) {\n  return String(value || '').replace(/\"/g, '\\\\\"').replace(/\\n/g, ' ');\n}\n\nconst now = new Date();\nconst stamp = now.toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);\n\nconst execution = payload.execution || {};\nconst workflow = payload.workflow || {};\nconst error = payload.error || payload;\n\nconst executionId = firstString(payload.executionId, execution.id, payload.id, 'unknown');\nconst workflowName = firstString(workflow.name, payload.workflowName, 'unknown_workflow');\nconst workflowId = firstString(workflow.id, payload.workflowId, 'unknown_id');\nconst errorMessage = firstString(error.message, payload.message, payload.lastNodeExecuted, 'unknown error');\nconst errorStack = firstString(error.stack, payload.stack, '');\nconst lastNode = firstString(payload.lastNodeExecuted, error.node && error.node.name, 'unknown_node');\n\nconst runId = 'wf95-' + executionId + '-' + stamp;\nconst logsDir = $env.OBSIDIAN_WORKFLOW_LOGS_DIR || 'Marketing/Social-Media/Workflow/Workflow Logs';\nconst logPath = logsDir + '/' + runId + '.md';\n\nconst markdown = [\n  '---',\n  'type: workflow-log',\n  'run_id: ' + runId,\n  'execution_id: ' + executionId,\n  'status: failed',\n  'workflow_name: \"' + yamlEscape(workflowName) + '\"',\n  'workflow_id: ' + workflowId,\n  'failed_at: ' + now.toISOString(),\n  'model_used: n/a',\n  '---',\n  '',\n  '# Workflow Fehler ' + runId,\n  '',\n  '- workflow: ' + workflowName + ' (' + workflowId + ')',\n  '- execution_id: ' + executionId,\n  '- last_node: ' + lastNode,\n  '- message: ' + errorMessage,\n  '',\n  '## Fehlerdetails',\n  '```text',\n  errorStack || errorMessage,\n  '```',\n].join('\\n');\n\nreturn [{\n  json: {\n    run_id: runId,\n    execution_id: executionId,\n    workflow_name: workflowName,\n    workflow_id: workflowId,\n    error_message: errorMessage,\n    last_node: lastNode,\n    logPath,\n    markdown,\n  },\n}];\n"
       },
       "id": "build-fehler-log",
-      "name": "Build Fehler Log",
+      "name": "Fehlerlog Bauen",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -48,11 +48,11 @@
         "rawContentType": "text/markdown",
         "body": "={{$json.markdown}}",
         "options": {
-          "allowUnauthorizedCerts": true
+          "allowUnauthorizedCerts": "={{($env.OBSIDIAN_ALLOW_INSECURE_TLS || \"false\") === \"true\"}}"
         }
       },
       "id": "write-fehler-log",
-      "name": "Write Fehler Log",
+      "name": "Fehlerlog Schreiben",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -65,7 +65,7 @@
         "jsCode": "return [{\n  json: {\n    run_id: $json.run_id,\n    execution_id: $json.execution_id,\n    workflow_name: $json.workflow_name,\n    workflow_id: $json.workflow_id,\n    status: 'failed_logged',\n    workflow_log_path: $json.logPath,\n    error_message: $json.error_message,\n    last_node: $json.last_node,\n  },\n}];\n"
       },
       "id": "return-fehler-summary",
-      "name": "Return Fehler Summary",
+      "name": "Fehler Ergebnis",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -75,33 +75,33 @@
     }
   ],
   "connections": {
-    "Catch Workflow Fehler": {
+    "Fehler Trigger": {
       "main": [
         [
           {
-            "node": "Build Fehler Log",
+            "node": "Fehlerlog Bauen",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Fehler Log": {
+    "Fehlerlog Bauen": {
       "main": [
         [
           {
-            "node": "Write Fehler Log",
+            "node": "Fehlerlog Schreiben",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Write Fehler Log": {
+    "Fehlerlog Schreiben": {
       "main": [
         [
           {
-            "node": "Return Fehler Summary",
+            "node": "Fehler Ergebnis",
             "type": "main",
             "index": 0
           }
@@ -112,5 +112,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b09bc36f-4fa3-4482-9dd6-8c13eb1c0c48"
+  "versionId": "06aeceb4-fd68-4f40-85f4-0f1a1e4b7502"
 }
