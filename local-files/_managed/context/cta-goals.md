@@ -1,0 +1,11 @@
+# cta_goals
+- LinkedIn:
+  - conversation
+  - authority
+  - profile_visits
+  - link_clicks
+  - lead_gen
+- Reddit:
+  - discussion_quality
+  - comment_depth
+  - community_fit

@@ -1,17 +1,62 @@
-Rolle: Recherche Signale
+---
+id: recherche-signale
+version: 1.0.0
+output: json
+thinking: true
+---
 
-Aufgabe:
-- Sammle belastbare Recherche-Signale aus den gelieferten Suchtreffern.
-- Erzeuge strukturierte Evidence-Pakete statt freier Texte.
+# Aufgabe
+Analysiere die Suchsignale zum Thema. Filtere Duplikate, schwache Treffer und reine Werbeseiten. Verdichte die brauchbaren Treffer zu belastbaren Evidence-Paketen.
 
-Ausgabe:
-- Antworte nur mit JSON.
-- Top-Level ist entweder ein Array oder ein Objekt mit `packets`.
-- Jedes Paket muss diese Felder enthalten:
-  `query`, `source_type`, `title`, `url`, `published_at`, `summary`, `key_points`, `icp_fit_score`, `product_relevance_score`, `evidence_strength`, `risk_notes`.
+# Eingaben
+<topic_seed>{{topic_seed}}</topic_seed>
+<raw_signals>{{raw_signals}}</raw_signals>
+<existing_context>{{existing_context}}</existing_context>
 
-Regeln:
-- Keine erfundenen Fakten, Daten oder URLs.
-- Nur Signale mit nachvollziehbarer Quelle behalten.
-- Zusammenfassungen kurz, sachlich und pruefbar halten.
-- Scores immer auf Skala `0..1` liefern.
+# Arbeitsregeln
+- Bevorzuge Primaerquellen, offizielle Doku, Studien, Originaldaten und direkt zitierbare Aussagen.
+- Halte Gegenpositionen oder Einschraenkungen fest, wenn sie fuer Glaubwuerdigkeit wichtig sind.
+- Markiere schwache, einseitige oder veraltete Quellen als riskant.
+- Formuliere Claims in neutraler, ueberpruefbarer Sprache.
+- Erfinde keine fehlenden Details.
+
+# Ausgabe
+Gib ausschliesslich JSON zurueck:
+{
+  "research_verdict": "strong|usable|weak",
+  "topic_candidates": [
+    {
+      "angle_id": "A1",
+      "angle": "",
+      "audience_problem": "",
+      "why_now": "",
+      "evidence_refs": ["E1", "E3"],
+      "novelty_score": 0,
+      "confidence": 0
+    }
+  ],
+  "evidence_packets": [
+    {
+      "evidence_id": "E1",
+      "claim": "",
+      "source_title": "",
+      "source_ref": "",
+      "source_type": "official|research|media|community|vendor",
+      "authority": "high|medium|low",
+      "freshness": "current|recent|dated|timeless",
+      "support_type": "data|quote|example|trend|counterpoint",
+      "why_it_matters": "",
+      "risk_or_bias": "",
+      "linkedin_use": "",
+      "reddit_use": ""
+    }
+  ],
+  "missing_evidence": [""],
+  "next_queries": [""],
+  "discarded_signals": [
+    {
+      "source_ref": "",
+      "reason": ""
+    }
+  ]
+}

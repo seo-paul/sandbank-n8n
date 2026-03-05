@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PerformanceLearnings",
+  "type": "object",
+  "required": [
+    "winning_patterns",
+    "weak_patterns",
+    "comment_insights",
+    "prompt_updates",
+    "workflow_updates",
+    "next_tests"
+  ],
+  "properties": {
+    "winning_patterns": { "type": "array", "items": { "type": "string" } },
+    "weak_patterns": { "type": "array", "items": { "type": "string" } },
+    "comment_insights": { "type": "array", "items": { "type": "string" } },
+    "prompt_updates": { "type": "array", "items": { "type": "string" } },
+    "workflow_updates": { "type": "array", "items": { "type": "string" } },
+    "next_tests": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

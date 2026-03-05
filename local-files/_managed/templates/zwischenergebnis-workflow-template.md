@@ -1,5 +1,5 @@
 ---
-type: workflow-zwischenergebnis
+type: workflow-zwischenergebnisse
 workflow:
 workflow_slug:
 run_id:

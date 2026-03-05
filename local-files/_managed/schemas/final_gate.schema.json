@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FinalGate",
+  "type": "object",
+  "required": [
+    "status",
+    "human_review_required",
+    "blocking_issues",
+    "release_notes",
+    "final_checks",
+    "priority_fixes"
+  ],
+  "properties": {
+    "status": { "type": "string", "enum": ["pass", "revise", "hold"] },
+    "human_review_required": { "type": "boolean" },
+    "blocking_issues": { "type": "array", "items": { "type": "string" } },
+    "release_notes": { "type": "array", "items": { "type": "string" } },
+    "final_checks": {
+      "type": "object",
+      "required": ["evidence_ok", "tone_ok", "platform_fit_ok", "conversion_ok", "clarity_ok"],
+      "properties": {
+        "evidence_ok": { "type": "boolean" },
+        "tone_ok": { "type": "boolean" },
+        "platform_fit_ok": { "type": "boolean" },
+        "conversion_ok": { "type": "boolean" },
+        "clarity_ok": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "priority_fixes": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StrategyCritique",
+  "type": "object",
+  "required": ["overall_score", "linkedin", "reddit", "cross_platform"],
+  "properties": {
+    "overall_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "linkedin": { "$ref": "#/definitions/channelCritique" },
+    "reddit": { "$ref": "#/definitions/channelCritique" },
+    "cross_platform": { "type": "array", "items": { "type": "string" } }
+  },
+  "definitions": {
+    "channelCritique": {
+      "type": "object",
+      "required": ["score", "pass", "dimension_scores", "must_fix", "should_fix", "risk_flags", "reason"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "pass": { "type": "boolean" },
+        "dimension_scores": {
+          "type": "object",
+          "required": ["evidence_strength", "hook_strength", "platform_fit", "commentability", "cta_naturalness", "rule_risk", "clarity"],
+          "properties": {
+            "evidence_strength": { "type": "number", "minimum": 0, "maximum": 100 },
+            "hook_strength": { "type": "number", "minimum": 0, "maximum": 100 },
+            "platform_fit": { "type": "number", "minimum": 0, "maximum": 100 },
+            "commentability": { "type": "number", "minimum": 0, "maximum": 100 },
+            "cta_naturalness": { "type": "number", "minimum": 0, "maximum": 100 },
+            "rule_risk": { "type": "number", "minimum": 0, "maximum": 100 },
+            "clarity": { "type": "number", "minimum": 0, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "must_fix": { "type": "array", "items": { "type": "string" } },
+        "should_fix": { "type": "array", "items": { "type": "string" } },
+        "risk_flags": { "type": "array", "items": { "type": "string" } },
+        "reason": { "type": "string", "minLength": 3 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

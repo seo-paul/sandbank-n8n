@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RedditBrief",
+  "type": "object",
+  "required": [
+    "mode",
+    "community_fit_score",
+    "rationale",
+    "title_options",
+    "opening_options",
+    "outline",
+    "allowed_self_reference",
+    "disclosure_line",
+    "soft_cta",
+    "reply_seed_topics",
+    "risk_flags",
+    "must_avoid"
+  ],
+  "properties": {
+    "mode": { "type": "string", "enum": ["comment", "post_text_only", "post_with_link", "skip"] },
+    "community_fit_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "rationale": { "type": "string", "minLength": 5 },
+    "title_options": { "type": "array", "items": { "type": "string" } },
+    "opening_options": { "type": "array", "items": { "type": "string" } },
+    "outline": { "type": "array", "minItems": 2, "items": { "type": "string", "minLength": 2 } },
+    "allowed_self_reference": { "type": "string", "enum": ["none", "light_disclosure", "direct_when_asked"] },
+    "disclosure_line": { "type": "string" },
+    "soft_cta": { "type": "string" },
+    "reply_seed_topics": { "type": "array", "items": { "type": "string" } },
+    "risk_flags": { "type": "array", "items": { "type": "string" } },
+    "must_avoid": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

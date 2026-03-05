@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContentPackage",
+  "type": "object",
+  "required": ["linkedin", "reddit"],
+  "properties": {
+    "linkedin": {
+      "type": "object",
+      "required": ["status", "hook_used", "post_markdown", "first_comment", "cta_goal", "evidence_refs", "reply_seeds", "cta_variants", "follow_up_angles"],
+      "properties": {
+        "status": { "type": "string", "enum": ["ready", "skip"] },
+        "hook_used": { "type": "string" },
+        "post_markdown": { "type": "string", "minLength": 20 },
+        "first_comment": { "type": "string" },
+        "cta_goal": { "type": "string" },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } },
+        "reply_seeds": { "type": "array", "items": { "type": "string" } },
+        "cta_variants": { "type": "array", "items": { "type": "string" } },
+        "follow_up_angles": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "reddit": {
+      "type": "object",
+      "required": ["status", "mode", "title", "body_markdown", "disclosure_line", "soft_cta", "evidence_refs", "reply_seeds", "cta_variants", "follow_up_angles"],
+      "properties": {
+        "status": { "type": "string", "enum": ["ready", "skip"] },
+        "mode": { "type": "string", "enum": ["comment", "post_text_only", "post_with_link", "skip"] },
+        "title": { "type": "string" },
+        "body_markdown": { "type": "string" },
+        "disclosure_line": { "type": "string" },
+        "soft_cta": { "type": "string" },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } },
+        "reply_seeds": { "type": "array", "items": { "type": "string" } },
+        "cta_variants": { "type": "array", "items": { "type": "string" } },
+        "follow_up_angles": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

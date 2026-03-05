@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "prompt_version": "baseline",
+    "created_at": "2026-03-05T00:00:00Z"
+  },
+  "cases": [
+    {
+      "id": "case-001",
+      "active": true,
+      "prompt_version": "baseline",
+      "expected": {
+        "status": "pass",
+        "min_quality_score": 75,
+        "requires_reddit": true,
+        "must_include": ["core_thesis", "evidence_refs"]
+      },
+      "actual": {
+        "status": "pass",
+        "final_quality_score": 82,
+        "reddit": {
+          "status": "ready"
+        }
+      }
+    },
+    {
+      "id": "case-002-planned",
+      "active": false,
+      "state": "planned",
+      "prompt_version": "candidate",
+      "hypothesis": "Test stricter Reddit mode routing for low community_fit_score",
+      "expected": {
+        "status": "pass",
+        "min_quality_score": 78
+      }
+    }
+  ]
+}

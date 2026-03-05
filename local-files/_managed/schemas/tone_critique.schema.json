@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ToneCritique",
+  "type": "object",
+  "required": ["overall_score", "linkedin", "reddit", "cross_platform"],
+  "properties": {
+    "overall_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "linkedin": { "$ref": "#/definitions/channelCritique" },
+    "reddit": { "$ref": "#/definitions/channelCritique" },
+    "cross_platform": { "type": "array", "items": { "type": "string" } }
+  },
+  "definitions": {
+    "channelCritique": {
+      "type": "object",
+      "required": ["score", "pass", "dimension_scores", "must_fix", "should_fix", "phrases_to_cut", "reason"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "pass": { "type": "boolean" },
+        "dimension_scores": {
+          "type": "object",
+          "required": ["authenticity", "specificity", "platform_naturalness", "clarity"],
+          "properties": {
+            "authenticity": { "type": "number", "minimum": 0, "maximum": 100 },
+            "specificity": { "type": "number", "minimum": 0, "maximum": 100 },
+            "platform_naturalness": { "type": "number", "minimum": 0, "maximum": 100 },
+            "clarity": { "type": "number", "minimum": 0, "maximum": 100 }
+          },
+          "additionalProperties": false
+        },
+        "must_fix": { "type": "array", "items": { "type": "string" } },
+        "should_fix": { "type": "array", "items": { "type": "string" } },
+        "phrases_to_cut": { "type": "array", "items": { "type": "string" } },
+        "reason": { "type": "string", "minLength": 3 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

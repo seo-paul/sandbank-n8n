@@ -1,0 +1,14 @@
+# audience_profile
+- Primary ICP: B2B Marketing, RevOps, Data/Analytics-Verantwortliche in kleinen bis mittleren Unternehmen
+- Problems:
+  - KPI-Definitionen sind inkonsistent
+  - Reports sind widerspruechlich oder zu spaet
+  - Entscheidungen werden ohne belastbare Evidenz getroffen
+- Desired outcomes:
+  - Gemeinsame KPI-Sprache
+  - Verlaessliche Entscheidungsgrundlage
+  - Weniger Reporting-Reibung
+- Objections:
+  - Angst vor Komplexitaet
+  - Zweifel an Datenqualitaet
+  - Unsicherheit zu Ressourcenaufwand

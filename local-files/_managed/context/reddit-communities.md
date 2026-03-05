@@ -1,0 +1,14 @@
+# reddit_context
+- Community-first policy:
+  - Helpful before promotional
+  - Prefer comment mode when uncertainty is high
+  - Use disclosure only when needed and short
+- Allowed modes:
+  - comment
+  - post_text_only
+  - post_with_link
+  - skip
+- High-risk triggers:
+  - Unclear subreddit rules
+  - Hard sales tone
+  - Unsupported claim density

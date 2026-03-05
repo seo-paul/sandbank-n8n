@@ -7,8 +7,12 @@ datum:
 zeit:
 topic:
 model_used:
+status:
+final_gate_status:
+human_review_required:
 quality_score:
 errors:
+duration_sec:
 ---
 
 # Laufdetail {{run_id}}
@@ -19,8 +23,12 @@ errors:
 - zeit:
 - thema:
 - modell:
+- status:
+- final_gate:
+- human_review_required:
 - quality_score:
 - errors:
+- duration_sec:
 
 ## Evidenz Referenzen
 - n/a
@@ -35,5 +43,5 @@ errors:
 ### Reddit Entwurf
 
 ## Laufschritte
-| run_id | workflow | datum | zeit | schritt | model_used | quality_score | qwen_summary | errors |
-|---|---|---|---|---|---|---:|---|---:|
+| step | workflow | stage | status | model_used | quality_score | errors | notes |
+|---:|---|---|---|---|---:|---:|---|
