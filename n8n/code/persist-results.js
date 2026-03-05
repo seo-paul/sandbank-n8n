@@ -102,6 +102,7 @@ function ensureArray(value) { return Array.isArray(value) ? value : []; }
 function tableCell(value) { return String(value == null ? '' : value).replace(/\|/g, '/').replace(/\n/g, ' ').trim(); }
 function yamlEscape(value) { return String(value || '').replace(/"/g, '\\"').replace(/\n/g, ' '); }
 function wiki(path, label) { return '[[' + String(path) + '|' + String(label) + ']]'; }
+function wikiPlain(path) { return '[[' + String(path) + ']]'; }
 
 function normalizeDateTime(ts) {
   const dateObj = new Date(String(ts || ''));
@@ -186,55 +187,6 @@ function stageTableMarkdown(stageRows) {
 
 function jsonBlock(value) {
   return ['~~~json', JSON.stringify(value == null ? null : value, null, 2), '~~~'].join('\n');
-}
-
-function parseEvalDatasetDocument(rawText) {
-  if (rawText && typeof rawText === 'object') {
-    const parsed = rawText;
-    if (Array.isArray(parsed)) return { metadata: {}, cases: parsed };
-    if (parsed && typeof parsed === 'object') {
-      return {
-        metadata: parsed.metadata && typeof parsed.metadata === 'object' ? parsed.metadata : {},
-        cases: ensureArray(parsed.cases),
-      };
-    }
-  }
-
-  if (!String(rawText || '').trim()) {
-    return { metadata: {}, cases: [] };
-  }
-  const parsed = JSON.parse(String(rawText));
-  if (Array.isArray(parsed)) return { metadata: {}, cases: parsed };
-  if (parsed && typeof parsed === 'object') {
-    return {
-      metadata: parsed.metadata && typeof parsed.metadata === 'object' ? parsed.metadata : {},
-      cases: ensureArray(parsed.cases),
-    };
-  }
-  throw new Error('Unsupported evaluation dataset format');
-}
-
-function buildRegressionCase(runId, status, gate, qualityScore) {
-  return {
-    id: 'regression-' + runId,
-    active: false,
-    state: 'planned',
-    source: 'production-failure',
-    source_run_id: runId,
-    prompt_version: 'runtime',
-    hypothesis: 'Fix blocking issues for run ' + runId + ' and re-test pass gate behavior.',
-    expected: {
-      status: 'pass',
-      min_quality_score: Math.max(70, Math.round(Number(qualityScore || 0))),
-      must_include: ['core_thesis', 'evidence_refs'],
-    },
-    failure_snapshot: {
-      status: status,
-      blocking_issues: ensureArray(gate && gate.blocking_issues),
-      priority_fixes: ensureArray(gate && gate.priority_fixes),
-    },
-    created_at: new Date().toISOString(),
-  };
 }
 
 function baseIntermediateFile(workflowName, workflowSlug) {
@@ -330,11 +282,22 @@ const intermediateDir = String(ctx.workflow_intermediate_dir || (ctx.workflow_di
 const stageRows = stageRowsForRun(ctx.stage_logs || []);
 const finalQuality = normalizeQualityScore((ctx.generated && ctx.generated.final_quality_score) || 0);
 const totalErrors = stageRows.reduce((acc, row) => acc + Number(row.errors || 0), 0);
-const completedAtIso = String(ctx.completed_at || new Date().toISOString());
-const completed = normalizeDateTime(completedAtIso);
-const createdAtIso = String(ctx.created_at || completedAtIso);
-const durationSec = durationSeconds(createdAtIso, completedAtIso);
 const finalGate = (ctx.artifacts && ctx.artifacts.final_gate && typeof ctx.artifacts.final_gate === 'object') ? ctx.artifacts.final_gate : {};
+const stageTimes = stageRows
+  .map((row) => new Date(String(row.ts || '')).getTime())
+  .filter((value) => Number.isFinite(value));
+const earliestStageTs = stageTimes.length ? new Date(Math.min(...stageTimes)).toISOString() : '';
+const latestStageTs = stageTimes.length ? new Date(Math.max(...stageTimes)).toISOString() : '';
+
+const completedAtIso = String(ctx.completed_at || latestStageTs || new Date().toISOString());
+const createdAtIso = String(ctx.created_at || earliestStageTs || completedAtIso);
+const completed = normalizeDateTime(completedAtIso);
+let durationSec = durationSeconds(createdAtIso, completedAtIso);
+if (durationSec <= 0 && stageTimes.length >= 2) {
+  durationSec = Math.max(0, Math.round((Math.max(...stageTimes) - Math.min(...stageTimes)) / 1000));
+}
+
+const pipelineStatus = String(ctx.status || finalGate.status || 'unknown');
 
 const workflowsForFiles = [
   { name: 'System Verbindungen pruefen', slug: 'system-verbindungen-pruefen' },
@@ -345,7 +308,6 @@ const workflowsForFiles = [
   { name: 'Ablauf automatisch steuern', slug: 'ablauf-automatisch-steuern' },
   { name: 'Fehlerlauf klar dokumentieren', slug: 'fehlerlauf-klar-dokumentieren' },
   { name: 'Performance zurueckfuehren', slug: 'performance-zurueckfuehren' },
-  { name: 'Evaluationslauf ausfuehren', slug: 'evaluationslauf-ausfuehren' },
 ];
 
 const stageRowsByWorkflow = {};
@@ -410,7 +372,8 @@ const detailMarkdown = [
   'zeit: ' + completed.zeit,
   'topic: "' + yamlEscape(ctx.topic || '') + '"',
   'model_used: ' + tableCell(ctx.model_used),
-  'status: ' + tableCell(ctx.status),
+  'status: ' + tableCell(pipelineStatus),
+  'persistence_status: completed',
   'final_gate_status: ' + tableCell(finalGate.status || ''),
   'human_review_required: ' + String(!!finalGate.human_review_required),
   'quality_score: ' + Number(finalQuality).toFixed(2),
@@ -426,7 +389,8 @@ const detailMarkdown = [
   '- zeit: ' + completed.zeit,
   '- thema: ' + tableCell(ctx.topic || ''),
   '- modell: ' + tableCell(ctx.model_used || ''),
-  '- status: ' + tableCell(ctx.status || ''),
+  '- status: ' + tableCell(pipelineStatus),
+  '- persistence_status: completed',
   '- final_gate: ' + tableCell(finalGate.status || 'n/a'),
   '- human_review_required: ' + String(!!finalGate.human_review_required),
   '- quality_score: ' + Number(finalQuality).toFixed(2),
@@ -464,7 +428,7 @@ const runsHeader = [
 ].join('\n');
 
 let runsContent = await ensureFile.call(this, runsPath, runsHeader);
-const intermediateLinks = runIntermediateFiles.map((item) => wiki(item.path, item.workflow)).join(', ');
+const intermediateLinks = runIntermediateFiles.map((item) => wikiPlain(item.path)).join(', ');
 const runsRow = [
   '| ' + tableCell(ctx.run_id),
   tableCell(ctx.workflow_name || 'Ablauf automatisch steuern'),
@@ -472,13 +436,13 @@ const runsRow = [
   tableCell(completed.zeit),
   tableCell(ctx.topic || ''),
   tableCell(ctx.model_used || ''),
-  tableCell(ctx.status || 'completed'),
+  tableCell(pipelineStatus),
   tableCell(finalGate.status || 'n/a'),
   tableCell(String(!!finalGate.human_review_required)),
   Number(finalQuality).toFixed(2),
   String(durationSec),
-  wiki(detailPath, 'Laufdetail'),
-  tableCell(intermediateLinks) + ' |',
+  wikiPlain(detailPath),
+  intermediateLinks + ' |',
 ].join(' | ');
 
 if (!runsContent.includes('| ' + String(ctx.run_id || '') + ' |')) {
@@ -487,27 +451,16 @@ if (!runsContent.includes('| ' + String(ctx.run_id || '') + ' |')) {
   await obsidianPut.call(this, runsPath, runsContent);
 }
 
-let regression_case_added = false;
-if (String(finalGate.status || '') !== 'pass') {
-  const datasetPath = String(ctx.workflow_eval_dataset_file || '');
-  if (datasetPath) {
-    const rawDataset = await readOrEmpty.call(this, datasetPath);
-    const datasetDoc = parseEvalDatasetDocument(rawDataset);
-    datasetDoc.metadata = datasetDoc.metadata && typeof datasetDoc.metadata === 'object' ? datasetDoc.metadata : {};
-    datasetDoc.metadata.last_regression_capture_at = new Date().toISOString();
-    datasetDoc.metadata.last_regression_run_id = String(ctx.run_id || '');
-
-    const caseId = 'regression-' + String(ctx.run_id || '');
-    const exists = ensureArray(datasetDoc.cases).some((row) => String(row && row.id || '') === caseId);
-    if (!exists) {
-      datasetDoc.cases.push(buildRegressionCase(String(ctx.run_id || ''), String(finalGate.status || 'revise'), finalGate, finalQuality));
-      await obsidianPut.call(this, datasetPath, JSON.stringify(datasetDoc, null, 2) + '\n', 'application/json');
-      regression_case_added = true;
-    }
-  }
-}
-
 const workflowCatalog = [
+  {
+    workflow: 'System Verbindungen pruefen',
+    steps: [
+      { step: '1. Manuell starten', intermediate: '-', purpose: 'Infrastruktur Trigger', description: 'Startet den Verbindungscheck fuer alle externen Abhaengigkeiten.' },
+      { step: '2. Websuche Verbindung pruefen', intermediate: 'Zwischenergebnisse/system-verbindungen-pruefen.md', purpose: 'SearXNG Verfuegbarkeit', description: 'Prueft Erreichbarkeit und Antwortverhalten der Retrieval-Quelle.' },
+      { step: '3. KI Modell erreichbar', intermediate: 'Zwischenergebnisse/system-verbindungen-pruefen.md', purpose: 'Modell Verfuegbarkeit', description: 'Prueft die Erreichbarkeit von Ollama mit dem gepinnten Modell.' },
+      { step: '4. Obsidian API erreichbar', intermediate: 'Zwischenergebnisse/system-verbindungen-pruefen.md', purpose: 'Persistenz Verfuegbarkeit', description: 'Prueft Zugriff auf Obsidian REST fuer Schreib- und Lesepfade.' },
+    ],
+  },
   {
     workflow: 'Ablauf automatisch steuern',
     steps: [
@@ -549,17 +502,25 @@ const workflowCatalog = [
     ],
   },
   {
-    workflow: 'Performance zurueckfuehren',
+    workflow: 'Ergebnisse in Obsidian speichern',
     steps: [
-      { step: '1. Input normalisieren', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Metriken vorbereiten', description: 'Nimmt LinkedIn/Reddit Metriken und Kommentare als Input.' },
-      { step: '2. Learnings ableiten', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Datengetriebene Learnings', description: 'Erzeugt prompt_updates, workflow_updates und next_tests.' },
+      { step: '1. Ergebnisse in Obsidian speichern', intermediate: 'Ergebnisse/00-Runs.md, Ergebnisse/Laufdetails/<run_id>.md', purpose: 'Persistenz', description: 'Schreibt Laufdetail, Run-Tabelle und workflowbezogene Zwischenergebnisse.' },
     ],
   },
   {
-    workflow: 'Evaluationslauf ausfuehren',
+    workflow: 'Fehlerlauf klar dokumentieren',
     steps: [
-      { step: '1. Dataset laden', intermediate: 'Zwischenergebnisse/evaluationslauf-ausfuehren.md', purpose: 'Eval Input', description: 'Laedt Testfaelle aus Input oder Eval-Dataset Datei.' },
-      { step: '2. Cases bewerten', intermediate: 'Zwischenergebnisse/evaluationslauf-ausfuehren.md', purpose: 'Regression erkennen', description: 'Erzeugt pass_rate, Fehlfaelle und Empfehlung.' },
+      { step: '1. Bei Fehler starten', intermediate: 'Zwischenergebnisse/fehlerlauf-klar-dokumentieren.md', purpose: 'Fehler Trigger', description: 'Startet den Fehlerfluss mit Execution-Kontext.' },
+      { step: '2. Fehlerdaten aufbereiten', intermediate: 'Zwischenergebnisse/fehlerlauf-klar-dokumentieren.md', purpose: 'Fehler Kontext', description: 'Normalisiert Fehlerdaten inkl. Run-ID, Status und Quelle.' },
+      { step: '3. Fehlerdetails speichern', intermediate: 'Ergebnisse/Fehlerdetails/<run_id>.md', purpose: 'Fehler Persistenz', description: 'Schreibt den vollstaendigen Fehlerlauf in die Fehlerdokumentation.' },
+      { step: '4. Fehler Ergebnis ausgeben', intermediate: 'Rueckgabe JSON', purpose: 'Monitoring', description: 'Gibt den Fehlerstatus inkl. Pfad zur Fehlerdatei aus.' },
+    ],
+  },
+  {
+    workflow: 'Performance zurueckfuehren',
+    steps: [
+      { step: '1. Input normalisieren', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Metriken vorbereiten', description: 'Nimmt LinkedIn/Reddit Metriken und Kommentare als Input.' },
+      { step: '2. Learnings ableiten', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Datengetriebene Learnings', description: 'Erzeugt datenbasierte Muster und konkrete naechste Optimierungsschritte.' },
     ],
   },
 ];
@@ -567,6 +528,7 @@ const workflowCatalog = [
 const workflowOverviewContent = ['# Workflow Uebersicht', '', renderWorkflowOverviewTable(workflowCatalog)].join('\n');
 await obsidianPut.call(this, ctx.workflow_overview_file, workflowOverviewContent.trimEnd() + '\n');
 
+ctx.pipeline_status = pipelineStatus;
 ctx.status = 'completed';
 ctx.completed_at = ctx.completed_at || new Date().toISOString();
 ctx.output_paths = Object.assign({}, ctx.output_paths || {}, {
@@ -574,7 +536,6 @@ ctx.output_paths = Object.assign({}, ctx.output_paths || {}, {
   workflow_runs: runsPath,
   workflow_intermediate_dir: intermediateDir,
   workflow_intermediate_files: runIntermediateFiles.map((item) => item.path),
-  regression_case_added,
 });
 
 return [{ json: ctx }];

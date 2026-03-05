@@ -50,6 +50,12 @@ function executeTriggerNode(id, name, position, workflowInputs = []) {
 const sharedCtxInputContract = [
   { name: 'run_id', type: 'string' },
   { name: 'execution_id', type: 'string' },
+  { name: 'workflow_name', type: 'string' },
+  { name: 'status', type: 'string' },
+  { name: 'created_at', type: 'string' },
+  { name: 'completed_at', type: 'string' },
+  { name: 'topic', type: 'string' },
+  { name: 'model_primary', type: 'string' },
   { name: 'model_used', type: 'string' },
   { name: 'workflow_dir', type: 'string' },
   { name: 'workflow_results_dir', type: 'string' },

@@ -56,11 +56,9 @@ const ctx = {
   workflow_prompts_dir: input.workflow_prompts_dir || $env.OBSIDIAN_WORKFLOW_PROMPTS_DIR || (workflowDir + '/Prompts'),
   workflow_context_dir: input.workflow_context_dir || $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR || (workflowDir + '/Kontext'),
   workflow_schema_dir: input.workflow_schema_dir || $env.OBSIDIAN_WORKFLOW_SCHEMA_DIR || (workflowDir + '/Schemas'),
-  workflow_eval_dir: input.workflow_eval_dir || $env.OBSIDIAN_WORKFLOW_EVAL_DIR || (workflowDir + '/Evaluations'),
 
   workflow_runs_file: input.workflow_runs_file || $env.OBSIDIAN_WORKFLOW_RUNS_FILE || (workflowDir + '/Ergebnisse/00-Runs.md'),
   workflow_overview_file: input.workflow_overview_file || $env.OBSIDIAN_WORKFLOW_OVERVIEW_FILE || (workflowDir + '/Workflow Übersicht.md'),
-  workflow_eval_dataset_file: input.workflow_eval_dataset_file || $env.OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE || (workflowDir + '/Evaluations/dataset.json'),
   workflow_ssot_manifest_file: input.workflow_ssot_manifest_file || $env.OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE || (workflowDir + '/SSOT/manifest.json'),
 
   obsidian_rest_url: input.obsidian_rest_url || $env.OBSIDIAN_REST_URL || '',

@@ -25,9 +25,7 @@ fi
 WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Prompts}"
 WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Kontext}"
 WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Schemas}"
-WORKFLOW_EVAL_DATASET_FILE="${OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE:-Marketing/Social-Media/Beitraege/Workflow/Evaluations/dataset.json}"
 WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE:-Marketing/Social-Media/Beitraege/Workflow/SSOT/manifest.json}"
-SEED_EVAL_DATASET="${SEED_EVAL_DATASET:-false}"
 
 CURL_INSECURE=()
 if [[ "${OBSIDIAN_ALLOW_INSECURE_TLS:-false}" == "true" ]]; then
@@ -45,6 +43,19 @@ put_file() {
     --data-binary "@${src}" \
     "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" >/dev/null
   echo "synced: $dest"
+}
+
+assert_non_empty_file() {
+  local path="$1"
+  local label="$2"
+  if [[ ! -f "$path" ]]; then
+    echo "Missing SSOT source file: ${label} -> ${path}"
+    exit 1
+  fi
+  if [[ ! -s "$path" ]]; then
+    echo "Empty SSOT source file: ${label} -> ${path}"
+    exit 1
+  fi
 }
 
 PROMPT_PAIRS=(
@@ -84,6 +95,24 @@ SCHEMA_PAIRS=(
   "final_gate:final_gate.schema.json"
   "performance_learnings:performance_learnings.schema.json"
 )
+
+for pair in "${PROMPT_PAIRS[@]}"; do
+  key="${pair%%:*}"
+  file="${pair#*:}"
+  assert_non_empty_file "local-files/_managed/prompts/${file}" "prompt:${key}"
+done
+
+for pair in "${CONTEXT_PAIRS[@]}"; do
+  key="${pair%%:*}"
+  file="${pair#*:}"
+  assert_non_empty_file "local-files/_managed/context/${file}" "context:${key}"
+done
+
+for pair in "${SCHEMA_PAIRS[@]}"; do
+  key="${pair%%:*}"
+  file="${pair#*:}"
+  assert_non_empty_file "local-files/_managed/schemas/${file}" "schema:${key}"
+done
 
 for pair in "${PROMPT_PAIRS[@]}"; do
   file="${pair#*:}"
@@ -145,7 +174,7 @@ bundle_hash = hashlib.sha256(bundle_source.encode('utf-8')).hexdigest()
 
 manifest = {
     "version": "1.0.0",
-    "generated_at": dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+    "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace('+00:00', 'Z'),
     "bundle_hash": bundle_hash,
     "items": items,
 }
@@ -153,13 +182,6 @@ manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", 
 PY
 
 put_file "$MANIFEST_FILE" "${WORKFLOW_SSOT_MANIFEST_FILE}" "application/json"
-
-if [[ "$SEED_EVAL_DATASET" == "true" && -f local-files/_managed/templates/evaluation-dataset-template.json ]]; then
-  put_file "local-files/_managed/templates/evaluation-dataset-template.json" "${WORKFLOW_EVAL_DATASET_FILE}" "application/json"
-  echo "synced: ${WORKFLOW_EVAL_DATASET_FILE}"
-elif [[ "$SEED_EVAL_DATASET" != "true" ]]; then
-  echo "skipped: ${WORKFLOW_EVAL_DATASET_FILE} (set SEED_EVAL_DATASET=true to overwrite)"
-fi
 
 echo
 echo "SSOT sync complete."

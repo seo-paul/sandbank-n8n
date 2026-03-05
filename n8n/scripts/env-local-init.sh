@@ -194,6 +194,11 @@ if [[ -z "$current_workflow_dir" || "$current_workflow_dir" == "replace_with_"* 
   set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Marketing/Social-Media/Beitraege/Workflow\""
 fi
 
+current_workflow_archive_dir="$(get_env_value "OBSIDIAN_WORKFLOW_ARCHIVE_DIR")"
+if [[ -z "$current_workflow_archive_dir" || "$current_workflow_archive_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_ARCHIVE_DIR" "\"Marketing/Social-Media/Beitraege/_Archiv/Workflow\""
+fi
+
 current_workflow_results_dir="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR")"
 if [[ -z "$current_workflow_results_dir" || "$current_workflow_results_dir" == "replace_with_"* ]]; then
   set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse\""
@@ -227,21 +232,6 @@ fi
 current_workflow_schema_dir="$(get_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR")"
 if [[ -z "$current_workflow_schema_dir" || "$current_workflow_schema_dir" == "replace_with_"* ]]; then
   set_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Schemas\""
-fi
-
-current_workflow_eval_dir="$(get_env_value "OBSIDIAN_WORKFLOW_EVAL_DIR")"
-if [[ -z "$current_workflow_eval_dir" || "$current_workflow_eval_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_EVAL_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Evaluations\""
-fi
-
-current_workflow_eval_dataset_file="$(get_env_value "OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE")"
-if [[ -z "$current_workflow_eval_dataset_file" || "$current_workflow_eval_dataset_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Evaluations/dataset.json\""
-fi
-
-current_workflow_prompt_change_log_file="$(get_env_value "OBSIDIAN_WORKFLOW_PROMPT_CHANGE_LOG_FILE")"
-if [[ -z "$current_workflow_prompt_change_log_file" || "$current_workflow_prompt_change_log_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_PROMPT_CHANGE_LOG_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Evaluations/prompt-change-log.md\""
 fi
 
 current_workflow_ssot_manifest_file="$(get_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE")"

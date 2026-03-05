@@ -20,9 +20,6 @@ const runId = runIdBase + '-' + nowIso().replace(/[-:.TZ]/g, '').slice(0, 14);
 
 const workflowDir = String(input.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow');
 const resultsDir = String(input.workflow_results_dir || $env.OBSIDIAN_WORKFLOW_RESULTS_DIR || (workflowDir + '/Ergebnisse'));
-const evalDir = String(input.workflow_eval_dir || $env.OBSIDIAN_WORKFLOW_EVAL_DIR || (workflowDir + '/Evaluations'));
-const evalDatasetFile = String(input.workflow_eval_dataset_file || $env.OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE || (workflowDir + '/Evaluations/dataset.json'));
-const promptChangeLogFile = String(input.workflow_prompt_change_log_file || $env.OBSIDIAN_WORKFLOW_PROMPT_CHANGE_LOG_FILE || (workflowDir + '/Evaluations/prompt-change-log.md'));
 const promptsDir = String(input.workflow_prompts_dir || $env.OBSIDIAN_WORKFLOW_PROMPTS_DIR || (workflowDir + '/Prompts'));
 const contextDir = String(input.workflow_context_dir || $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR || (workflowDir + '/Kontext'));
 const schemaDir = String(input.workflow_schema_dir || $env.OBSIDIAN_WORKFLOW_SCHEMA_DIR || (workflowDir + '/Schemas'));
@@ -258,74 +255,6 @@ async function callOllamaJson(systemPrompt, userPrompt) {
   }
 }
 
-function parseDatasetDocument(rawText) {
-  if (rawText && typeof rawText === 'object') {
-    const parsed = rawText;
-    if (Array.isArray(parsed)) return { metadata: {}, cases: parsed };
-    if (parsed && typeof parsed === 'object') {
-      return {
-        metadata: parsed.metadata && typeof parsed.metadata === 'object' ? parsed.metadata : {},
-        cases: ensureArray(parsed.cases),
-      };
-    }
-  }
-
-  if (!String(rawText || '').trim()) {
-    return { metadata: {}, cases: [] };
-  }
-  const parsed = JSON.parse(String(rawText));
-  if (Array.isArray(parsed)) return { metadata: {}, cases: parsed };
-  if (parsed && typeof parsed === 'object') {
-    return {
-      metadata: parsed.metadata && typeof parsed.metadata === 'object' ? parsed.metadata : {},
-      cases: ensureArray(parsed.cases),
-    };
-  }
-  throw new Error('Unsupported evaluation dataset format');
-}
-
-function plannedCasesFromLearnings(learningsValue, parentRunId) {
-  const tests = ensureArray(learningsValue.next_tests);
-  const out = [];
-  for (let i = 0; i < tests.length; i++) {
-    const hypothesis = sanitize(tests[i], 260);
-    if (!hypothesis) continue;
-    out.push({
-      id: 'planned-' + parentRunId + '-' + String(i + 1).padStart(2, '0'),
-      active: false,
-      state: 'planned',
-      source: 'performance-feedback',
-      source_run_id: parentRunId,
-      hypothesis,
-      expected: {
-        status: 'pass',
-        min_quality_score: 75,
-      },
-      prompt_version: String(input.prompt_version || 'candidate'),
-      created_at: nowIso(),
-    });
-  }
-  return out;
-}
-
-function mergePlannedCases(existingCases, plannedCases) {
-  const merged = ensureArray(existingCases).slice();
-  const existingHypothesis = new Set(
-    merged.map((row) => sanitize(row && row.hypothesis ? row.hypothesis : '', 260)).filter(Boolean)
-  );
-  let added = 0;
-
-  for (const row of plannedCases) {
-    const key = sanitize(row.hypothesis, 260);
-    if (!key || existingHypothesis.has(key)) continue;
-    existingHypothesis.add(key);
-    merged.push(row);
-    added += 1;
-  }
-
-  return { merged, added };
-}
-
 const prompts = {
   global_system: input.prompts && input.prompts.global_system ? String(input.prompts.global_system) : await readRequired.call(this, promptsDir + '/00-global-system.md', 'global_system'),
   performance_auswertung: input.prompts && input.prompts.performance_auswertung ? String(input.prompts.performance_auswertung) : await readRequired.call(this, promptsDir + '/performance-auswertung.md', 'performance_auswertung'),
@@ -402,42 +331,8 @@ const noteMarkdown = [
   '~~~',
 ].join('\n');
 
-let plannedCasesAdded = 0;
-let promptChangeLogUpdated = false;
-
 if (obsidianRestUrl && obsidianKey) {
   await obsidianPut.call(this, notePath, noteMarkdown.trimEnd() + '\n', 'text/markdown');
-
-  const datasetRaw = await readOrEmpty.call(this, evalDatasetFile);
-  const datasetDoc = parseDatasetDocument(datasetRaw);
-  datasetDoc.metadata = datasetDoc.metadata && typeof datasetDoc.metadata === 'object' ? datasetDoc.metadata : {};
-  datasetDoc.metadata.last_performance_sync_run_id = runId;
-  datasetDoc.metadata.last_performance_sync_at = nowIso();
-
-  const plannedCases = plannedCasesFromLearnings(learnings, runId);
-  const merged = mergePlannedCases(datasetDoc.cases, plannedCases);
-  plannedCasesAdded = merged.added;
-  datasetDoc.cases = merged.merged;
-
-  await obsidianPut.call(
-    this,
-    evalDatasetFile,
-    JSON.stringify(datasetDoc, null, 2) + '\n',
-    'application/json'
-  );
-
-  const currentLog = await readOrEmpty.call(this, promptChangeLogFile);
-  const logEntry = [
-    '',
-    '## ' + nowIso() + ' - ' + runId,
-    '- source_run_id: ' + runId,
-    '- prompt_updates: ' + (ensureArray(learnings.prompt_updates).length ? ensureArray(learnings.prompt_updates).join(' | ') : 'none'),
-    '- workflow_updates: ' + (ensureArray(learnings.workflow_updates).length ? ensureArray(learnings.workflow_updates).join(' | ') : 'none'),
-    '- next_tests_added_to_dataset: ' + String(plannedCasesAdded),
-  ].join('\\n');
-  const logBody = (currentLog ? String(currentLog).trimEnd() + '\\n' : '# Prompt Change Log\\n') + logEntry + '\\n';
-  await obsidianPut.call(this, promptChangeLogFile, logBody, 'text/markdown');
-  promptChangeLogUpdated = true;
 }
 
 return [{
@@ -449,10 +344,5 @@ return [{
     learning_note_path: notePath,
     learnings,
     summary: shortText(learnings.next_tests, 220),
-    workflow_eval_dir: evalDir,
-    workflow_eval_dataset_file: evalDatasetFile,
-    prompt_change_log_file: promptChangeLogFile,
-    planned_cases_added: plannedCasesAdded,
-    prompt_change_log_updated: promptChangeLogUpdated,
   },
 }];

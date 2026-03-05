@@ -26,6 +26,30 @@
               "type": "string"
             },
             {
+              "name": "workflow_name",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "created_at",
+              "type": "string"
+            },
+            {
+              "name": "completed_at",
+              "type": "string"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "model_primary",
+              "type": "string"
+            },
+            {
               "name": "model_used",
               "type": "string"
             },
