@@ -90,19 +90,19 @@ if [[ -z "$current_ollama_base_url" || "$current_ollama_base_url" == "replace_wi
   set_env_value "OLLAMA_BASE_URL" "http://host.docker.internal:11434"
 fi
 
-current_min_quality_score="$(get_env_value "WF90_MIN_QUALITY_SCORE")"
+current_min_quality_score="$(get_env_value "PIPELINE_MIN_QUALITY_SCORE")"
 if [[ -z "$current_min_quality_score" || "$current_min_quality_score" == "replace_with_"* ]]; then
-  set_env_value "WF90_MIN_QUALITY_SCORE" "6.5"
+  set_env_value "PIPELINE_MIN_QUALITY_SCORE" "70"
 fi
 
-current_min_evidence_refs="$(get_env_value "WF90_MIN_EVIDENCE_REFS")"
+current_min_evidence_refs="$(get_env_value "PIPELINE_MIN_EVIDENCE_REFS")"
 if [[ -z "$current_min_evidence_refs" || "$current_min_evidence_refs" == "replace_with_"* ]]; then
-  set_env_value "WF90_MIN_EVIDENCE_REFS" "3"
+  set_env_value "PIPELINE_MIN_EVIDENCE_REFS" "3"
 fi
 
-current_min_draft_len="$(get_env_value "WF90_MIN_DRAFT_BODY_LEN")"
+current_min_draft_len="$(get_env_value "PIPELINE_MIN_DRAFT_BODY_LEN")"
 if [[ -z "$current_min_draft_len" || "$current_min_draft_len" == "replace_with_"* ]]; then
-  set_env_value "WF90_MIN_DRAFT_BODY_LEN" "180"
+  set_env_value "PIPELINE_MIN_DRAFT_BODY_LEN" "180"
 fi
 
 # Try to auto-load Obsidian Local REST settings from plugin data.json
@@ -161,58 +161,48 @@ fi
 
 current_workflow_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DIR")"
 if [[ -z "$current_workflow_dir" || "$current_workflow_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Marketing/Social-Media/Workflow\""
-fi
-
-current_workflow_logs_dir="$(get_env_value "OBSIDIAN_WORKFLOW_LOGS_DIR")"
-if [[ -z "$current_workflow_logs_dir" || "$current_workflow_logs_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_LOGS_DIR" "\"Marketing/Social-Media/Workflow/Workflow Logs\""
+  set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Marketing/Social-Media/Beitraege/Workflow\""
 fi
 
 current_workflow_results_dir="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR")"
 if [[ -z "$current_workflow_results_dir" || "$current_workflow_results_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Marketing/Social-Media/Workflow/Workflow Ergebnisse\""
+  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse\""
 fi
 
-current_workflow_drafts_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DRAFTS_DIR")"
-if [[ -z "$current_workflow_drafts_dir" || "$current_workflow_drafts_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_DRAFTS_DIR" "\"Marketing/Social-Media/Workflow/Drafts\""
+current_workflow_detail_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR")"
+if [[ -z "$current_workflow_detail_dir" || "$current_workflow_detail_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/Laufdetails\""
+fi
+
+current_workflow_error_dir="$(get_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR")"
+if [[ -z "$current_workflow_error_dir" || "$current_workflow_error_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/Fehlerdetails\""
+fi
+
+current_workflow_intermediate_dir="$(get_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR")"
+if [[ -z "$current_workflow_intermediate_dir" || "$current_workflow_intermediate_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Zwischenergebnisse\""
 fi
 
 current_workflow_prompts_dir="$(get_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR")"
 if [[ -z "$current_workflow_prompts_dir" || "$current_workflow_prompts_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Marketing/Social-Media/Workflow/Prompts\""
+  set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Prompts\""
 fi
 
-current_workflow_results_index="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_INDEX")"
-if [[ -z "$current_workflow_results_index" || "$current_workflow_results_index" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_INDEX" "\"Marketing/Social-Media/Workflow/Workflow Ergebnisse/00-Workflow-Ergebnisse.md\""
-fi
-
-current_workflow_steps_file="$(get_env_value "OBSIDIAN_WORKFLOW_STEPS_FILE")"
-if [[ -z "$current_workflow_steps_file" || "$current_workflow_steps_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_STEPS_FILE" "\"Marketing/Social-Media/Workflow/Workflow Schritte.md\""
-fi
-
-current_workflow_intermediate_file="$(get_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_FILE")"
-if [[ -z "$current_workflow_intermediate_file" || "$current_workflow_intermediate_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_FILE" "\"Marketing/Social-Media/Workflow/Workflow Zwischenergebnisse.md\""
+current_workflow_runs_file="$(get_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE")"
+if [[ -z "$current_workflow_runs_file" || "$current_workflow_runs_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/00-Runs.md\""
 fi
 
 current_workflow_overview_file="$(get_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE")"
 if [[ -z "$current_workflow_overview_file" || "$current_workflow_overview_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Social-Media/Workflow/Workflow Übersicht.md\""
+  set_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Workflow Übersicht.md\""
 fi
 
 # Ensure local model defaults are set
 current_model="$(get_env_value "OLLAMA_MODEL")"
 if is_placeholder "$current_model"; then
   set_env_value "OLLAMA_MODEL" "qwen3.5:27b"
-fi
-
-current_fallback_model="$(get_env_value "OLLAMA_MODEL_FALLBACK")"
-if [[ -z "$current_fallback_model" || "$current_fallback_model" == "replace_with_"* ]]; then
-  set_env_value "OLLAMA_MODEL_FALLBACK" "llama3.2:latest"
 fi
 
 # Generate SearXNG secret if still placeholder

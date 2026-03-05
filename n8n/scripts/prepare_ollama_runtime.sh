@@ -44,7 +44,7 @@ if [[ "$APPLY" != "true" ]]; then
   echo
   echo "Dry run only."
   echo "Run with: $0 --apply"
-  echo "to stop these containers before WF90 runs and reduce OOM risk for Ollama."
+  echo "to stop these containers before der Hauptablauf startet und OOM-Risiko fuer Ollama sinkt."
   exit 0
 fi
 

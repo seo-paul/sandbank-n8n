@@ -139,7 +139,7 @@ while true; do
   progress_line=""
   if [[ -n "$run_container_name" ]]; then
     run_tail="$(docker logs --tail 800 "$run_container_name" 2>/dev/null || true)"
-    progress_line="$(echo "$run_tail" | awk -v rid="run-${exec_id}-" '/\[WF90_PROGRESS\]/{if(rid=="run--" || index($0,rid)>0) line=$0} END{print line}')"
+    progress_line="$(echo "$run_tail" | awk -v rid="run-${exec_id}-" '/\[PIPELINE_PROGRESS\]/{if(rid=="run--" || index($0,rid)>0) line=$0} END{print line}')"
   fi
 
   if [[ -n "$progress_line" ]]; then

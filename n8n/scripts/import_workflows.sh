@@ -7,32 +7,21 @@ cd "$ROOT_DIR"
 source .env
 
 # Clean-cutover import:
-# - remove legacy workflow names
 # - remove current target names
+# - remove legacy names that follow old two-letter + two-digit prefixes
 # - re-import exactly the repository blueprints
 if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
-  purge_names=(
-    "WF00_Local_Healthcheck"
-    "WF10_Research_Intake_Local"
-    "WF20_Content_Pipeline_Qwen"
-    "WF30_Obsidian_Sink_REST"
-    "WF90_Orchestrator_7Stage_Obsidian"
-    "WF95_Workflow_Error_Logger"
-    "WF00 System Checks"
-    "WF10 Research Sammeln"
-    "WF20 Qwen Entwurf"
-    "WF30 Obsidian Schreiben"
-    "WF90 Workflow Orchestrator"
-    "WF95 Fehler Logger"
-    "WF10 Research Evidenz"
-    "WF20 Topic Draft Kritik"
-    "WF30 Logs Ergebnisse"
-    "WF90 Orchestrator Subflows"
-    "WF95 Workflow Fehlerlog"
+  target_names=(
+    "System Verbindungen pruefen"
+    "Thema und Quellen sammeln"
+    "Beitrag aus Quellen erstellen"
+    "Ergebnisse in Obsidian speichern"
+    "Ablauf automatisch steuern"
+    "Fehlerlauf klar dokumentieren"
   )
 
   quoted_names=""
-  for name in "${purge_names[@]}"; do
+  for name in "${target_names[@]}"; do
     if [[ -n "$quoted_names" ]]; then
       quoted_names+=","
     fi
@@ -43,7 +32,7 @@ if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
     -U "$POSTGRES_USER" \
     -d "$POSTGRES_DB" \
     -v ON_ERROR_STOP=1 \
-    -c "DELETE FROM workflow_entity WHERE name IN (${quoted_names});"
+    -c "DELETE FROM workflow_entity WHERE name IN (${quoted_names}) OR name ~ '^[A-Z]{2}[0-9]{2}([ _-])(System|Research|Qwen|Obsidian|Workflow|Fehler|Orchestrator|Local)';"
 fi
 
 docker compose exec -T n8n n8n import:workflow --separate --input=/workflows

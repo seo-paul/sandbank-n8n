@@ -5,12 +5,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
 EXPECTED_WORKFLOWS=(
-  "WF00 System Checks"
-  "WF10 Research Evidenz"
-  "WF20 Topic Draft Kritik"
-  "WF30 Logs Ergebnisse"
-  "WF90 Orchestrator Subflows"
-  "WF95 Workflow Fehlerlog"
+  "System Verbindungen pruefen"
+  "Thema und Quellen sammeln"
+  "Beitrag aus Quellen erstellen"
+  "Ergebnisse in Obsidian speichern"
+  "Ablauf automatisch steuern"
+  "Fehlerlauf klar dokumentieren"
 )
 
 echo "[1/7] Validate workflow JSON syntax"
@@ -26,12 +26,12 @@ const path = require('path');
 
 const root = '/Users/zweigen/Sites/sandbank-n8n';
 const expected = new Set([
-  'WF00 System Checks',
-  'WF10 Research Evidenz',
-  'WF20 Topic Draft Kritik',
-  'WF30 Logs Ergebnisse',
-  'WF90 Orchestrator Subflows',
-  'WF95 Workflow Fehlerlog',
+  'System Verbindungen pruefen',
+  'Thema und Quellen sammeln',
+  'Beitrag aus Quellen erstellen',
+  'Ergebnisse in Obsidian speichern',
+  'Ablauf automatisch steuern',
+  'Fehlerlauf klar dokumentieren',
 ]);
 
 const files = fs.readdirSync(path.join(root, 'n8n/workflows')).filter((f) => f.endsWith('.json'));
@@ -43,8 +43,8 @@ for (const file of files) {
   seen.add(data.name);
   for (const node of data.nodes || []) {
     const words = String(node.name || '').trim().split(/\s+/).filter(Boolean);
-    if (words.length < 2 || words.length > 4) {
-      console.error(`Node name not 2-4 words: ${data.name} -> ${node.name}`);
+    if (words.length < 2 || words.length > 5) {
+      console.error(`Node name not 2-5 words: ${data.name} -> ${node.name}`);
       failed = true;
     }
   }
@@ -79,17 +79,21 @@ fi
 echo "  ok: no model_requested/21_Marketing"
 
 echo "[4/7] Validate template formats"
-rg -n '^\| run_id \| datum \| thema \| linkedin_ausarbeitung \| reddit_ausarbeitung \| linkedin_draft \| reddit_draft \| log \|' local-files/_managed/templates/workflow-ergebnisse-index-template.md >/dev/null
-rg -n '^\| run_id \| ts \| step \| status \| model_used \| input_ref \| output_ref \| qwen_summary \| quality_score \| issues \|' local-files/_managed/templates/workflow-zwischenergebnisse-template.md >/dev/null
-rg -n '^cta:$' local-files/_managed/templates/workflow-draft-template.md >/dev/null
+rg -n '^\| run_id \| workflow \| datum \| zeit \| thema \| model_used \| status \| quality_final \| score_stufen_csv \| errors_stufen_csv \| duration_sec \| ergebnis \| zwischenergebnisse \|' local-files/_managed/templates/runs-register-template.md >/dev/null
+rg -n '^type: workflow-zwischenergebnis$' local-files/_managed/templates/zwischenergebnis-workflow-template.md >/dev/null
+rg -n '^\| Workflow \| Schritt \| Zwischenergebnis \| Zweck \| Beschreibung \|' local-files/_managed/templates/workflow-uebersicht-template.md >/dev/null
+if [[ -e local-files/_managed/templates/workflow-ergebnisse-index-template.md || -e local-files/_managed/templates/workflow-zwischenergebnisse-template.md || -e local-files/_managed/templates/workflow-schritte-template.md ]]; then
+  echo "Legacy templates still present."
+  exit 1
+fi
 echo "  ok: templates"
 
 echo "[5/7] Validate workflow architecture edges"
 node <<'NODE'
 const fs = require('fs');
-const wf = JSON.parse(fs.readFileSync('/Users/zweigen/Sites/sandbank-n8n/n8n/workflows/WF90_Orchestrator_7Stage_Obsidian.json', 'utf8'));
+const wf = JSON.parse(fs.readFileSync('/Users/zweigen/Sites/sandbank-n8n/n8n/workflows/ablauf-automatisch-steuern.json', 'utf8'));
 const nodeNames = new Set((wf.nodes || []).map((n) => n.name));
-const required = ['Starte Research', 'Starte Content', 'Starte Logging'];
+const required = ['Recherche Schritt starten', 'Beitrag Schritt starten', 'Speicher Schritt starten'];
 for (const r of required) {
   if (!nodeNames.has(r)) {
     console.error(`Missing orchestrator node: ${r}`);

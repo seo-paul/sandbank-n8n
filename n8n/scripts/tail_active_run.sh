@@ -29,7 +29,7 @@ OLLAMA_LOG_FILE="${OLLAMA_LOG_FILE:-$HOME/.ollama/logs/server.log}"
 if [[ -f "$OLLAMA_LOG_FILE" ]]; then
   (
     tail -f "$OLLAMA_LOG_FILE" 2>&1 \
-      | awk '/api\/chat|api\/generate|\[WF90_PROGRESS\]|error|timeout|runner process terminated|signal: killed|level=ERROR|status=5[0-9][0-9]/ {print}' \
+      | awk '/api\/chat|api\/generate|\[PIPELINE_PROGRESS\]|error|timeout|runner process terminated|signal: killed|level=ERROR|status=5[0-9][0-9]/ {print}' \
       | sed -u 's/^/[ollama] /'
   ) &
 else

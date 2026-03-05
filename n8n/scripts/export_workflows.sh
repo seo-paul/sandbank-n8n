@@ -25,11 +25,11 @@ write_workflow() {
   ' "$TMP_JSON" > "$target_file"
 }
 
-write_workflow "WF00 System Checks" "n8n/workflows/WF00_Local_Healthcheck.json"
-write_workflow "WF10 Research Evidenz" "n8n/workflows/WF10_Research_Intake_Local.json"
-write_workflow "WF20 Topic Draft Kritik" "n8n/workflows/WF20_Content_Pipeline_Qwen.json"
-write_workflow "WF30 Logs Ergebnisse" "n8n/workflows/WF30_Obsidian_Sink_REST.json"
-write_workflow "WF90 Orchestrator Subflows" "n8n/workflows/WF90_Orchestrator_7Stage_Obsidian.json"
-write_workflow "WF95 Workflow Fehlerlog" "n8n/workflows/WF95_Workflow_Error_Logger.json"
+write_workflow "System Verbindungen pruefen" "n8n/workflows/system-verbindungen-pruefen.json"
+write_workflow "Thema und Quellen sammeln" "n8n/workflows/thema-und-quellen-sammeln.json"
+write_workflow "Beitrag aus Quellen erstellen" "n8n/workflows/beitrag-aus-quellen-erstellen.json"
+write_workflow "Ergebnisse in Obsidian speichern" "n8n/workflows/ergebnisse-in-obsidian-speichern.json"
+write_workflow "Ablauf automatisch steuern" "n8n/workflows/ablauf-automatisch-steuern.json"
+write_workflow "Fehlerlauf klar dokumentieren" "n8n/workflows/fehlerlauf-klar-dokumentieren.json"
 
 echo "Workflows exported to n8n/workflows (deterministic filenames)."
