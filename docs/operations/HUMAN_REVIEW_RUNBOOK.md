@@ -1,0 +1,33 @@
+# Human Review Runbook
+
+## Triggerbedingungen
+- `final_gate.human_review_required = true`
+- oder `final_gate.status != pass`
+- oder explizite manuelle Vorgabe `review_decision`
+
+## Freigabewege
+- `review_decision=approve`
+  - setzt `final_gate.status` auf `pass` (ausser bei explizitem hold)
+  - entfernt `human_review_required`
+- `review_decision=deny`
+  - setzt `final_gate.status` auf `hold`
+  - erweitert blocking/prio fixes um Review-Hinweis
+- kein `review_decision`
+  - markiert `human_review_pending`
+  - Laufstatus bleibt `review_required`
+
+## Timeout/Retry
+- Kein automatischer Timeout-Approve.
+- Wiederholte Ausfuehrung mit `review_decision` erlaubt.
+- Alle Obsidian-Schreibzugriffe laufen mit Retry-Logik.
+
+## Eskalation
+- Wenn `human_review_pending` > 24h: manuelle Eskalation an Workflow-Owner.
+- Bei wiederholtem `deny`: erst Prompt-/Workflow-Änderung, dann erneute Freigabe.
+
+## Audit-Felder
+- `artifacts.human_review.required`
+- `artifacts.human_review.decision`
+- `artifacts.human_review.applied_at`
+- `artifacts.human_review.notes`
+- `artifacts.final_gate.release_notes`
