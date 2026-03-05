@@ -26,10 +26,10 @@ write_workflow() {
 }
 
 write_workflow "WF00 System Checks" "n8n/workflows/WF00_Local_Healthcheck.json"
-write_workflow "WF10 Research Sammeln" "n8n/workflows/WF10_Research_Intake_Local.json"
-write_workflow "WF20 Qwen Entwurf" "n8n/workflows/WF20_Content_Pipeline_Qwen.json"
-write_workflow "WF30 Obsidian Schreiben" "n8n/workflows/WF30_Obsidian_Sink_REST.json"
-write_workflow "WF90 Workflow Orchestrator" "n8n/workflows/WF90_Orchestrator_7Stage_Obsidian.json"
-write_workflow "WF95 Fehler Logger" "n8n/workflows/WF95_Workflow_Error_Logger.json"
+write_workflow "WF10 Research Evidenz" "n8n/workflows/WF10_Research_Intake_Local.json"
+write_workflow "WF20 Topic Draft Kritik" "n8n/workflows/WF20_Content_Pipeline_Qwen.json"
+write_workflow "WF30 Logs Ergebnisse" "n8n/workflows/WF30_Obsidian_Sink_REST.json"
+write_workflow "WF90 Orchestrator Subflows" "n8n/workflows/WF90_Orchestrator_7Stage_Obsidian.json"
+write_workflow "WF95 Workflow Fehlerlog" "n8n/workflows/WF95_Workflow_Error_Logger.json"
 
 echo "Workflows exported to n8n/workflows (deterministic filenames)."

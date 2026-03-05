@@ -25,11 +25,11 @@ trap cleanup INT TERM EXIT
     | sed -u "s/^/[${run_container_name}] /"
 ) &
 
-ollama_container="$(docker ps --format '{{.Names}}' | awk '/^sandbank-n8n-local-ollama-1$/{print; exit}' || true)"
-if [[ -n "$ollama_container" ]]; then
+OLLAMA_LOG_FILE="${OLLAMA_LOG_FILE:-$HOME/.ollama/logs/server.log}"
+if [[ -f "$OLLAMA_LOG_FILE" ]]; then
   (
-    docker logs -f "$ollama_container" 2>&1 \
-      | awk '/\/api\/chat|\[WF90_PROGRESS\]|error|timeout|500|runner process terminated|signal: killed/ {print}' \
+    tail -f "$OLLAMA_LOG_FILE" 2>&1 \
+      | awk '/api\/chat|api\/generate|\[WF90_PROGRESS\]|error|timeout|runner process terminated|signal: killed|level=ERROR|status=5[0-9][0-9]/ {print}' \
       | sed -u 's/^/[ollama] /'
   ) &
 else

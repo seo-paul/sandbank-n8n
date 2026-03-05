@@ -17,12 +17,18 @@ if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
     "WF20_Content_Pipeline_Qwen"
     "WF30_Obsidian_Sink_REST"
     "WF90_Orchestrator_7Stage_Obsidian"
+    "WF95_Workflow_Error_Logger"
     "WF00 System Checks"
     "WF10 Research Sammeln"
     "WF20 Qwen Entwurf"
     "WF30 Obsidian Schreiben"
     "WF90 Workflow Orchestrator"
     "WF95 Fehler Logger"
+    "WF10 Research Evidenz"
+    "WF20 Topic Draft Kritik"
+    "WF30 Logs Ergebnisse"
+    "WF90 Orchestrator Subflows"
+    "WF95 Workflow Fehlerlog"
   )
 
   quoted_names=""

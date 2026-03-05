@@ -80,9 +80,29 @@ if [[ -z "$current_runner_timeout" || "$current_runner_timeout" == "replace_with
   set_env_value "N8N_RUNNERS_TASK_TIMEOUT" "1800"
 fi
 
+current_block_env="$(get_env_value "N8N_BLOCK_ENV_ACCESS_IN_NODE")"
+if [[ -z "$current_block_env" || "$current_block_env" == "replace_with_"* ]]; then
+  set_env_value "N8N_BLOCK_ENV_ACCESS_IN_NODE" "false"
+fi
+
 current_ollama_base_url="$(get_env_value "OLLAMA_BASE_URL")"
 if [[ -z "$current_ollama_base_url" || "$current_ollama_base_url" == "replace_with_"* ]]; then
   set_env_value "OLLAMA_BASE_URL" "http://host.docker.internal:11434"
+fi
+
+current_min_quality_score="$(get_env_value "WF90_MIN_QUALITY_SCORE")"
+if [[ -z "$current_min_quality_score" || "$current_min_quality_score" == "replace_with_"* ]]; then
+  set_env_value "WF90_MIN_QUALITY_SCORE" "6.5"
+fi
+
+current_min_evidence_refs="$(get_env_value "WF90_MIN_EVIDENCE_REFS")"
+if [[ -z "$current_min_evidence_refs" || "$current_min_evidence_refs" == "replace_with_"* ]]; then
+  set_env_value "WF90_MIN_EVIDENCE_REFS" "3"
+fi
+
+current_min_draft_len="$(get_env_value "WF90_MIN_DRAFT_BODY_LEN")"
+if [[ -z "$current_min_draft_len" || "$current_min_draft_len" == "replace_with_"* ]]; then
+  set_env_value "WF90_MIN_DRAFT_BODY_LEN" "180"
 fi
 
 # Try to auto-load Obsidian Local REST settings from plugin data.json
@@ -188,6 +208,11 @@ fi
 current_model="$(get_env_value "OLLAMA_MODEL")"
 if is_placeholder "$current_model"; then
   set_env_value "OLLAMA_MODEL" "qwen3.5:27b"
+fi
+
+current_fallback_model="$(get_env_value "OLLAMA_MODEL_FALLBACK")"
+if [[ -z "$current_fallback_model" || "$current_fallback_model" == "replace_with_"* ]]; then
+  set_env_value "OLLAMA_MODEL_FALLBACK" "llama3.2:latest"
 fi
 
 # Generate SearXNG secret if still placeholder
