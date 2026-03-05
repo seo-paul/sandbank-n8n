@@ -17,6 +17,11 @@ if [[ -z "${OBSIDIAN_REST_URL:-}" || -z "${OBSIDIAN_REST_API_KEY:-}" ]]; then
   exit 1
 fi
 
+OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL}}"
+if [[ "$OBSIDIAN_REST_URL_EFFECTIVE" == *"host.docker.internal"* ]]; then
+  OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_EFFECTIVE/host.docker.internal/localhost}"
+fi
+
 WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Prompts}"
 WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Kontext}"
 WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Schemas}"
@@ -38,7 +43,7 @@ put_file() {
     -H "Authorization: Bearer ${OBSIDIAN_REST_API_KEY}" \
     -H "Content-Type: ${content_type}" \
     --data-binary "@${src}" \
-    "${OBSIDIAN_REST_URL%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" >/dev/null
+    "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" >/dev/null
   echo "synced: $dest"
 }
 

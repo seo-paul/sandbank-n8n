@@ -95,6 +95,21 @@ if [[ -z "$current_ollama_unload" || "$current_ollama_unload" == "replace_with_"
   set_env_value "OLLAMA_UNLOAD_ON_COMPLETE" "false"
 fi
 
+current_ollama_predict_cap="$(get_env_value "OLLAMA_NUM_PREDICT_CAP")"
+if [[ -z "$current_ollama_predict_cap" || "$current_ollama_predict_cap" == "replace_with_"* ]]; then
+  set_env_value "OLLAMA_NUM_PREDICT_CAP" "700"
+fi
+
+current_ollama_timeout_cap="$(get_env_value "OLLAMA_TIMEOUT_CAP_MS")"
+if [[ -z "$current_ollama_timeout_cap" || "$current_ollama_timeout_cap" == "replace_with_"* ]]; then
+  set_env_value "OLLAMA_TIMEOUT_CAP_MS" "240000"
+fi
+
+current_ollama_attempts_cap="$(get_env_value "OLLAMA_MAX_ATTEMPTS_CAP")"
+if [[ -z "$current_ollama_attempts_cap" || "$current_ollama_attempts_cap" == "replace_with_"* ]]; then
+  set_env_value "OLLAMA_MAX_ATTEMPTS_CAP" "2"
+fi
+
 current_min_quality_score="$(get_env_value "PIPELINE_MIN_QUALITY_SCORE")"
 if [[ -z "$current_min_quality_score" || "$current_min_quality_score" == "replace_with_"* ]]; then
   set_env_value "PIPELINE_MIN_QUALITY_SCORE" "70"
@@ -113,6 +128,11 @@ fi
 current_min_platform_fit="$(get_env_value "PIPELINE_MIN_PLATFORM_FIT_SCORE")"
 if [[ -z "$current_min_platform_fit" || "$current_min_platform_fit" == "replace_with_"* ]]; then
   set_env_value "PIPELINE_MIN_PLATFORM_FIT_SCORE" "65"
+fi
+
+current_stage_summary_enabled="$(get_env_value "PIPELINE_STAGE_SUMMARY_ENABLED")"
+if [[ -z "$current_stage_summary_enabled" || "$current_stage_summary_enabled" == "replace_with_"* ]]; then
+  set_env_value "PIPELINE_STAGE_SUMMARY_ENABLED" "false"
 fi
 
 # Try to auto-load Obsidian Local REST settings from plugin data.json
