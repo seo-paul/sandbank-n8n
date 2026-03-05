@@ -1,0 +1,177 @@
+{
+  "name": "Evaluationslauf ausfuehren",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manuell starten",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "run_id",
+              "type": "string"
+            },
+            {
+              "name": "execution_id",
+              "type": "string"
+            },
+            {
+              "name": "model_used",
+              "type": "string"
+            },
+            {
+              "name": "workflow_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_prompts_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_schema_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_eval_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_eval_dataset_file",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_url",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_api_key",
+              "type": "string"
+            },
+            {
+              "name": "allow_insecure_tls",
+              "type": "boolean"
+            },
+            {
+              "name": "topic_hint",
+              "type": "string"
+            },
+            {
+              "name": "campaign_goal",
+              "type": "string"
+            },
+            {
+              "name": "output_language",
+              "type": "string"
+            },
+            {
+              "name": "quality_gate",
+              "type": "any"
+            },
+            {
+              "name": "prompts",
+              "type": "any"
+            },
+            {
+              "name": "context",
+              "type": "any"
+            },
+            {
+              "name": "schemas",
+              "type": "any"
+            },
+            {
+              "name": "artifacts",
+              "type": "any"
+            },
+            {
+              "name": "stage_logs",
+              "type": "any"
+            },
+            {
+              "name": "stage_summaries",
+              "type": "any"
+            },
+            {
+              "name": "model_trace",
+              "type": "any"
+            },
+            {
+              "name": "generated",
+              "type": "any"
+            },
+            {
+              "name": "output_paths",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "trigger-subflow",
+      "name": "Vom Ablauf gestartet",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = (items[0] && items[0].json) ? items[0].json : {};\n\nfunction ensureArray(value) { return Array.isArray(value) ? value : []; }\nfunction nowIso() { return new Date().toISOString(); }\nfunction tableCell(value) { return String(value == null ? '' : value).replace(/\\|/g, '/').replace(/\\n/g, ' ').trim(); }\nfunction scorePercent(value) {\n  const n = Number(value);\n  if (!Number.isFinite(n)) return 0;\n  if (n <= 1) return Math.max(0, Math.min(100, n * 100));\n  if (n <= 10) return Math.max(0, Math.min(100, n * 10));\n  return Math.max(0, Math.min(100, n));\n}\n\nconst workflowDir = String(input.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow');\nconst evalDir = String(input.workflow_eval_dir || $env.OBSIDIAN_WORKFLOW_EVAL_DIR || (workflowDir + '/Evaluations'));\nconst datasetFile = String(input.workflow_eval_dataset_file || $env.OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE || (workflowDir + '/Evaluations/dataset.json'));\n\nconst obsidianRestUrl = String(input.obsidian_rest_url || $env.OBSIDIAN_REST_URL || '');\nconst obsidianKey = String(input.obsidian_rest_api_key || $env.OBSIDIAN_REST_API_KEY || '');\nconst allowInsecure = String(input.allow_insecure_tls || $env.OBSIDIAN_ALLOW_INSECURE_TLS || 'false') === 'true';\n\nfunction vaultUrl(path) {\n  return obsidianRestUrl.replace(/\\/+$/, '') + '/vault/' + encodeURI(path);\n}\n\nasync function obsidianGet(path) {\n  return await obsidianRequest.call(this, {\n    method: 'GET',\n    url: vaultUrl(path),\n    headers: { Authorization: 'Bearer ' + obsidianKey },\n    json: false,\n    skipSslCertificateValidation: allowInsecure,\n    timeout: 90000,\n  });\n}\n\nasync function obsidianPut(path, body) {\n  return await obsidianRequest.call(this, {\n    method: 'PUT',\n    url: vaultUrl(path),\n    headers: {\n      Authorization: 'Bearer ' + obsidianKey,\n      'Content-Type': 'text/markdown',\n    },\n    body,\n    json: false,\n    skipSslCertificateValidation: allowInsecure,\n    timeout: 90000,\n  });\n}\n\nasync function obsidianRequest(params) {\n  const maxAttempts = 3;\n  let lastErr = null;\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      return await this.helpers.httpRequest(params);\n    } catch (error) {\n      lastErr = error;\n      const status = Number(\n        (error && (error.statusCode || error.status || error.httpCode)) ||\n        (error && error.response ? (error.response.status || error.response.statusCode || 0) : 0)\n      );\n      if ((status >= 500 || status === 429) && attempt < maxAttempts) {\n        await new Promise((resolve) => setTimeout(resolve, 500 * attempt));\n        continue;\n      }\n      break;\n    }\n  }\n  throw lastErr || new Error('Obsidian request failed');\n}\n\nfunction parseDataset(text) {\n  const parsed = JSON.parse(String(text || '[]'));\n  if (Array.isArray(parsed)) return { cases: parsed, metadata: {} };\n  if (parsed && typeof parsed === 'object') {\n    return {\n      cases: Array.isArray(parsed.cases) ? parsed.cases : [],\n      metadata: parsed.metadata && typeof parsed.metadata === 'object' ? parsed.metadata : {},\n    };\n  }\n  throw new Error('Dataset must be array or {cases:[...], metadata:{...}}');\n}\n\nlet cases = ensureArray(input.cases);\nlet datasetMeta = {};\nif (!cases.length) {\n  if (!obsidianRestUrl || !obsidianKey) {\n    throw new Error('No evaluation cases in input and no Obsidian dataset access configured.');\n  }\n  const raw = await obsidianGet.call(this, datasetFile);\n  const parsed = parseDataset(raw);\n  cases = parsed.cases;\n  datasetMeta = parsed.metadata;\n}\n\nif (!cases.length) {\n  throw new Error('Evaluation dataset is empty.');\n}\n\nfunction evaluateActual(expected, actual) {\n  const issues = [];\n  const expectedObj = (expected && typeof expected === 'object') ? expected : {};\n  const actualObj = (actual && typeof actual === 'object') ? actual : {};\n\n  if (!actualObj || !Object.keys(actualObj).length) {\n    issues.push('missing_actual_output');\n  }\n\n  const expectedStatus = String(expectedObj.status || '').trim();\n  const actualStatus = String(actualObj.status || actualObj.final_gate_status || '').trim();\n  if (expectedStatus && actualStatus && expectedStatus !== actualStatus) {\n    issues.push('status_mismatch expected=' + expectedStatus + ' actual=' + actualStatus);\n  }\n\n  if (expectedObj.requires_reddit !== undefined) {\n    const hasReddit = !!(actualObj.reddit || (actualObj.content_package && actualObj.content_package.reddit));\n    if (Boolean(expectedObj.requires_reddit) !== hasReddit) {\n      issues.push('reddit_presence_mismatch');\n    }\n  }\n\n  const minScore = Number(expectedObj.min_quality_score);\n  const actualScore = scorePercent(actualObj.final_quality_score || actualObj.quality_score || actualObj.score || 0);\n  if (Number.isFinite(minScore) && actualScore < minScore) {\n    issues.push('quality_below_threshold expected>=' + minScore + ' actual=' + actualScore.toFixed(2));\n  }\n\n  if (expectedObj.must_include && Array.isArray(expectedObj.must_include)) {\n    const haystack = JSON.stringify(actualObj).toLowerCase();\n    for (const needle of expectedObj.must_include) {\n      if (!haystack.includes(String(needle).toLowerCase())) {\n        issues.push('missing_token:' + String(needle));\n      }\n    }\n  }\n\n  return {\n    passed: issues.length === 0,\n    issues,\n    expected_status: expectedStatus || null,\n    actual_status: actualStatus || null,\n    actual_score: Number(actualScore.toFixed(2)),\n  };\n}\n\nfunction normalizeVariants(row) {\n  const variants = [];\n\n  if (row && row.variants && typeof row.variants === 'object' && !Array.isArray(row.variants)) {\n    for (const [variantId, payload] of Object.entries(row.variants)) {\n      const actual = payload && typeof payload === 'object' && 'actual' in payload ? payload.actual : payload;\n      variants.push({ variant_id: variantId, actual });\n    }\n  }\n\n  if (!variants.length) {\n    const actual = (row.actual && typeof row.actual === 'object')\n      ? row.actual\n      : ((row.output && typeof row.output === 'object') ? row.output : {});\n    variants.push({ variant_id: 'default', actual });\n  }\n\n  return variants;\n}\n\nfunction evaluateCase(row) {\n  const id = String(row.id || row.case_id || 'case-' + Math.random().toString(16).slice(2, 8));\n  const expected = (row.expected && typeof row.expected === 'object') ? row.expected : {};\n  const promptVersion = String(row.prompt_version || row.promptVersion || expected.prompt_version || 'n/a');\n  const active = row.active !== false && String(row.state || '').toLowerCase() !== 'planned';\n\n  if (!active) {\n    return {\n      id,\n      active: false,\n      skipped: true,\n      prompt_version: promptVersion,\n      primary_variant: null,\n      variant_results: [],\n      passed: null,\n      issues: ['planned_case_not_executed'],\n      expected_status: String(expected.status || '').trim() || null,\n      actual_status: null,\n    };\n  }\n\n  const variantInputs = normalizeVariants(row);\n  const variantResults = variantInputs.map((entry) => {\n    const result = evaluateActual(expected, entry.actual);\n    return {\n      variant_id: String(entry.variant_id || 'default'),\n      ...result,\n    };\n  });\n\n  const preferredVariant = String(input.primary_variant || row.primary_variant || '').trim();\n  const primaryVariant =\n    variantResults.find((v) => v.variant_id === preferredVariant) ||\n    variantResults.find((v) => v.variant_id === 'default') ||\n    variantResults[0];\n\n  return {\n    id,\n    active: true,\n    skipped: false,\n    prompt_version: promptVersion,\n    primary_variant: primaryVariant ? primaryVariant.variant_id : null,\n    variant_results: variantResults,\n    passed: primaryVariant ? primaryVariant.passed : false,\n    issues: primaryVariant ? primaryVariant.issues : ['missing_primary_variant_result'],\n    expected_status: primaryVariant ? primaryVariant.expected_status : null,\n    actual_status: primaryVariant ? primaryVariant.actual_status : null,\n  };\n}\n\nconst caseResults = cases.map(evaluateCase);\nconst executedCases = caseResults.filter((row) => !row.skipped);\nconst skippedCases = caseResults.filter((row) => row.skipped).length;\n\nconst variantStats = {};\nfor (const row of executedCases) {\n  for (const variant of ensureArray(row.variant_results)) {\n    const key = String(variant.variant_id || 'default');\n    if (!variantStats[key]) {\n      variantStats[key] = { variant_id: key, total: 0, passed: 0, failed: 0, pass_rate: 0 };\n    }\n    variantStats[key].total += 1;\n    if (variant.passed) variantStats[key].passed += 1;\n    else variantStats[key].failed += 1;\n  }\n}\n\nfor (const stat of Object.values(variantStats)) {\n  stat.pass_rate = stat.total ? (stat.passed / stat.total) : 0;\n}\n\nconst primaryVariantId = String(input.primary_variant || 'default');\nconst primaryStat = variantStats[primaryVariantId] || Object.values(variantStats)[0] || { total: 0, passed: 0, failed: 0, pass_rate: 0 };\n\nconst passRate = primaryStat.pass_rate;\nconst recommendation = passRate >= 0.9 ? 'promote' : passRate >= 0.75 ? 'revise_and_retest' : 'hold_release';\n\nconst bestVariant = Object.values(variantStats).sort((a, b) => b.pass_rate - a.pass_rate || b.passed - a.passed)[0] || null;\n\nconst runId = 'eval-' + (($execution && $execution.id) ? String($execution.id) : 'manual') + '-' + nowIso().replace(/[-:.TZ]/g, '').slice(0, 14);\nconst reportPath = evalDir + '/reports/' + runId + '.md';\n\nconst report = [\n  '---',\n  'type: evaluation-report',\n  'run_id: ' + runId,\n  'created_at: ' + nowIso(),\n  'dataset_size: ' + String(caseResults.length),\n  'executed_cases: ' + String(executedCases.length),\n  'skipped_cases: ' + String(skippedCases),\n  'primary_variant: ' + tableCell(primaryVariantId),\n  'pass_rate: ' + String((passRate * 100).toFixed(2)),\n  'recommendation: ' + recommendation,\n  '---',\n  '',\n  '# Evaluationslauf ' + runId,\n  '',\n  '## Summary',\n  '- dataset_size: ' + String(caseResults.length),\n  '- executed_cases: ' + String(executedCases.length),\n  '- skipped_cases: ' + String(skippedCases),\n  '- primary_variant: ' + tableCell(primaryVariantId),\n  '- pass_rate: ' + String((passRate * 100).toFixed(2)) + '%',\n  '- recommendation: ' + recommendation,\n  '- best_variant: ' + (bestVariant ? (bestVariant.variant_id + ' (' + (bestVariant.pass_rate * 100).toFixed(2) + '%)') : 'n/a'),\n  '- dataset_meta_prompt_version: ' + tableCell(datasetMeta.prompt_version || 'n/a'),\n  '',\n  '## Variant Comparison',\n  '| variant_id | total | passed | failed | pass_rate |',\n  '|---|---:|---:|---:|---:|',\n  ...Object.values(variantStats).sort((a, b) => b.pass_rate - a.pass_rate).map((row) => [\n    '| ' + tableCell(row.variant_id),\n    String(row.total),\n    String(row.passed),\n    String(row.failed),\n    (row.pass_rate * 100).toFixed(2) + ' |',\n  ].join(' | ')),\n  '',\n  '## Case Results',\n  '| case_id | active | primary_variant | passed | expected_status | actual_status | prompt_version | issues |',\n  '|---|---|---|---|---|---|---|---|',\n  ...caseResults.map((row) => [\n    '| ' + tableCell(row.id),\n    row.active ? 'true' : 'false',\n    tableCell(row.primary_variant || '-'),\n    row.passed === null ? 'skipped' : (row.passed ? 'true' : 'false'),\n    tableCell(row.expected_status || ''),\n    tableCell(row.actual_status || ''),\n    tableCell(row.prompt_version || 'n/a'),\n    tableCell(row.issues.length ? row.issues.join(', ') : 'none') + ' |',\n  ].join(' | ')),\n  '',\n  '## Raw Result JSON',\n  '~~~json',\n  JSON.stringify({\n    case_results: caseResults,\n    variant_stats: variantStats,\n    primary_variant: primaryVariantId,\n    pass_rate: passRate,\n    recommendation,\n    best_variant: bestVariant,\n  }, null, 2),\n  '~~~',\n].join('\\n');\n\nif (obsidianRestUrl && obsidianKey) {\n  await obsidianPut.call(this, reportPath, report.trimEnd() + '\\n');\n}\n\nreturn [{\n  json: {\n    status: 'completed',\n    workflow_name: 'Evaluationslauf ausfuehren',\n    run_id: runId,\n    dataset_size: caseResults.length,\n    executed_cases: executedCases.length,\n    skipped_cases: skippedCases,\n    passed: primaryStat.passed,\n    failed: primaryStat.failed,\n    pass_rate: passRate,\n    recommendation,\n    primary_variant: primaryVariantId,\n    best_variant: bestVariant,\n    report_path: reportPath,\n    case_results: caseResults,\n    variant_stats: variantStats,\n  },\n}];\n"
+      },
+      "id": "code-eval",
+      "name": "Evaluation Runner ausfuehren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        290
+      ]
+    }
+  ],
+  "connections": {
+    "Manuell starten": {
+      "main": [
+        [
+          {
+            "node": "Evaluation Runner ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vom Ablauf gestartet": {
+      "main": [
+        [
+          {
+            "node": "Evaluation Runner ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true
+  },
+  "versionId": "6b1b7f9b-9555-41e4-a274-3ac71f4f9f04"
+}

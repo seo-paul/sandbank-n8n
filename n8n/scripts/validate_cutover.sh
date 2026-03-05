@@ -8,9 +8,12 @@ EXPECTED_WORKFLOWS=(
   "System Verbindungen pruefen"
   "Thema und Quellen sammeln"
   "Beitrag aus Quellen erstellen"
+  "Human Review pruefen"
   "Ergebnisse in Obsidian speichern"
   "Ablauf automatisch steuern"
   "Fehlerlauf klar dokumentieren"
+  "Performance zurueckfuehren"
+  "Evaluationslauf ausfuehren"
 )
 
 echo "[1/7] Validate workflow JSON syntax"
@@ -29,9 +32,12 @@ const expected = new Set([
   'System Verbindungen pruefen',
   'Thema und Quellen sammeln',
   'Beitrag aus Quellen erstellen',
+  'Human Review pruefen',
   'Ergebnisse in Obsidian speichern',
   'Ablauf automatisch steuern',
   'Fehlerlauf klar dokumentieren',
+  'Performance zurueckfuehren',
+  'Evaluationslauf ausfuehren',
 ]);
 
 const files = fs.readdirSync(path.join(root, 'n8n/workflows')).filter((f) => f.endsWith('.json'));
@@ -79,11 +85,20 @@ fi
 echo "  ok: no model_requested/21_Marketing"
 
 echo "[4/7] Validate template formats"
-rg -n '^\| run_id \| workflow \| datum \| zeit \| thema \| model_used \| status \| quality_final \| score_stufen_csv \| errors_stufen_csv \| duration_sec \| ergebnis \| zwischenergebnisse \|' local-files/_managed/templates/runs-register-template.md >/dev/null
-rg -n '^type: workflow-zwischenergebnis$' local-files/_managed/templates/zwischenergebnis-workflow-template.md >/dev/null
+rg -n '^\| run_id \| workflow \| datum \| zeit \| thema \| model_used \| status \| final_gate \| human_review \| quality_final \| duration_sec \| ergebnis \| zwischenergebnisse \|' local-files/_managed/templates/runs-register-template.md >/dev/null
+rg -n '^type: workflow-zwischenergebnisse$' local-files/_managed/templates/zwischenergebnis-workflow-template.md >/dev/null
 rg -n '^\| Workflow \| Schritt \| Zwischenergebnis \| Zweck \| Beschreibung \|' local-files/_managed/templates/workflow-uebersicht-template.md >/dev/null
 if [[ -e local-files/_managed/templates/workflow-ergebnisse-index-template.md || -e local-files/_managed/templates/workflow-zwischenergebnisse-template.md || -e local-files/_managed/templates/workflow-schritte-template.md ]]; then
   echo "Legacy templates still present."
+  exit 1
+fi
+if ls local-files/_managed/schemas/critique_report.schema.json \
+      local-files/_managed/schemas/draft_package.schema.json \
+      local-files/_managed/schemas/evidence_packet.schema.json \
+      local-files/_managed/schemas/obsidian_note.schema.json \
+      local-files/_managed/schemas/topic_brief.schema.json \
+      local-files/_managed/schemas/visual_brief.schema.json >/dev/null 2>&1; then
+  echo "Legacy schema contracts still present."
   exit 1
 fi
 echo "  ok: templates"
@@ -93,7 +108,7 @@ node <<'NODE'
 const fs = require('fs');
 const wf = JSON.parse(fs.readFileSync('/Users/zweigen/Sites/sandbank-n8n/n8n/workflows/ablauf-automatisch-steuern.json', 'utf8'));
 const nodeNames = new Set((wf.nodes || []).map((n) => n.name));
-const required = ['Recherche Schritt starten', 'Beitrag Schritt starten', 'Speicher Schritt starten'];
+const required = ['Prompt und Kontext SSOT laden', 'Recherche Schritt starten', 'Beitrag Schritt starten', 'Review Schritt starten', 'Speicher Schritt starten'];
 for (const r of required) {
   if (!nodeNames.has(r)) {
     console.error(`Missing orchestrator node: ${r}`);

@@ -9,8 +9,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -920,
-        260
+        -900,
+        220
       ]
     },
     {
@@ -29,47 +29,53 @@
               "value": "json"
             }
           ]
+        },
+        "options": {
+          "timeout": 15000
         }
       },
-      "id": "http-searx",
+      "id": "http-search",
       "name": "Websuche Verbindung pruefen",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         -620,
-        100
+        120
       ]
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ ($env.OLLAMA_BASE_URL || \"http://host.docker.internal:11434\").replace(/\\/+$/, \"\") + \"/api/tags\" }}"
+        "url": "={{ ($env.OLLAMA_BASE_URL || \"http://host.docker.internal:11434\").replace(/\\/+$/, \"\") + \"/api/tags\" }}",
+        "options": {
+          "timeout": 15000
+        }
       },
-      "id": "http-ollama",
+      "id": "http-model",
       "name": "KI Modell erreichbar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         -620,
-        260
+        220
       ]
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "={{$env.OBSIDIAN_REST_URL + '/'}}",
+        "url": "={{$env.OBSIDIAN_REST_URL + \"/\"}}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "={{'Bearer ' + $env.OBSIDIAN_REST_API_KEY}}"
+              "value": "={{\"Bearer \" + $env.OBSIDIAN_REST_API_KEY}}"
             }
           ]
         },
         "options": {
-          "ignoreResponseCode": true,
-          "allowUnauthorizedCerts": "={{($env.OBSIDIAN_ALLOW_INSECURE_TLS || \"false\") === \"true\"}}"
+          "allowUnauthorizedCerts": "={{($env.OBSIDIAN_ALLOW_INSECURE_TLS || \"false\") === \"true\"}}",
+          "timeout": 15000
         }
       },
       "id": "http-obsidian",
@@ -78,7 +84,7 @@
       "typeVersion": 4.2,
       "position": [
         -620,
-        420
+        320
       ]
     }
   ],
@@ -106,7 +112,10 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true
   },
-  "versionId": "732fbcf4-4a51-4d26-83a7-0c180461e30a"
+  "versionId": "be0eb23c-6ea4-4ad0-91bb-c88e2e2ebfce"
 }

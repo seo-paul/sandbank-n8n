@@ -90,6 +90,11 @@ if [[ -z "$current_ollama_base_url" || "$current_ollama_base_url" == "replace_wi
   set_env_value "OLLAMA_BASE_URL" "http://host.docker.internal:11434"
 fi
 
+current_ollama_unload="$(get_env_value "OLLAMA_UNLOAD_ON_COMPLETE")"
+if [[ -z "$current_ollama_unload" || "$current_ollama_unload" == "replace_with_"* ]]; then
+  set_env_value "OLLAMA_UNLOAD_ON_COMPLETE" "false"
+fi
+
 current_min_quality_score="$(get_env_value "PIPELINE_MIN_QUALITY_SCORE")"
 if [[ -z "$current_min_quality_score" || "$current_min_quality_score" == "replace_with_"* ]]; then
   set_env_value "PIPELINE_MIN_QUALITY_SCORE" "70"
@@ -103,6 +108,11 @@ fi
 current_min_draft_len="$(get_env_value "PIPELINE_MIN_DRAFT_BODY_LEN")"
 if [[ -z "$current_min_draft_len" || "$current_min_draft_len" == "replace_with_"* ]]; then
   set_env_value "PIPELINE_MIN_DRAFT_BODY_LEN" "180"
+fi
+
+current_min_platform_fit="$(get_env_value "PIPELINE_MIN_PLATFORM_FIT_SCORE")"
+if [[ -z "$current_min_platform_fit" || "$current_min_platform_fit" == "replace_with_"* ]]; then
+  set_env_value "PIPELINE_MIN_PLATFORM_FIT_SCORE" "65"
 fi
 
 # Try to auto-load Obsidian Local REST settings from plugin data.json
@@ -187,6 +197,36 @@ fi
 current_workflow_prompts_dir="$(get_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR")"
 if [[ -z "$current_workflow_prompts_dir" || "$current_workflow_prompts_dir" == "replace_with_"* ]]; then
   set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Prompts\""
+fi
+
+current_workflow_context_dir="$(get_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR")"
+if [[ -z "$current_workflow_context_dir" || "$current_workflow_context_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Kontext\""
+fi
+
+current_workflow_schema_dir="$(get_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR")"
+if [[ -z "$current_workflow_schema_dir" || "$current_workflow_schema_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Schemas\""
+fi
+
+current_workflow_eval_dir="$(get_env_value "OBSIDIAN_WORKFLOW_EVAL_DIR")"
+if [[ -z "$current_workflow_eval_dir" || "$current_workflow_eval_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_EVAL_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Evaluations\""
+fi
+
+current_workflow_eval_dataset_file="$(get_env_value "OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE")"
+if [[ -z "$current_workflow_eval_dataset_file" || "$current_workflow_eval_dataset_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_EVAL_DATASET_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Evaluations/dataset.json\""
+fi
+
+current_workflow_prompt_change_log_file="$(get_env_value "OBSIDIAN_WORKFLOW_PROMPT_CHANGE_LOG_FILE")"
+if [[ -z "$current_workflow_prompt_change_log_file" || "$current_workflow_prompt_change_log_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_PROMPT_CHANGE_LOG_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Evaluations/prompt-change-log.md\""
+fi
+
+current_workflow_ssot_manifest_file="$(get_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE")"
+if [[ -z "$current_workflow_ssot_manifest_file" || "$current_workflow_ssot_manifest_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/SSOT/manifest.json\""
 fi
 
 current_workflow_runs_file="$(get_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE")"

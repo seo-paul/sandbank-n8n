@@ -28,8 +28,11 @@ write_workflow() {
 write_workflow "System Verbindungen pruefen" "n8n/workflows/system-verbindungen-pruefen.json"
 write_workflow "Thema und Quellen sammeln" "n8n/workflows/thema-und-quellen-sammeln.json"
 write_workflow "Beitrag aus Quellen erstellen" "n8n/workflows/beitrag-aus-quellen-erstellen.json"
+write_workflow "Human Review pruefen" "n8n/workflows/human-review-pruefen.json"
 write_workflow "Ergebnisse in Obsidian speichern" "n8n/workflows/ergebnisse-in-obsidian-speichern.json"
 write_workflow "Ablauf automatisch steuern" "n8n/workflows/ablauf-automatisch-steuern.json"
 write_workflow "Fehlerlauf klar dokumentieren" "n8n/workflows/fehlerlauf-klar-dokumentieren.json"
+write_workflow "Performance zurueckfuehren" "n8n/workflows/performance-zurueckfuehren.json"
+write_workflow "Evaluationslauf ausfuehren" "n8n/workflows/evaluationslauf-ausfuehren.json"
 
 echo "Workflows exported to n8n/workflows (deterministic filenames)."

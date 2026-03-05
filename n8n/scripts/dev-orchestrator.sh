@@ -7,9 +7,11 @@ cd "$ROOT_DIR"
 ACTION="${1:-bootstrap}"
 SKIP_MODEL="${SKIP_MODEL:-false}"
 SKIP_IMPORT="${SKIP_IMPORT:-false}"
+SKIP_SSOT_SYNC="${SKIP_SSOT_SYNC:-false}"
 
 run_bootstrap() {
   ./n8n/scripts/env-local-init.sh
+  node ./n8n/scripts/build_workflows_from_code.mjs
   ./n8n/scripts/up.sh
 
   if [[ "$SKIP_MODEL" != "true" ]]; then
@@ -22,6 +24,16 @@ run_bootstrap() {
     ./n8n/scripts/import_workflows.sh
   else
     echo "Skipping workflow import (SKIP_IMPORT=true)"
+  fi
+
+  if [[ "$SKIP_SSOT_SYNC" != "true" ]]; then
+    if ./n8n/scripts/sync_obsidian_ssot.sh; then
+      echo "SSOT synced to Obsidian."
+    else
+      echo "SSOT sync skipped/failed (Obsidian might be offline). Continuing bootstrap."
+    fi
+  else
+    echo "Skipping SSOT sync (SKIP_SSOT_SYNC=true)"
   fi
 
   ./n8n/scripts/healthcheck.sh
@@ -40,6 +52,7 @@ case "$ACTION" in
     ;;
   up|start)
     ./n8n/scripts/env-local-init.sh
+    node ./n8n/scripts/build_workflows_from_code.mjs
     ./n8n/scripts/up.sh
     ./n8n/scripts/healthcheck.sh
     ;;
@@ -69,6 +82,7 @@ Defaults:
 Optional env flags:
   SKIP_MODEL=true   # skip ollama model pull during bootstrap
   SKIP_IMPORT=true  # skip workflow import during bootstrap
+  SKIP_SSOT_SYNC=true  # skip prompt/context sync to Obsidian during bootstrap
 USAGE
     exit 1
     ;;

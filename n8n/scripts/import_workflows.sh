@@ -6,6 +6,8 @@ cd "$ROOT_DIR"
 
 source .env
 
+node ./n8n/scripts/build_workflows_from_code.mjs
+
 # Clean-cutover import:
 # - remove current target names
 # - remove legacy names that follow old two-letter + two-digit prefixes
@@ -15,9 +17,12 @@ if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
     "System Verbindungen pruefen"
     "Thema und Quellen sammeln"
     "Beitrag aus Quellen erstellen"
+    "Human Review pruefen"
     "Ergebnisse in Obsidian speichern"
     "Ablauf automatisch steuern"
     "Fehlerlauf klar dokumentieren"
+    "Performance zurueckfuehren"
+    "Evaluationslauf ausfuehren"
   )
 
   quoted_names=""

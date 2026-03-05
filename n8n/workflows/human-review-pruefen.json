@@ -1,0 +1,177 @@
+{
+  "name": "Human Review pruefen",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manuell starten",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "run_id",
+              "type": "string"
+            },
+            {
+              "name": "execution_id",
+              "type": "string"
+            },
+            {
+              "name": "model_used",
+              "type": "string"
+            },
+            {
+              "name": "workflow_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_prompts_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_schema_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_eval_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_eval_dataset_file",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_url",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_api_key",
+              "type": "string"
+            },
+            {
+              "name": "allow_insecure_tls",
+              "type": "boolean"
+            },
+            {
+              "name": "topic_hint",
+              "type": "string"
+            },
+            {
+              "name": "campaign_goal",
+              "type": "string"
+            },
+            {
+              "name": "output_language",
+              "type": "string"
+            },
+            {
+              "name": "quality_gate",
+              "type": "any"
+            },
+            {
+              "name": "prompts",
+              "type": "any"
+            },
+            {
+              "name": "context",
+              "type": "any"
+            },
+            {
+              "name": "schemas",
+              "type": "any"
+            },
+            {
+              "name": "artifacts",
+              "type": "any"
+            },
+            {
+              "name": "stage_logs",
+              "type": "any"
+            },
+            {
+              "name": "stage_summaries",
+              "type": "any"
+            },
+            {
+              "name": "model_trace",
+              "type": "any"
+            },
+            {
+              "name": "generated",
+              "type": "any"
+            },
+            {
+              "name": "output_paths",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "trigger-subflow",
+      "name": "Vom Ablauf gestartet",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = (items[0] && items[0].json) ? items[0].json : {};\n\nif (!ctx || typeof ctx !== 'object') {\n  throw new Error('Missing workflow context payload');\n}\n\nctx.artifacts = (ctx.artifacts && typeof ctx.artifacts === 'object') ? ctx.artifacts : {};\nconst finalGate = (ctx.artifacts.final_gate && typeof ctx.artifacts.final_gate === 'object')\n  ? ctx.artifacts.final_gate\n  : null;\n\nif (!finalGate) {\n  throw new Error('Missing final_gate artifact before human review gate');\n}\n\nconst decision = String(ctx.review_decision || ctx.human_review_decision || '').trim().toLowerCase();\nconst hasDecision = decision === 'approve' || decision === 'deny';\n\nconst reviewState = {\n  required: !!finalGate.human_review_required,\n  decision: hasDecision ? decision : 'pending',\n  applied_at: new Date().toISOString(),\n  notes: [],\n};\n\nif (!finalGate.human_review_required) {\n  reviewState.decision = 'not_required';\n  reviewState.notes.push('human review not required for this run');\n} else if (decision === 'approve') {\n  finalGate.human_review_required = false;\n  if (finalGate.status !== 'hold') {\n    finalGate.status = 'pass';\n  }\n  finalGate.release_notes = Array.isArray(finalGate.release_notes) ? finalGate.release_notes : [];\n  finalGate.release_notes.push('manual_human_review_approved');\n  reviewState.notes.push('content approved by human review');\n} else if (decision === 'deny') {\n  finalGate.status = 'hold';\n  finalGate.human_review_required = true;\n  finalGate.blocking_issues = Array.isArray(finalGate.blocking_issues) ? finalGate.blocking_issues : [];\n  finalGate.blocking_issues.push('manual_human_review_denied');\n  finalGate.priority_fixes = Array.isArray(finalGate.priority_fixes) ? finalGate.priority_fixes : [];\n  finalGate.priority_fixes.push('resolve reviewer blocking concerns');\n  reviewState.notes.push('content denied by human review');\n} else {\n  finalGate.status = finalGate.status === 'pass' ? 'revise' : finalGate.status;\n  finalGate.human_review_required = true;\n  finalGate.blocking_issues = Array.isArray(finalGate.blocking_issues) ? finalGate.blocking_issues : [];\n  if (!finalGate.blocking_issues.includes('human_review_pending')) {\n    finalGate.blocking_issues.push('human_review_pending');\n  }\n  reviewState.notes.push('human review decision is pending');\n}\n\nctx.artifacts.final_gate = finalGate;\nctx.artifacts.human_review = reviewState;\n\nif (reviewState.decision === 'approve' && finalGate.status === 'pass') {\n  ctx.status = 'content_ready';\n} else if (reviewState.decision === 'deny') {\n  ctx.status = 'hold';\n} else if (finalGate.human_review_required) {\n  ctx.status = 'review_required';\n}\n\nreturn [{ json: ctx }];\n"
+      },
+      "id": "code-human-review",
+      "name": "Review Gate ausfuehren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        290
+      ]
+    }
+  ],
+  "connections": {
+    "Manuell starten": {
+      "main": [
+        [
+          {
+            "node": "Review Gate ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vom Ablauf gestartet": {
+      "main": [
+        [
+          {
+            "node": "Review Gate ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true
+  },
+  "versionId": "2911ce2b-6d0f-487e-b22c-f31500f5f5ce"
+}
