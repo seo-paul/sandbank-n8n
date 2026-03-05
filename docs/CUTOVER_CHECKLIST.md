@@ -1,5 +1,8 @@
 # Cutover Checklist
 
+Letzte dokumentierte Vollausfuehrung:
+- siehe `docs/CUTOVER_EXECUTION_2026-03-05.md`
+
 ## Vor dem Cutover
 - [ ] `.env` ist gesetzt und ohne Platzhalter.
 - [ ] `OLLAMA_MODEL=qwen3.5:27b` ist aktiv.

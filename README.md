@@ -34,6 +34,11 @@ Relevante Pfade:
 - Modellwechsel wird als Fehler beendet.
 - Quality-Score ist auf Skala `0-100` normalisiert.
 - Default Gate: `PIPELINE_MIN_QUALITY_SCORE=70`.
+- Performance-Caps fuer lokale Inferenz:
+  - `OLLAMA_NUM_PREDICT_CAP`
+  - `OLLAMA_TIMEOUT_CAP_MS`
+  - `OLLAMA_MAX_ATTEMPTS_CAP`
+- KI-basierte Schrittzusammenfassungen sind per Env schaltbar: `PIPELINE_STAGE_SUMMARY_ENABLED`.
 
 ## Laufkennungen
 - run_id Format: `run-<execution_id>-<timestamp>`
