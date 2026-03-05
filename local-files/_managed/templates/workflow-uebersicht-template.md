@@ -1,42 +1,46 @@
 # Workflow Übersicht
 
-## Workflows
+## Alle Workflows
 - WF00 System Checks
-- WF10 Research Sammeln
-- WF20 Qwen Entwurf
-- WF30 Obsidian Schreiben
-- WF90 Workflow Orchestrator
-- WF95 Fehler Logger
+- WF10 Research Evidenz
+- WF20 Topic Draft Kritik
+- WF30 Logs Ergebnisse
+- WF90 Orchestrator Subflows
+- WF95 Workflow Fehlerlog
 
 ## Schritte je Workflow
 ### WF00 System Checks
-1. Start Manual
-2. Check SearXNG
-3. Check Ollama
-4. Check Obsidian
+1. Start Manuell
+2. Pruefe SearXNG
+3. Pruefe Ollama
+4. Pruefe Obsidian
 
-### WF10 Research Sammeln
-1. Start Manual
-2. Search Web Quellen
+### WF10 Research Evidenz
+1. Start Manuell
+2. Start Subworkflow
+3. Recherche Evidenz
 
-### WF20 Qwen Entwurf
-1. Start Manual
-2. Generate Draft Paket
+### WF20 Topic Draft Kritik
+1. Start Manuell
+2. Start Subworkflow
+3. Topic Draft Kritik
 
-### WF30 Obsidian Schreiben
-1. Start Manual
-2. Persist Workflow Output
+### WF30 Logs Ergebnisse
+1. Start Manuell
+2. Start Subworkflow
+3. Logs Ergebnisse
 
-### WF90 Workflow Orchestrator
-1. Start Manual
-2. Init Run Kontext
-3. Load Prompt Dateien
-4. Run KI Pipeline
-5. Write Workflow Outputs
-6. Return Summary
+### WF90 Orchestrator Subflows
+1. Start Manuell
+2. Init Laufkontext
+3. Lade Promptdateien
+4. Starte Research
+5. Starte Content
+6. Starte Logging
+7. Lauf Summary
 
-### WF95 Fehler Logger
-1. Catch Workflow Fehler
-2. Build Fehler Log
-3. Write Fehler Log
-4. Return Fehler Summary
+### WF95 Workflow Fehlerlog
+1. Fehler Trigger
+2. Fehlerlog Bauen
+3. Fehlerlog Schreiben
+4. Fehler Ergebnis

@@ -6,6 +6,7 @@ zielgruppe:
 beitragstyp:
 thema:
 hook:
+cta:
 status: draft
 model_used:
 evidence_refs: []
@@ -14,7 +15,6 @@ quality_score:
 
 # Titel
 
-## Beitrag
+## Entwurf
 
 ## CTA
-

@@ -1,24 +1,24 @@
 # Workflow Schritte
 
 ## Name
-<Workflow Name>
+WFxx_<Name>
 
 ## Tools
 - n8n
+- Ollama (Qwen)
 - SearXNG
-- Qwen (Ollama)
 - Obsidian REST
 
 ## Schritte
 1. <Schrittname>
-- Was passiert:
-- Verwendete Tools:
-- Prompt:
-- Warum dieser Schritt:
-- Ergebnisartefakt:
+   - Zweck:
+   - Input:
+   - Verarbeitung:
+   - Prompt/Regeln:
+   - Output:
+   - Warum dieser Schritt:
 
 ## Ergebnis
-- Output:
-- Qualitätskriterien:
-- Fehlerfälle:
-
+- Erwartetes Artefakt:
+- Qualitätskriterium:
+- Fehlermodi:

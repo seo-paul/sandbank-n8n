@@ -11,13 +11,12 @@ topic:
 
 # Workflow Log {{run_id}}
 
-| step | stage | status | input_ref | output_ref | quality_score | notes | ts |
-|---|---|---|---|---|---:|---|---|
+| step | stage | status | input_ref | output_ref | quality_score | issues | model_used | notes | ts |
+|---|---|---|---|---|---:|---:|---|---|---|
 
 ## Ergebnisse
-- workflow_ergebnisse_index:
-- linkedin_recherche:
-- reddit_recherche:
+- linkedin_ausarbeitung:
+- reddit_ausarbeitung:
 - linkedin_draft:
 - reddit_draft:
-
+- log:
