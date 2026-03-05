@@ -28,7 +28,7 @@ Defaults werden mit folgendem Script gesetzt:
 ```
 
 ## Was pro Run geschrieben wird
-`WF90 Workflow Orchestrator` schreibt:
+`WF90 Orchestrator Subflows` schreibt ueber Subworkflows:
 - Workflow-Log in `Workflow Logs/<run_id>.md`
 - LinkedIn-/Reddit-Ausarbeitung in `Workflow Ergebnisse/`
 - Link-Row in `Workflow Ergebnisse/00-Workflow-Ergebnisse.md`
@@ -38,5 +38,9 @@ Defaults werden mit folgendem Script gesetzt:
   - `Workflow Schritte.md`
   - `Workflow Übersicht.md`
 
+## Prompt-Steuerung
+Promptdateien unter `Marketing/Social-Media/Workflow/Prompts` sind Pflicht.
+Wenn eine Datei fehlt oder leer ist, bricht der Lauf mit hartem Fehler ab.
+
 ## Fehlgeschlagene Runs
-`WF95 Fehler Logger` schreibt Fehlerlaeufe ebenfalls in `Workflow Logs`.
+`WF95 Workflow Fehlerlog` schreibt Fehlerlaeufe ebenfalls in `Workflow Logs`.

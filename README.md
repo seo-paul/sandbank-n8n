@@ -2,7 +2,7 @@
 
 Lokaler Stack fuer Social-Content-Workflows ohne externe API-Kosten:
 - n8n Orchestrierung
-- Qwen via lokal installiertem Ollama (Host, primaer `qwen3.5:27b`, kein aktiver Modell-Fallback)
+- Qwen via lokal installiertem Ollama (Host, primaer `qwen3.5:27b`)
 - SearXNG Recherche
 - Obsidian Local REST als Senke fuer Logs, Zwischenergebnisse, Ergebnisse und Drafts
 
@@ -11,7 +11,7 @@ Voraussetzung:
 - n8n greift darauf ueber `OLLAMA_BASE_URL` zu (Default: `http://host.docker.internal:11434`)
 
 ## Zielbild
-- Klar steuerbarer Workflow mit expliziten Schritten.
+- WF90 ist Orchestrator, der Stage-Subworkflows ausfuehrt.
 - Prompt-Steuerung ueber Obsidian-Dateien (ohne Workflow-Code-Edit).
 - Vollstaendige Run-Nachvollziehbarkeit (success + error).
 - Getrennte Ausgaben fuer:
@@ -63,17 +63,17 @@ cd /Users/zweigen/Sites/sandbank-n8n
 
 ## Aktive Workflows (Blueprints)
 - `WF00 System Checks`
-- `WF10 Research Sammeln`
-- `WF20 Qwen Entwurf`
-- `WF30 Obsidian Schreiben`
-- `WF90 Workflow Orchestrator`
-- `WF95 Fehler Logger`
+- `WF10 Research Evidenz`
+- `WF20 Topic Draft Kritik`
+- `WF30 Logs Ergebnisse`
+- `WF90 Orchestrator Subflows`
+- `WF95 Workflow Fehlerlog`
 
 ## Prompt-Steuerung in Obsidian
 `WF90` laedt Prompts aus:
 `Marketing/Social-Media/Workflow/Prompts`
 
-Bei fehlenden Dateien werden Defaults automatisch angelegt:
+Erforderliche Dateien:
 - `agent1_research.md`
 - `agent2_topic_fit.md`
 - `agent3_draft.md`
@@ -84,15 +84,20 @@ Bei fehlenden Dateien werden Defaults automatisch angelegt:
 - `platform_reddit.md`
 - `qwen_step_summary.md`
 
+Fehlende oder leere Promptdateien fuehren zu einem harten Workflow-Fehler.
+
 ## Laufverhalten WF90
-- run_id ist deterministisch: `run-<execution_id>-<timestamp>`.
-- Primaermodell bleibt fest auf `OLLAMA_MODEL` (kein Modellwechsel im Workflow).
-- Bei transienten Ollama-Fehlern (`5xx`, Runner-Reset) werden Calls begrenzt erneut versucht (`max_attempts=3` je Modell-Call).
+- run_id ist deterministisch: `wf90-<execution_id>-<timestamp>`.
+- WF90 orchestriert sequenziell:
+  - `WF10 Research Evidenz`
+  - `WF20 Topic Draft Kritik`
+  - `WF30 Logs Ergebnisse`
+- Modell-Trace wird pro Schritt in `stage_logs` und `model_trace` geschrieben.
 - Erfolgreiche Runs werden immer in `Workflow Logs` geschrieben.
-- Fehlgeschlagene Runs werden durch `WF95 Fehler Logger` ebenfalls in `Workflow Logs` geschrieben.
-- Plattform-spezifische Rechercheausarbeitungen (LinkedIn/Reddit) landen in `Workflow Ergebnisse`.
+- Fehlgeschlagene Runs werden durch `WF95 Workflow Fehlerlog` ebenfalls in `Workflow Logs` geschrieben.
+- Plattform-spezifische Ausarbeitungen (LinkedIn/Reddit) landen in `Workflow Ergebnisse`.
 - Drafts landen in `Drafts/LinkedIn` und `Drafts/Reddit` mit einheitlichem Frontmatter-Schema.
-- Fuer lange KI-Laeufe ist `N8N_RUNNERS_TASK_TIMEOUT=1800` gesetzt (sonst bricht `Run KI Pipeline` nach 300s ab).
+- Quality Gate blockiert Ergebnisse bei unterschrittenem Score, zu wenig Evidence-Refs oder zu kurzer Draftlaenge.
 
 ## Re-Import / Export
 - Import loescht Legacy-/Ziel-Workflows vor dem Import (Clean-Cutover), um Duplikate zu verhindern.
@@ -103,14 +108,17 @@ Bei fehlenden Dateien werden Defaults automatisch angelegt:
   - `./n8n/scripts/watch_active_run.sh 5`
   - Optional feintuning:
     - `HANG_ALERT_SEC=240` (Standard)
-    - `WF90_EXPECTED_CHAT_CALLS=16` (Standard fuer Modell-Call-Fortschritt)
-  - Falls keine Node-Stage-Events verfuegbar sind, faellt der Monitor automatisch auf Modell-Call- und Zeit-Progress zurueck.
+    - `RUN_STALE_SEC=900` (Standard fuer Stale-Run-Warnung)
 - Live-Logs fuer aktiven Run + Ollama:
   - `./n8n/scripts/tail_active_run.sh`
+  - Optional: `OLLAMA_LOG_FILE=~/.ollama/logs/server.log`
 - Aktiven One-Off-Run sofort stoppen:
   - `./n8n/scripts/stop_active_run.sh`
-- Optional vor langen WF90-Runs RAM freimachen:
-  - `./n8n/scripts/prepare_ollama_runtime.sh --apply`
+- Stale Runs erkennen/bereinigen (Dry-Run Standard):
+  - `./n8n/scripts/cleanup_stale_runs.sh --stale-sec 900`
+  - Mit Update auf `crashed`: `./n8n/scripts/cleanup_stale_runs.sh --stale-sec 900 --apply`
+- Sicherheitscheck:
+  - `./n8n/scripts/security_check.sh`
 
 ## Dateien
 - Managed Prompts/Schemas/Templates: `local-files/_managed/`

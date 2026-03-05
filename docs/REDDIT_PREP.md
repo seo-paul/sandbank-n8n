@@ -11,7 +11,7 @@
 - Kein Blocker durch externe Credentials.
 
 ## Plattform-Ausarbeitung
-`WF90 Workflow Orchestrator` erzeugt pro Run:
+`WF90 Orchestrator Subflows` erzeugt pro Run:
 - `.../Workflow Ergebnisse/<run_id> - reddit-ausarbeitung.md`
 - Reddit Draft in `.../Drafts/Reddit/`
 

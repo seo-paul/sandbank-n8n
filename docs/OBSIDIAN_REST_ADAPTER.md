@@ -11,9 +11,9 @@
 - Schreibformat: `text/markdown`
 
 Verwendet in:
-- `WF30 Obsidian Schreiben`
-- `WF90 Workflow Orchestrator`
-- `WF95 Fehler Logger`
+- `WF30 Logs Ergebnisse`
+- `WF90 Orchestrator Subflows`
+- `WF95 Workflow Fehlerlog`
 
 ## Healthcheck
 ```bash
@@ -24,7 +24,7 @@ Bei Problemen:
 - Obsidian offen?
 - Plugin-Port korrekt?
 - API-Key gueltig?
-- `OBSIDIAN_ALLOW_INSECURE_TLS=true` fuer self-signed TLS gesetzt?
+- Bei self-signed TLS nur wenn noetig: `OBSIDIAN_ALLOW_INSECURE_TLS=true`.
 
 ## Base-Hinweis
 `Marketing/Social-Media/Beitraege` bleibt eine manuell gepflegte Base.
