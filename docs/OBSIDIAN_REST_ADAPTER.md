@@ -13,7 +13,10 @@
 ## Genutzt von
 - `Ergebnisse in Obsidian speichern`
 - `Ablauf automatisch steuern`
+- `Human Review pruefen`
 - `Fehlerlauf klar dokumentieren`
+- `Performance zurueckfuehren`
+- `Evaluationslauf ausfuehren`
 
 ## Healthcheck
 ```bash

@@ -23,6 +23,10 @@ Relevante Pfade:
 - `Ergebnisse/Fehlerdetails/`
 - `Zwischenergebnisse/`
 - `Prompts/`
+- `Kontext/`
+- `Schemas/`
+- `SSOT/manifest.json`
+- `Evaluations/`
 - `Workflow Übersicht.md` (Ein-Tabelle mit Schritten, Zwischenergebnissen, Zweck, Beschreibung)
 
 ## Modell- und Qualitaetsregeln
@@ -49,21 +53,27 @@ cd /Users/zweigen/Sites/sandbank-n8n
 ./dev.sh status
 ./dev.sh import
 ./dev.sh export
+make workflow-build
+make sync-ssot
 ```
 
 ## Aktive Workflows
 - `System Verbindungen pruefen`
 - `Thema und Quellen sammeln`
 - `Beitrag aus Quellen erstellen`
+- `Human Review pruefen`
 - `Ergebnisse in Obsidian speichern`
 - `Ablauf automatisch steuern`
 - `Fehlerlauf klar dokumentieren`
+- `Performance zurueckfuehren`
+- `Evaluationslauf ausfuehren`
 
 ## Prompt-Steuerung
 Prompt-SSOT liegt unter:
 `Marketing/Social-Media/Beitraege/Workflow/Prompts`
 
 Pflichtdateien:
+- `00-global-system.md`
 - `recherche-signale.md`
 - `thema-pruefung.md`
 - `entwurf-erstellung.md`
@@ -73,9 +83,34 @@ Pflichtdateien:
 - `kanal-linkedin.md`
 - `kanal-reddit.md`
 - `schritt-zusammenfassung.md`
+- `performance-auswertung.md`
+
+## Schema-Steuerung
+Schema-SSOT liegt unter:
+`Marketing/Social-Media/Beitraege/Workflow/Schemas`
+
+SSOT-Paritaet wird ueber:
+`Marketing/Social-Media/Beitraege/Workflow/SSOT/manifest.json`
+erzwungen.
+
+## Kontext-SSOT
+Kontext-SSOT liegt unter:
+`Marketing/Social-Media/Beitraege/Workflow/Kontext`
+
+Pflichtdateien:
+- `brand.md`
+- `audience.md`
+- `offer.md`
+- `voice.md`
+- `proof-library.md`
+- `red-lines.md`
+- `cta-goals.md`
+- `reddit-communities.md`
+- `linkedin-context.md`
 
 ## Dateien
 - Workflows: `n8n/workflows/`
+- Code fuer n8n Code-Nodes: `n8n/code/`
 - Betriebsskripte: `n8n/scripts/`
 - Templates: `local-files/_managed/templates/`
 - Doku: `docs/`

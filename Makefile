@@ -1,4 +1,4 @@
-.PHONY: up down logs pull-model health import export backup clean-legacy
+.PHONY: up down logs pull-model health import export backup clean-legacy workflow-build validate-cutover sync-ssot
 
 up:
 	./n8n/scripts/up.sh
@@ -20,6 +20,15 @@ import:
 
 export:
 	./n8n/scripts/export_workflows.sh
+
+workflow-build:
+	node ./n8n/scripts/build_workflows_from_code.mjs
+
+validate-cutover:
+	./n8n/scripts/validate_cutover.sh
+
+sync-ssot:
+	./n8n/scripts/sync_obsidian_ssot.sh
 
 backup:
 	./n8n/scripts/backup_postgres.sh
