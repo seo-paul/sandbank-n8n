@@ -8,6 +8,10 @@
 - Parent: `Marketing/Social-Media/Beitraege/Workflow`
 - Active workflow root: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
 
+## BI Guide (workflow-spezifisch)
+- Parent: `Marketing/BI-Guide/Workflow`
+- Active workflow root: `Marketing/BI-Guide/Workflow/BI-Guide-Workflow`
+
 ## Beitraege-Workflow Struktur
 - `Ergebnisse/00-Runs.md`
 - `Ergebnisse/Laufdetails/`
@@ -20,6 +24,24 @@
 - `Schemas/`
 - `SSOT/manifest.json`
 - `Beitraege-Workflow-Uebersicht.md`
+- `README.md`
+
+## BI-Guide-Workflow Struktur
+- `Ergebnisse/00-Runs.md`
+- `Ergebnisse/Laufdetails/`
+- `Ergebnisse/Fehlerdetails/`
+- `Ergebnisse/Quellensnapshots/`
+- `Ergebnisse/Artikelpakete/`
+- `Ergebnisse/Exporte/`
+- `Zwischenergebnisse/`
+- `Prompts/`
+- `Kontext/`
+- `Config/`
+- `Schemas/`
+- `Templates/`
+- `SSOT/manifest.json`
+- `00-Artikelregister.md`
+- `BI-Guide-Workflow-Uebersicht.md`
 - `README.md`
 
 ## Kontext-Zuordnung

@@ -1,4 +1,4 @@
-.PHONY: up down logs pull-model health import export backup clean-legacy workflow-build validate-cutover sync-ssot pull-ssot refresh-obsidian-manifest
+.PHONY: up down logs pull-model health import export backup clean-legacy workflow-build validate-cutover sync-ssot pull-ssot refresh-obsidian-manifest sync-bi-guide-ssot pull-bi-guide-ssot refresh-bi-guide-manifest
 
 up:
 	./n8n/scripts/up.sh
@@ -35,6 +35,15 @@ pull-ssot:
 
 refresh-obsidian-manifest:
 	./n8n/scripts/refresh_obsidian_ssot_manifest.sh
+
+sync-bi-guide-ssot:
+	./n8n/scripts/sync_obsidian_bi_guide_ssot.sh
+
+pull-bi-guide-ssot:
+	./n8n/scripts/pull_obsidian_bi_guide_ssot.sh
+
+refresh-bi-guide-manifest:
+	./n8n/scripts/refresh_obsidian_bi_guide_manifest.sh
 
 backup:
 	./n8n/scripts/backup_postgres.sh

@@ -18,6 +18,17 @@ Aktive Laufdaten liegen unter:
 - `SSOT/manifest.json`
 - `Beitraege-Workflow-Uebersicht.md`
 
+Weitere Workflow-Familie:
+- `Marketing/BI-Guide/Workflow/BI-Guide-Workflow`
+- `.../Ergebnisse/Laufdetails/`
+- `.../Ergebnisse/Quellensnapshots/`
+- `.../Ergebnisse/Artikelpakete/`
+- `.../Ergebnisse/Exporte/`
+- `.../Zwischenergebnisse/`
+- `.../Templates/`
+- `.../00-Artikelregister.md`
+- `.../BI-Guide-Workflow-Uebersicht.md`
+
 ## Relevante `.env`-Variablen
 - `OBSIDIAN_WORKFLOWS_DIR`
 - `OBSIDIAN_WORKFLOWS_CONTEXT_DIR`
@@ -38,6 +49,7 @@ Defaults setzt:
 ```bash
 ./n8n/scripts/env-local-init.sh
 ./n8n/scripts/sync_obsidian_ssot.sh
+./n8n/scripts/sync_obsidian_bi_guide_ssot.sh
 ```
 
 Clean reset + Archivierung:

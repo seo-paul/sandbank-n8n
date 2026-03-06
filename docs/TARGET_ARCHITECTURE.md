@@ -36,6 +36,11 @@
   - Final gate
 - Side workflow:
   - Performance feedback with note + curated memory update
+- Parallel workflow family:
+  - BI-Guide read-only source snapshot
+  - BI-Guide article planning
+  - BI-Guide article package + publication fit
+  - BI-Guide export bundle to Obsidian
 
 ## Layer 3: Prompt Design
 - Global system prompt (`00-global-system.md`)

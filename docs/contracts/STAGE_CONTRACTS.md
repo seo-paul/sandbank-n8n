@@ -11,6 +11,11 @@
 | strategie-kritik | `strategy_critique.schema.json` | 1.1.0 | Beitrag aus Quellen erstellen | Finale-Kritik | required/enum-Änderung, Feldentfernung |
 | finale-kritik | `final_gate.schema.json` | 1.0.0 | Beitrag aus Quellen erstellen | Human Review / Persistenz | required/enum-Änderung, Feldentfernung |
 | performance-auswertung | `performance_learnings.schema.json` | 1.1.0 | Performance zurueckfuehren | `Kontext/performance-memory.md`, Research, Content | required/enum-Änderung, Feldentfernung |
+| bi-guide-source-snapshot | `source_snapshot.schema.json` | 1.0.0 | BI-Guide Quellen und Planung | BI-Guide Artikelpaket erstellen | required/enum-Aenderung, Feldentfernung |
+| bi-guide-article-plan | `article_plan.schema.json` | 1.0.0 | BI-Guide Quellen und Planung | BI-Guide Artikelpaket erstellen | required/enum-Aenderung, Feldentfernung |
+| bi-guide-article-package | `article_package.schema.json` | 1.0.0 | BI-Guide Artikelpaket erstellen | Publication Fit / Persistenz | required/enum-Aenderung, Feldentfernung |
+| bi-guide-publication-fit | `publication_fit_report.schema.json` | 1.0.0 | BI-Guide Artikelpaket erstellen | Human Review / Persistenz | required/enum-Aenderung, Feldentfernung |
+| bi-guide-export-bundle | `export_bundle.schema.json` | 1.0.0 | BI-Guide Artikelpaket erstellen | Persistenz / manueller Repo-Import | required/enum-Aenderung, Feldentfernung |
 
 ## Governance
 - Authoring-SSOT: Obsidian `Workflow/Schemas`.

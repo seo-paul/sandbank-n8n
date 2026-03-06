@@ -38,6 +38,7 @@ Workflow-spezifisch:
 - Fehlerlaeufe landen in: `Ergebnisse/Fehlerdetails/<run_id>.md`.
 - Performance-Learnings landen als Einzelnotiz unter `Ergebnisse/Performance/` und kuratiert in `Kontext/performance-memory.md`.
 - Kein `Evaluations/`-Ordner, kein stiller Schema-Fallback und kein Prompt-Change-Log.
+- Fuer BI-Guide gilt zusaetzlich: Sandbank-Repo nur read-only, Exporte nur nach Obsidian.
 
 ## Modell- und Qualitaetsregeln
 - Modell ist hart gepinnt: `qwen3.5:27b`.
@@ -72,6 +73,9 @@ make workflow-build
 make pull-ssot
 make sync-ssot
 make refresh-obsidian-manifest
+make sync-bi-guide-ssot
+make pull-bi-guide-ssot
+make refresh-bi-guide-manifest
 ./n8n/scripts/reset_obsidian_workflow_artifacts.sh
 ./n8n/scripts/legacy_cleanup.sh --apply
 ```
@@ -85,6 +89,12 @@ make refresh-obsidian-manifest
 - `Ablauf automatisch steuern`
 - `Fehlerlauf klar dokumentieren`
 - `Performance zurueckfuehren`
+- `BI-Guide Ablauf automatisch steuern`
+- `BI-Guide Quellen und Planung`
+- `BI-Guide Artikelpaket erstellen`
+- `BI-Guide Human Review pruefen`
+- `BI-Guide Ergebnisse in Obsidian speichern`
+- `BI-Guide Fehlerlauf klar dokumentieren`
 
 ## Prompt-Steuerung
 Prompt-SSOT liegt unter:
