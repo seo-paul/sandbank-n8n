@@ -1,0 +1,257 @@
+{
+  "name": "BI-Guide Artikelpaket erstellen",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manuell starten",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "run_id",
+              "type": "string"
+            },
+            {
+              "name": "execution_id",
+              "type": "string"
+            },
+            {
+              "name": "workflow_name",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "created_at",
+              "type": "string"
+            },
+            {
+              "name": "completed_at",
+              "type": "string"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "model_primary",
+              "type": "string"
+            },
+            {
+              "name": "model_used",
+              "type": "string"
+            },
+            {
+              "name": "workflow_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_results_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_detail_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_error_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_export_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_snapshot_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_article_package_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_intermediate_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_prompts_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_global_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_config_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_schema_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_ssot_manifest_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_runs_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_register_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_url",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_api_key",
+              "type": "string"
+            },
+            {
+              "name": "allow_insecure_tls",
+              "type": "boolean"
+            },
+            {
+              "name": "review_decision",
+              "type": "string"
+            },
+            {
+              "name": "human_review_decision",
+              "type": "string"
+            },
+            {
+              "name": "topic_hint",
+              "type": "string"
+            },
+            {
+              "name": "campaign_goal",
+              "type": "string"
+            },
+            {
+              "name": "output_language",
+              "type": "string"
+            },
+            {
+              "name": "quality_gate",
+              "type": "any"
+            },
+            {
+              "name": "prompts",
+              "type": "any"
+            },
+            {
+              "name": "context",
+              "type": "any"
+            },
+            {
+              "name": "configs",
+              "type": "any"
+            },
+            {
+              "name": "schemas",
+              "type": "any"
+            },
+            {
+              "name": "artifacts",
+              "type": "any"
+            },
+            {
+              "name": "stage_logs",
+              "type": "any"
+            },
+            {
+              "name": "stage_summaries",
+              "type": "any"
+            },
+            {
+              "name": "model_trace",
+              "type": "any"
+            },
+            {
+              "name": "generated",
+              "type": "any"
+            },
+            {
+              "name": "output_paths",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "trigger-subflow",
+      "name": "Vom Ablauf gestartet",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = items[0].json;\nconst path = require('path');\n\nconst requiredInputFields = [\n  'run_id',\n  'model_used',\n  'artifacts',\n  'prompts',\n  'context',\n  'schemas',\n  'configs',\n  'quality_gate',\n];\n\nfor (const field of requiredInputFields) {\n  if (!(field in ctx)) {\n    throw new Error('Missing typed subworkflow input: ' + field);\n  }\n}\n\nfunction nowIso() { return new Date().toISOString(); }\nfunction ensureArray(value) { return Array.isArray(value) ? value : []; }\nfunction ensureObject(value) {\n  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};\n}\nfunction clamp(value, min, max, fallback) {\n  const numeric = Number(value);\n  if (!Number.isFinite(numeric)) return fallback;\n  return Math.min(max, Math.max(min, numeric));\n}\nfunction normalizeQualityScore(value) {\n  const numeric = Number(value);\n  if (!Number.isFinite(numeric)) return 0;\n  if (numeric <= 1) return Math.max(0, Math.min(100, numeric * 100));\n  if (numeric <= 10) return Math.max(0, Math.min(100, numeric * 10));\n  return Math.max(0, Math.min(100, numeric));\n}\nfunction shortText(value, maxLen = 260) {\n  const text = typeof value === 'string' ? value : JSON.stringify(value || '');\n  return text.length <= maxLen ? text : text.slice(0, maxLen - 3) + '...';\n}\nfunction sanitizeText(value, maxLen = 10000) {\n  return String(value || '')\n    .replace(/```[\\s\\S]*?```/g, ' ')\n    .replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, ' ')\n    .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, ' ')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/\\[[^\\]]*\\]\\([^)]+\\)/g, ' ')\n    .replace(/[ \\t]+/g, ' ')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim()\n    .slice(0, maxLen);\n}\nfunction transliterate(value) {\n  return String(value || '')\n    .replace(/ß/g, 'ss')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '');\n}\nfunction normalizeKey(value) {\n  return transliterate(value)\n    .toLowerCase()\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/^-+|-+$/g, '');\n}\nfunction slugify(value) {\n  return normalizeKey(value).slice(0, 80);\n}\nfunction uniqueStrings(values, maxLen = 220) {\n  const out = [];\n  const seen = new Set();\n  for (const value of ensureArray(values)) {\n    const text = sanitizeText(value, maxLen);\n    if (!text || seen.has(text)) continue;\n    seen.add(text);\n    out.push(text);\n  }\n  return out;\n}\nfunction parseBool(value, fallback = false) {\n  if (value === true || value === false) return value;\n  const normalized = String(value == null ? '' : value).trim().toLowerCase();\n  if (normalized === 'true') return true;\n  if (normalized === 'false') return false;\n  return fallback;\n}\nfunction yamlEscape(value) {\n  return String(value || '').replace(/\"/g, '\\\\\"').replace(/\\n/g, ' ');\n}\nfunction bodyWordCount(text) {\n  return sanitizeText(text, 200000).split(/\\s+/).filter(Boolean).length;\n}\n\nif (String(ctx.model_used || '').trim() !== 'qwen3.5:27b') {\n  throw new Error('Nur qwen3.5:27b ist erlaubt. Aktuell: ' + String(ctx.model_used || 'leer'));\n}\n\nctx.stage_logs = ensureArray(ctx.stage_logs);\nctx.stage_summaries = ensureArray(ctx.stage_summaries);\nctx.model_trace = ensureArray(ctx.model_trace);\nctx.artifacts = ensureObject(ctx.artifacts);\nctx.context = ensureObject(ctx.context);\nctx.schemas = ensureObject(ctx.schemas);\nctx.configs = ensureObject(ctx.configs);\nctx.artifacts.content_diagnostics = ensureObject(ctx.artifacts.content_diagnostics);\n\nconst sourceSnapshot = ensureObject(ctx.artifacts.source_snapshot);\nconst articlePlan = ensureObject(ctx.artifacts.article_plan);\nif (!sourceSnapshot.snapshot_id || !articlePlan.article_id) {\n  throw new Error('Missing source_snapshot or article_plan artifact');\n}\n\nconst articlePackageSchema = ctx.schemas.article_package;\nconst publicationFitSchema = ctx.schemas.publication_fit_report;\nconst exportBundleSchema = ctx.schemas.export_bundle;\nif (!articlePackageSchema || !publicationFitSchema || !exportBundleSchema) {\n  throw new Error('Missing schema contracts: article_package, publication_fit_report, export_bundle');\n}\n\nfunction validateSchema(schema, value, atPath = 'value') {\n  if (!schema || typeof schema !== 'object') return;\n  if (schema.const !== undefined && value !== schema.const) {\n    throw new Error(atPath + ' const mismatch');\n  }\n  if (Array.isArray(schema.enum) && !schema.enum.includes(value)) {\n    throw new Error(atPath + ' enum mismatch');\n  }\n  const type = schema.type;\n  const isObjectSchema = type === 'object' || !!schema.properties || !!schema.required;\n  const isArraySchema = type === 'array' || !!schema.items;\n  if (isObjectSchema) {\n    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(atPath + ' must be object');\n    const properties = ensureObject(schema.properties);\n    for (const requiredKey of ensureArray(schema.required)) {\n      if (!(requiredKey in value)) throw new Error(atPath + '.' + requiredKey + ' is required');\n    }\n    for (const [key, child] of Object.entries(properties)) {\n      if (key in value) validateSchema(child, value[key], atPath + '.' + key);\n    }\n    if (schema.additionalProperties === false) {\n      for (const key of Object.keys(value)) {\n        if (!(key in properties)) throw new Error(atPath + '.' + key + ' is not allowed');\n      }\n    }\n    return;\n  }\n  if (isArraySchema) {\n    if (!Array.isArray(value)) throw new Error(atPath + ' must be array');\n    if (Number.isFinite(schema.minItems) && value.length < schema.minItems) {\n      throw new Error(atPath + ' minItems=' + schema.minItems);\n    }\n    if (schema.items) {\n      for (let i = 0; i < value.length; i++) validateSchema(schema.items, value[i], atPath + '[' + i + ']');\n    }\n    return;\n  }\n  if (type === 'string') {\n    if (typeof value !== 'string') throw new Error(atPath + ' must be string');\n    if (Number.isFinite(schema.minLength) && value.length < schema.minLength) {\n      throw new Error(atPath + ' minLength=' + schema.minLength);\n    }\n    return;\n  }\n  if (type === 'number') {\n    if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(atPath + ' must be number');\n    if (Number.isFinite(schema.minimum) && value < schema.minimum) throw new Error(atPath + ' minimum=' + schema.minimum);\n    if (Number.isFinite(schema.maximum) && value > schema.maximum) throw new Error(atPath + ' maximum=' + schema.maximum);\n    return;\n  }\n  if (type === 'boolean' && typeof value !== 'boolean') {\n    throw new Error(atPath + ' must be boolean');\n  }\n}\n\nfunction addStage(step, stage, status, inputRef, outputRef, quality, notes, issueCount = 0) {\n  ctx.stage_logs.push({\n    workflow: 'BI-Guide Artikelpaket erstellen',\n    step,\n    stage,\n    status,\n    input_ref: inputRef,\n    output_ref: outputRef,\n    quality_score: normalizeQualityScore(quality),\n    notes: String(notes || ''),\n    issues: Number.isFinite(Number(issueCount)) ? Number(issueCount) : 0,\n    model_used: ctx.model_used,\n    ts: nowIso(),\n  });\n  ctx.model_trace.push({ step, stage, model_used: ctx.model_used, ts: nowIso() });\n}\n\nasync function addStageSummary(step, stage, payload) {\n  const enabled = parseBool($env.PIPELINE_STAGE_SUMMARY_ENABLED, false);\n  if (!enabled) {\n    ctx.stage_summaries.push({\n      step,\n      stage,\n      summary: shortText(typeof payload === 'string' ? payload : JSON.stringify(payload), 480),\n    });\n    return;\n  }\n  try {\n    const res = await callOllamaRaw.call(\n      this,\n      'Du erstellst knappe Workflow-Zusammenfassungen.',\n      buildPrompt(String(ctx.prompts.schritt_zusammenfassung || ''), {\n        workflow_name: 'BI-Guide Artikelpaket erstellen',\n        step_name: stage,\n        output_summary: shortText(typeof payload === 'string' ? payload : JSON.stringify(payload), 1800),\n      }),\n      { temperature: 0.1, num_predict: 180, num_ctx: 2048, timeout: 120000, max_attempts: 2, thinking: false }\n    );\n    ctx.stage_summaries.push({ step, stage, summary: shortText(res.text, 480) });\n  } catch (error) {\n    ctx.stage_summaries.push({ step, stage, summary: 'Zusammenfassung fehlgeschlagen: ' + shortText(error.message || 'unknown', 180) });\n  }\n}\n\nfunction recordDiagnostic(stageKey, payload) {\n  ctx.artifacts.content_diagnostics[stageKey] = Object.assign({ ts: nowIso() }, ensureObject(payload));\n}\n\nfunction extractJsonCandidate(rawText) {\n  if (typeof rawText !== 'string') throw new Error('Model output is not string');\n  const fenced = rawText.match(/```(?:json)?\\s*([\\s\\S]*?)```/i);\n  const text = (fenced ? fenced[1] : rawText).trim();\n  try {\n    return JSON.parse(text);\n  } catch {}\n  const objStart = text.indexOf('{');\n  if (objStart < 0) throw new Error('No JSON object found');\n  let depth = 0;\n  let inString = false;\n  let escaped = false;\n  for (let i = objStart; i < text.length; i++) {\n    const ch = text[i];\n    if (inString) {\n      if (escaped) escaped = false;\n      else if (ch === '\\\\') escaped = true;\n      else if (ch === '\"') inString = false;\n      continue;\n    }\n    if (ch === '\"') { inString = true; continue; }\n    if (ch === '{') depth += 1;\n    if (ch === '}') {\n      depth -= 1;\n      if (depth === 0) return JSON.parse(text.slice(objStart, i + 1));\n    }\n  }\n  throw new Error('Could not extract valid JSON payload');\n}\n\nasync function callOllamaRaw(systemPrompt, userPrompt, options = {}) {\n  const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\\/+$/, ''));\n  const temperature = Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.2;\n  const maxPredict = clamp($env.OLLAMA_NUM_PREDICT_CAP, 80, 3000, 1100);\n  const requestedPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 900;\n  const numPredict = clamp(requestedPredict, 80, maxPredict, 900);\n  const numCtx = Number.isFinite(Number(options.num_ctx)) ? Math.max(1024, Number(options.num_ctx)) : 12288;\n  const maxTimeout = clamp($env.OLLAMA_TIMEOUT_CAP_MS, 30000, 900000, 420000);\n  const requestedTimeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 300000;\n  const timeout = clamp(Math.min(requestedTimeout, maxTimeout), 30000, maxTimeout, 300000);\n  const attemptsCap = clamp($env.OLLAMA_MAX_ATTEMPTS_CAP, 1, 5, 2);\n  const requestedAttempts = Number.isFinite(Number(options.max_attempts)) ? Number(options.max_attempts) : 2;\n  const maxAttempts = clamp(requestedAttempts, 1, attemptsCap, 2);\n  const thinking = options.thinking !== false;\n\n  const userContent = thinking\n    ? userPrompt\n    : ('Antworte direkt und kompakt ohne Gedankenausfuehrung.\\n\\n' + userPrompt);\n\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      const body = {\n        model: ctx.model_used,\n        stream: false,\n        keep_alive: '30m',\n        think: thinking,\n        messages: [\n          { role: 'system', content: systemPrompt },\n          { role: 'user', content: userContent },\n        ],\n        options: { temperature, num_predict: numPredict, num_ctx: numCtx, enable_thinking: thinking },\n      };\n      if (options.format_schema) body.format = options.format_schema;\n      const data = await this.helpers.httpRequest({\n        method: 'POST',\n        url: baseUrl + '/api/chat',\n        body,\n        json: true,\n        timeout,\n      });\n      const text = String((data && data.message && data.message.content) || data.response || '').trim();\n      if (!text) throw new Error('empty response');\n      return { text, model_used: ctx.model_used };\n    } catch (error) {\n      const msg = String(error && error.message ? error.message : 'unknown');\n      const retryable = /timeout|timed out|5\\d\\d|socket|connection|empty response|runner process/i.test(msg);\n      if (retryable && attempt < maxAttempts) {\n        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));\n        continue;\n      }\n      throw error;\n    }\n  }\n  throw new Error('Ollama call failed');\n}\n\nasync function callOllamaJsonStrict(systemPrompt, userPrompt, options = {}) {\n  const raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);\n  try {\n    return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, repair_used: false };\n  } catch (firstError) {\n    const repaired = await callOllamaRaw.call(\n      this,\n      'You are a strict JSON formatter. Return valid JSON only.',\n      [\n        'Convert this content to strict valid JSON.',\n        options.format_schema ? ('Schema:\\n' + JSON.stringify(options.format_schema)) : '',\n        'Input:',\n        raw.text,\n      ].filter(Boolean).join('\\n\\n'),\n      { temperature: 0, num_predict: 900, num_ctx: 8192, timeout: 240000, max_attempts: 2, thinking: false, format_schema: options.format_schema || null }\n    );\n    return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\\n\\n[REPAIRED]\\n' + repaired.text, repair_used: true };\n  }\n}\n\nfunction sectionTag(key, value) {\n  return '<' + key + '>\\n' + String(value == null ? '' : value) + '\\n</' + key + '>';\n}\n\nfunction buildPrompt(stagePrompt, sections) {\n  const globalSystem = String(ctx.prompts.global_system || '').trim();\n  const mergedSections = Object.assign({}, sections || {}, {\n    brand_profile: ctx.context.brand_profile || '',\n    audience_profile: ctx.context.audience_profile || '',\n    offer_context: ctx.context.offer_context || '',\n    voice_guide: ctx.context.voice_guide || '',\n    author_voice: ctx.context.author_voice || '',\n    red_lines: ctx.context.red_lines || '',\n    editorial_pattern: ctx.context.editorial_pattern || '',\n    publication_contract_note: ctx.context.publication_contract_note || '',\n    reference_articles_note: ctx.context.reference_articles_note || '',\n    output_language: ctx.context.output_language || ctx.output_language || 'de',\n  });\n  const sectionLines = Object.entries(mergedSections).map(([key, value]) => sectionTag(key, value));\n  return [globalSystem, stagePrompt, ...sectionLines].filter(Boolean).join('\\n\\n');\n}\n\nfunction parseIpv4(host) {\n  const parts = String(host || '').split('.');\n  if (parts.length !== 4) return null;\n  const octets = [];\n  for (const part of parts) {\n    if (!/^\\d{1,3}$/.test(part)) return null;\n    const numeric = Number(part);\n    if (!Number.isInteger(numeric) || numeric < 0 || numeric > 255) return null;\n    octets.push(numeric);\n  }\n  return octets;\n}\n\nfunction isPrivateOrSpecialIpv4(host) {\n  const ip = parseIpv4(host);\n  if (!ip) return false;\n  const [a, b, c] = ip;\n  if (a === 0 || a === 10 || a === 127) return true;\n  if (a === 169 && b === 254) return true;\n  if (a === 172 && b >= 16 && b <= 31) return true;\n  if (a === 192 && b === 168) return true;\n  if (a === 100 && b >= 64 && b <= 127) return true;\n  if (a === 198 && (b === 18 || b === 19)) return true;\n  if (a === 192 && b === 0 && c === 2) return true;\n  if (a === 198 && b === 51 && c === 100) return true;\n  if (a === 203 && b === 0 && c === 113) return true;\n  if (a >= 224) return true;\n  return false;\n}\n\nfunction isPrivateOrSpecialIpv6(host) {\n  const normalized = String(host || '').toLowerCase();\n  if (!normalized || !normalized.includes(':')) return false;\n  if (normalized.includes('%')) return true;\n  if (normalized === '::' || normalized === '::1') return true;\n  if (normalized.startsWith('fe80:')) return true;\n  if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true;\n  if (normalized.startsWith('2001:db8:')) return true;\n  return false;\n}\n\nfunction safeUrl(urlValue) {\n  try {\n    return new URL(String(urlValue || '').trim());\n  } catch (error) {\n    return null;\n  }\n}\n\nfunction isAllowedExternalUrl(urlValue) {\n  const url = safeUrl(urlValue);\n  if (!url) return false;\n  const protocol = String(url.protocol || '').toLowerCase();\n  if (protocol !== 'http:' && protocol !== 'https:') return false;\n  if (url.username || url.password) return false;\n  const host = String(url.hostname || '').toLowerCase();\n  if (!host) return false;\n  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.home.arpa')) {\n    return false;\n  }\n  if (isPrivateOrSpecialIpv4(host) || isPrivateOrSpecialIpv6(host)) return false;\n  return true;\n}\n\nasync function callSearx(query) {\n  const maxAttempts = 4;\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      return await this.helpers.httpRequest({\n        method: 'GET',\n        url: 'http://searxng:8080/search',\n        qs: { format: 'json', language: 'de-DE', q: query },\n        headers: { 'User-Agent': 'Mozilla/5.0 (sandbank-bi-guide-workflow)' },\n        json: true,\n        timeout: 15000,\n      });\n    } catch (error) {\n      const status = error?.response?.status || error?.httpCode || 0;\n      if ((status === 429 || status >= 500) && attempt < maxAttempts) {\n        await new Promise((resolve) => setTimeout(resolve, 450 * attempt));\n        continue;\n      }\n      throw error;\n    }\n  }\n  throw new Error('SearxNG failed for query: ' + query);\n}\n\nasync function fetchPageSnippet(urlValue) {\n  if (!isAllowedExternalUrl(urlValue)) return '';\n  try {\n    const raw = await this.helpers.httpRequest({\n      method: 'GET',\n      url: urlValue,\n      json: false,\n      timeout: 18000,\n      headers: { 'User-Agent': 'Mozilla/5.0 (sandbank-bi-guide-workflow)' },\n    });\n    const html = typeof raw === 'string' ? raw : JSON.stringify(raw);\n    return sanitizeText(\n      html\n        .replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, ' ')\n        .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, ' ')\n        .replace(/<[^>]+>/g, ' '),\n      1800\n    );\n  } catch (error) {\n    return '';\n  }\n}\n\nfunction classifySource(urlValue, policy) {\n  const url = safeUrl(urlValue);\n  const host = url ? String(url.hostname || '').toLowerCase() : '';\n  const blocked = ensureArray(policy.blocked_domain_patterns).some((pattern) => host.includes(String(pattern).toLowerCase()));\n  if (blocked) return { allowed: false, source_type: 'blocked', domain: host };\n  if (ensureArray(policy.research_domain_patterns).some((pattern) => host.includes(String(pattern).toLowerCase()))) {\n    return { allowed: true, source_type: 'research', domain: host };\n  }\n  if (ensureArray(policy.official_domain_markers).some((pattern) => host.includes(String(pattern).toLowerCase()))) {\n    return { allowed: true, source_type: 'official', domain: host };\n  }\n  if (host.includes('wikipedia.org') || host.includes('blog.')) {\n    return { allowed: true, source_type: 'media', domain: host };\n  }\n  return { allowed: true, source_type: 'vendor', domain: host };\n}\n\nfunction buildQueries(plan) {\n  return uniqueStrings([\n    plan.working_title,\n    plan.working_title + ' business intelligence',\n    plan.working_title + ' ' + plan.audience,\n    plan.working_title + ' beispiel statistik studie',\n  ], 160).slice(0, 4);\n}\n\nfunction compactSnapshot(snapshot) {\n  return {\n    categories: ensureArray(snapshot.categories).filter((row) => row.locale === 'de').map((row) => ({\n      category_id: row.category_id,\n      title: row.title,\n      help_slug: row.help_slug,\n      category_order: row.category_order,\n    })),\n    existing_articles: ensureArray(snapshot.articles).filter((row) => row.locale === 'de').map((row) => ({\n      article_id: row.article_id,\n      title: row.title,\n      category_id: row.category_id,\n      article_number: row.article_number,\n      help_slug: row.help_slug,\n      visibility: row.visibility,\n    })),\n    route_map: ensureArray(snapshot.route_map).filter((row) => row.locale === 'de'),\n    reference_articles: ensureArray(snapshot.reference_articles).slice(0, 4),\n  };\n}\n\nfunction sanitizeInternalLinks(links) {\n  return ensureArray(links).map((link) => ({\n    path: String(link.path || ''),\n    label: String(link.label || ''),\n    reason: String(link.reason || ''),\n  }));\n}\n\nfunction renderFrontmatter(frontmatter) {\n  const lines = ['---'];\n  const orderedKeys = [\n    'id',\n    'title',\n    'description',\n    'seoTitle',\n    'seoDescription',\n    'heroSubtitle',\n    'navTitle',\n    'visibility',\n    'kind',\n    'helpSlug',\n    'categoryId',\n    'articleOrder',\n    'audience',\n    'keyTakeaways',\n    'authorId',\n    'authorRole',\n    'reviewer',\n    'publishedAt',\n    'tileBody',\n    'last_reviewed',\n    'collection',\n    'categoryOrder',\n    'articleNumber',\n  ];\n  for (const key of orderedKeys) {\n    const value = frontmatter[key];\n    if (Array.isArray(value)) {\n      lines.push(key + ':');\n      for (const item of value) {\n        lines.push('  - \"' + yamlEscape(item) + '\"');\n      }\n      continue;\n    }\n    if (typeof value === 'number') {\n      lines.push(key + ': ' + String(value));\n      continue;\n    }\n    lines.push(key + ': \"' + yamlEscape(value) + '\"');\n  }\n  lines.push('---');\n  return lines.join('\\n');\n}\n\nfunction mergeFrontmatter(rawFrontmatter, plan, planningRules) {\n  const defaults = {\n    id: plan.article_id,\n    title: String(rawFrontmatter.title || plan.working_title),\n    description: String(rawFrontmatter.description || ''),\n    seoTitle: String(rawFrontmatter.seoTitle || rawFrontmatter.title || plan.working_title),\n    seoDescription: String(rawFrontmatter.seoDescription || rawFrontmatter.description || ''),\n    heroSubtitle: String(rawFrontmatter.heroSubtitle || ''),\n    navTitle: String(rawFrontmatter.navTitle || rawFrontmatter.title || plan.working_title),\n    visibility: String(rawFrontmatter.visibility || planningRules.default_visibility || 'public'),\n    kind: String(rawFrontmatter.kind || planningRules.default_kind || 'cluster'),\n    helpSlug: String(rawFrontmatter.helpSlug || plan.article_slug),\n    categoryId: plan.category_id,\n    articleOrder: Number(plan.article_order),\n    audience: String(rawFrontmatter.audience || plan.audience),\n    keyTakeaways: ensureArray(rawFrontmatter.keyTakeaways),\n    authorId: String(rawFrontmatter.authorId || planningRules.default_author_id || ''),\n    authorRole: String(rawFrontmatter.authorRole || planningRules.default_author_role || ''),\n    reviewer: String(rawFrontmatter.reviewer || planningRules.default_reviewer || ''),\n    publishedAt: String(rawFrontmatter.publishedAt || nowIso().slice(0, 10)),\n    tileBody: String(rawFrontmatter.tileBody || rawFrontmatter.description || ''),\n    last_reviewed: String(rawFrontmatter.last_reviewed || nowIso().slice(0, 10)),\n    collection: 'bi-guide',\n    categoryOrder: Number(plan.category_order),\n    articleNumber: String(plan.article_number),\n  };\n  return defaults;\n}\n\nconst planningRules = ensureObject(ctx.configs.planning_rules);\nconst qualityGates = ensureObject(ctx.configs.quality_gates);\nconst sourcePolicy = ensureObject(ctx.configs.source_policy);\nconst queries = buildQueries(articlePlan);\nconst rawResults = [];\nfor (const query of queries) {\n  const data = await callSearx.call(this, query);\n  for (const result of ensureArray(data.results).slice(0, 6)) {\n    const classified = classifySource(result.url, sourcePolicy);\n    if (!classified.allowed) continue;\n    rawResults.push({\n      query,\n      title: String(result.title || ''),\n      url: String(result.url || ''),\n      snippet: sanitizeText(result.content || '', 500),\n      source_type: classified.source_type,\n      domain: classified.domain,\n    });\n  }\n}\nconst dedupedByUrl = new Map();\nfor (const row of rawResults) {\n  if (!row.url || dedupedByUrl.has(row.url)) continue;\n  dedupedByUrl.set(row.url, row);\n}\nconst searchResults = Array.from(dedupedByUrl.values()).slice(0, 10);\nconst fetchedResults = [];\nfor (const row of searchResults.slice(0, 5)) {\n  fetchedResults.push(Object.assign({}, row, {\n    page_excerpt: await fetchPageSnippet.call(this, row.url),\n  }));\n}\nctx.artifacts.external_research = {\n  queries,\n  results: fetchedResults,\n};\naddStage(5, 'external_research', 'ok', 'article_plan', 'external_research', 86, 'Queries: ' + queries.length + ', results: ' + fetchedResults.length);\nawait addStageSummary.call(this, 5, 'external_research', ctx.artifacts.external_research);\n\nconst compactedSnapshot = compactSnapshot(sourceSnapshot);\nconst draftPrompt = buildPrompt(String(ctx.prompts.article_draft || ''), {\n  article_plan: JSON.stringify(articlePlan, null, 2),\n  source_snapshot: JSON.stringify(compactedSnapshot, null, 2),\n  external_research: JSON.stringify(ctx.artifacts.external_research, null, 2),\n  quality_gates: JSON.stringify(qualityGates, null, 2),\n});\n\nconst draftResponse = await callOllamaJsonStrict.call(\n  this,\n  'Du erstellst ein repo-kompatibles BI-Guide-ArticlePackage. Liefere nur JSON.',\n  draftPrompt,\n  {\n    format_schema: articlePackageSchema,\n    temperature: 0.2,\n    num_predict: 1600,\n    num_ctx: 16384,\n    timeout: 420000,\n    max_attempts: 2,\n    thinking: false,\n  }\n);\n\nconst draftCandidate = ensureObject(draftResponse.parsed);\nconst normalizedFrontmatter = mergeFrontmatter(ensureObject(draftCandidate.frontmatter), articlePlan, planningRules);\nconst articlePackage = {\n  article_id: articlePlan.article_id,\n  frontmatter: normalizedFrontmatter,\n  body_mdx: String(draftCandidate.body_mdx || '').trim(),\n  internal_links: sanitizeInternalLinks(draftCandidate.internal_links),\n  external_sources: ensureArray(draftCandidate.external_sources).map((row) => ({\n    title: String(row.title || ''),\n    url: String(row.url || ''),\n    why_used: String(row.why_used || ''),\n  })),\n  media_brief: ensureArray(draftCandidate.media_brief).map((row) => ({\n    status: String(row.status || ''),\n    assetId: String(row.assetId || ''),\n    purpose: String(row.purpose || ''),\n    alt: String(row.alt || ''),\n    caption: String(row.caption || ''),\n  })),\n  quality_notes: uniqueStrings(draftCandidate.quality_notes, 220),\n};\nvalidateSchema(articlePackageSchema, articlePackage, 'article_package');\nctx.artifacts.article_package = articlePackage;\nctx.artifacts.article_package_raw = {\n  raw_text: draftResponse.raw_text,\n  repair_used: !!draftResponse.repair_used,\n};\nrecordDiagnostic('draft', {\n  internal_links: articlePackage.internal_links.length,\n  external_sources: articlePackage.external_sources.length,\n  body_words: bodyWordCount(articlePackage.body_mdx),\n});\naddStage(6, 'article_package_created', 'ok', 'external_research', 'article_package', 84, 'Article package generated and validated');\nawait addStageSummary.call(this, 6, 'article_package_created', {\n  article_id: articlePackage.article_id,\n  title: articlePackage.frontmatter.title,\n  body_words: bodyWordCount(articlePackage.body_mdx),\n});\n\nconst routeSet = new Set(ensureArray(sourceSnapshot.route_map).filter((row) => row.locale === articlePlan.target_locale).map((row) => String(row.path || '')));\nconst mediaSet = new Set(ensureArray(sourceSnapshot.media_assets).map((asset) => String(asset.id || '')));\nconst articleSlugSet = new Set(\n  ensureArray(sourceSnapshot.articles)\n    .filter((row) => row.locale === articlePlan.target_locale && row.article_id !== articlePlan.article_id)\n    .map((row) => String(row.help_slug || ''))\n);\nconst deterministicBlocking = [];\nconst deterministicWarnings = [];\nconst validatedLinks = [];\nconst validatedAssets = [];\n\nfor (const field of ensureArray(qualityGates.required_frontmatter_fields)) {\n  const value = articlePackage.frontmatter[field];\n  if (value === undefined || value === null || value === '' || (Array.isArray(value) && !value.length)) {\n    deterministicBlocking.push('frontmatter_missing:' + field);\n  }\n}\n\nif (String(articlePackage.frontmatter.collection || '') !== 'bi-guide') {\n  deterministicBlocking.push('collection_must_be_bi-guide');\n}\nif (String(articlePackage.frontmatter.categoryId || '') !== String(articlePlan.category_id || '')) {\n  deterministicBlocking.push('categoryId_mismatch_to_plan');\n}\nif (String(articlePackage.frontmatter.helpSlug || '') !== String(articlePlan.article_slug || '')) {\n  deterministicWarnings.push('helpSlug_adjusted_to_plan_recommended');\n}\nif (articleSlugSet.has(String(articlePackage.frontmatter.helpSlug || ''))) {\n  deterministicBlocking.push('helpSlug_already_exists');\n}\nif (!ensureArray(qualityGates.allowed_visibility).includes(String(articlePackage.frontmatter.visibility || ''))) {\n  deterministicBlocking.push('visibility_not_allowed');\n}\nif (!ensureArray(qualityGates.allowed_kind).includes(String(articlePackage.frontmatter.kind || ''))) {\n  deterministicBlocking.push('kind_not_allowed');\n}\nif (ensureArray(articlePackage.frontmatter.keyTakeaways).length < Number(qualityGates.minimum_key_takeaways || 3)) {\n  deterministicBlocking.push('too_few_key_takeaways');\n}\nif (articlePackage.internal_links.length < Number(qualityGates.minimum_internal_links || 2)) {\n  deterministicBlocking.push('too_few_internal_links');\n}\nif (articlePackage.external_sources.length < Number(qualityGates.minimum_external_sources || 2)) {\n  deterministicBlocking.push('too_few_external_sources');\n}\nif (articlePackage.media_brief.length > Number(qualityGates.maximum_callouts || 2) + 2) {\n  deterministicWarnings.push('many_media_or_callout_requests');\n}\nif (bodyWordCount(articlePackage.body_mdx) < Number(qualityGates.minimum_body_words || 1600)) {\n  deterministicBlocking.push('body_too_short');\n}\nif (/^#\\s+/m.test(articlePackage.body_mdx)) {\n  deterministicBlocking.push('body_contains_h1');\n}\nif (!articlePackage.body_mdx.includes('<ArticleInfoGrid />')) {\n  deterministicWarnings.push('missing_article_info_grid');\n}\n\nfor (const link of articlePackage.internal_links) {\n  const pathValue = String(link.path || '');\n  const valid = routeSet.has(pathValue);\n  validatedLinks.push({ path: pathValue, status: valid ? 'ok' : 'missing', note: valid ? '' : 'not found in source snapshot route map' });\n  if (!valid) deterministicBlocking.push('invalid_internal_link:' + pathValue);\n}\n\nfor (const media of articlePackage.media_brief) {\n  const assetId = String(media.assetId || '');\n  if (!assetId) {\n    validatedAssets.push({ status: 'brief_only', note: 'new media brief without existing asset id' });\n    continue;\n  }\n  if (mediaSet.has(assetId)) {\n    validatedAssets.push({ assetId, status: 'known', note: 'asset id exists in registry' });\n    continue;\n  }\n  if (String(media.status || '').toLowerCase() === 'new') {\n    validatedAssets.push({ assetId, status: 'new_brief', note: 'asset id not in registry yet; manual asset work required' });\n    deterministicWarnings.push('new_asset_required:' + assetId);\n    continue;\n  }\n  validatedAssets.push({ assetId, status: 'missing', note: 'asset id not found in registry' });\n  deterministicBlocking.push('missing_asset:' + assetId);\n}\n\nconst deterministicScore = Math.max(\n  0,\n  100\n  - (deterministicBlocking.length * 15)\n  - (deterministicWarnings.length * 4)\n);\n\nrecordDiagnostic('deterministic_publication_fit', {\n  deterministic_blocking: deterministicBlocking,\n  deterministic_warnings: deterministicWarnings,\n  deterministic_score: deterministicScore,\n});\n\nconst fitPrompt = buildPrompt(String(ctx.prompts.publication_fit || ''), {\n  article_plan: JSON.stringify(articlePlan, null, 2),\n  article_package: JSON.stringify(articlePackage, null, 2),\n  deterministic_findings: JSON.stringify({\n    blocking_issues: deterministicBlocking,\n    warnings: deterministicWarnings,\n    validated_links: validatedLinks,\n    validated_assets: validatedAssets,\n  }, null, 2),\n  source_snapshot: JSON.stringify(compactedSnapshot, null, 2),\n  quality_gates: JSON.stringify(qualityGates, null, 2),\n});\n\nconst fitResponse = await callOllamaJsonStrict.call(\n  this,\n  'Du pruefst Publizierbarkeit und Contract-Fit fuer einen BI-Guide-Artikel. Liefere nur JSON.',\n  fitPrompt,\n  {\n    format_schema: publicationFitSchema,\n    temperature: 0.1,\n    num_predict: 1000,\n    num_ctx: 16384,\n    timeout: 360000,\n    max_attempts: 2,\n    thinking: false,\n  }\n);\n\nconst modelFit = ensureObject(fitResponse.parsed);\nconst mergedBlocking = uniqueStrings([].concat(ensureArray(modelFit.blocking_issues), deterministicBlocking), 220);\nconst mergedWarnings = uniqueStrings([].concat(ensureArray(modelFit.warnings), deterministicWarnings), 220);\nconst nextActions = uniqueStrings([].concat(ensureArray(modelFit.next_actions), mergedBlocking, mergedWarnings), 220).slice(0, 10);\nconst mergedScore = Math.min(Number(modelFit.fit_score || 0) || 0, deterministicScore);\n\nconst publicationFitReport = {\n  status: mergedBlocking.length\n    ? 'hold'\n    : (mergedScore < Number(ctx.quality_gate.min_publication_fit_score || 72) || mergedWarnings.length ? 'revise' : 'pass'),\n  human_review_required: !!modelFit.human_review_required || mergedBlocking.length > 0 || mergedWarnings.some((row) => row.includes('new_asset_required')),\n  fit_score: Math.max(0, Math.min(100, mergedScore)),\n  blocking_issues: mergedBlocking,\n  warnings: mergedWarnings,\n  validated_links: validatedLinks,\n  validated_assets: validatedAssets,\n  next_actions: nextActions.length ? nextActions : ['review_article_package'],\n};\nvalidateSchema(publicationFitSchema, publicationFitReport, 'publication_fit_report');\nctx.artifacts.publication_fit_report = publicationFitReport;\n\nctx.artifacts.final_gate = {\n  status: publicationFitReport.status,\n  human_review_required: publicationFitReport.human_review_required,\n  fit_score: publicationFitReport.fit_score,\n  blocking_issues: publicationFitReport.blocking_issues,\n  priority_fixes: publicationFitReport.next_actions,\n  release_notes: publicationFitReport.warnings,\n};\naddStage(7, 'publication_fit_report', 'ok', 'article_package', 'publication_fit_report', publicationFitReport.fit_score, 'Publication fit merged', publicationFitReport.blocking_issues.length);\nawait addStageSummary.call(this, 7, 'publication_fit_report', publicationFitReport);\n\nconst exportStatus = publicationFitReport.status === 'hold'\n  ? 'blocked'\n  : (publicationFitReport.status === 'revise' ? 'needs_revision' : 'export_ready');\nconst frontmatterPreview = renderFrontmatter(articlePackage.frontmatter);\nconst exportBundle = {\n  status: exportStatus,\n  target_locale: articlePlan.target_locale,\n  target_source_path: articlePlan.target_source_path,\n  target_category_path: articlePlan.target_category_path,\n  article_file_name: String(articlePlan.article_file_name || path.basename(articlePlan.target_source_path || '')),\n  mdx: frontmatterPreview + '\\n\\n' + articlePackage.body_mdx.trim() + '\\n',\n  frontmatter_preview: frontmatterPreview,\n  manual_followups: uniqueStrings([\n    exportStatus === 'needs_revision' ? 'revise_before_import' : '',\n    exportStatus === 'blocked' ? 'resolve_blocking_issues' : '',\n    validatedAssets.some((asset) => asset.status === 'new_brief') ? 'create_or_register_new_assets' : '',\n    'copy_export_bundle_into_sandbank_repo_manually_after_review',\n  ], 220),\n  notes: uniqueStrings([\n    'target_source_path:' + articlePlan.target_source_path,\n    'target_category_path:' + articlePlan.target_category_path,\n    'fit_status:' + publicationFitReport.status,\n  ], 220),\n};\nvalidateSchema(exportBundleSchema, exportBundle, 'export_bundle');\nctx.artifacts.export_bundle = exportBundle;\nctx.status = exportStatus === 'export_ready' ? 'content_ready' : (exportStatus === 'needs_revision' ? 'revise' : 'hold');\nctx.completed_at = nowIso();\n\nctx.generated = Object.assign({}, ensureObject(ctx.generated), {\n  final_quality_score: publicationFitReport.fit_score,\n  export_status: exportBundle.status,\n  publication_fit_markdown: [\n    '### Publication Fit',\n    '',\n    '- status: ' + publicationFitReport.status,\n    '- fit_score: ' + String(publicationFitReport.fit_score),\n    '- human_review_required: ' + String(publicationFitReport.human_review_required),\n    '',\n    '#### Blocking Issues',\n    publicationFitReport.blocking_issues.length ? publicationFitReport.blocking_issues.map((row) => '- ' + row).join('\\n') : '- none',\n    '',\n    '#### Warnings',\n    publicationFitReport.warnings.length ? publicationFitReport.warnings.map((row) => '- ' + row).join('\\n') : '- none',\n  ].join('\\n'),\n});\n\naddStage(8, 'export_bundle_ready', 'ok', 'publication_fit_report', 'export_bundle', publicationFitReport.fit_score, 'Export bundle created');\nawait addStageSummary.call(this, 8, 'export_bundle_ready', {\n  status: exportBundle.status,\n  target_source_path: exportBundle.target_source_path,\n});\n\nreturn [{ json: ctx }];\n"
+      },
+      "id": "code-content",
+      "name": "Content Pipeline ausfuehren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        290
+      ]
+    }
+  ],
+  "connections": {
+    "Manuell starten": {
+      "main": [
+        [
+          {
+            "node": "Content Pipeline ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vom Ablauf gestartet": {
+      "main": [
+        [
+          {
+            "node": "Content Pipeline ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true
+  },
+  "versionId": "5e4087f6-3f74-4ee8-b4d6-6edaf145c4bb"
+}

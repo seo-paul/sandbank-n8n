@@ -70,6 +70,18 @@
               "type": "string"
             },
             {
+              "name": "workflow_export_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_snapshot_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_article_package_dir",
+              "type": "string"
+            },
+            {
               "name": "workflow_intermediate_dir",
               "type": "string"
             },
@@ -99,6 +111,10 @@
             },
             {
               "name": "workflow_runs_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_register_file",
               "type": "string"
             },
             {

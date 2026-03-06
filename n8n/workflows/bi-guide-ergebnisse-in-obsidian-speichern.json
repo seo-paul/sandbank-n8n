@@ -1,0 +1,257 @@
+{
+  "name": "BI-Guide Ergebnisse in Obsidian speichern",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manuell starten",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "run_id",
+              "type": "string"
+            },
+            {
+              "name": "execution_id",
+              "type": "string"
+            },
+            {
+              "name": "workflow_name",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "created_at",
+              "type": "string"
+            },
+            {
+              "name": "completed_at",
+              "type": "string"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "model_primary",
+              "type": "string"
+            },
+            {
+              "name": "model_used",
+              "type": "string"
+            },
+            {
+              "name": "workflow_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_results_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_detail_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_error_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_export_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_snapshot_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_article_package_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_intermediate_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_prompts_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_global_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_config_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_schema_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_ssot_manifest_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_runs_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_register_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_url",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_api_key",
+              "type": "string"
+            },
+            {
+              "name": "allow_insecure_tls",
+              "type": "boolean"
+            },
+            {
+              "name": "review_decision",
+              "type": "string"
+            },
+            {
+              "name": "human_review_decision",
+              "type": "string"
+            },
+            {
+              "name": "topic_hint",
+              "type": "string"
+            },
+            {
+              "name": "campaign_goal",
+              "type": "string"
+            },
+            {
+              "name": "output_language",
+              "type": "string"
+            },
+            {
+              "name": "quality_gate",
+              "type": "any"
+            },
+            {
+              "name": "prompts",
+              "type": "any"
+            },
+            {
+              "name": "context",
+              "type": "any"
+            },
+            {
+              "name": "configs",
+              "type": "any"
+            },
+            {
+              "name": "schemas",
+              "type": "any"
+            },
+            {
+              "name": "artifacts",
+              "type": "any"
+            },
+            {
+              "name": "stage_logs",
+              "type": "any"
+            },
+            {
+              "name": "stage_summaries",
+              "type": "any"
+            },
+            {
+              "name": "model_trace",
+              "type": "any"
+            },
+            {
+              "name": "generated",
+              "type": "any"
+            },
+            {
+              "name": "output_paths",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "trigger-subflow",
+      "name": "Vom Ablauf gestartet",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = items[0].json;\n\nconst requiredInputFields = [\n  'run_id',\n  'execution_id',\n  'workflow_dir',\n  'workflow_results_dir',\n  'workflow_detail_dir',\n  'workflow_intermediate_dir',\n  'workflow_export_dir',\n  'workflow_snapshot_dir',\n  'workflow_article_package_dir',\n  'workflow_runs_file',\n  'workflow_register_file',\n  'obsidian_rest_url',\n  'obsidian_rest_api_key',\n];\n\nfor (const field of requiredInputFields) {\n  if (!(field in ctx)) {\n    throw new Error('Missing typed subworkflow input: ' + field);\n  }\n}\n\nif (!ctx.obsidian_rest_url || !ctx.obsidian_rest_api_key) {\n  throw new Error('Missing OBSIDIAN_REST_URL or OBSIDIAN_REST_API_KEY');\n}\n\nconst baseUrl = String(ctx.obsidian_rest_url).replace(/\\/+$/, '');\n\nfunction vaultUrl(path) {\n  return baseUrl + '/vault/' + encodeURI(path);\n}\n\nasync function obsidianRequest(params) {\n  const maxAttempts = 3;\n  let lastErr = null;\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      return await this.helpers.httpRequest(params);\n    } catch (error) {\n      lastErr = error;\n      const status = Number(\n        (error && (error.statusCode || error.status || error.httpCode)) ||\n        (error && error.response ? (error.response.status || error.response.statusCode || 0) : 0)\n      );\n      if ((status >= 500 || status === 429) && attempt < maxAttempts) {\n        await new Promise((resolve) => setTimeout(resolve, 500 * attempt));\n        continue;\n      }\n      break;\n    }\n  }\n  throw lastErr || new Error('Obsidian request failed');\n}\n\nasync function obsidianGet(path) {\n  return await obsidianRequest.call(this, {\n    method: 'GET',\n    url: vaultUrl(path),\n    headers: { Authorization: 'Bearer ' + ctx.obsidian_rest_api_key },\n    json: false,\n    skipSslCertificateValidation: !!ctx.allow_insecure_tls,\n    timeout: 120000,\n  });\n}\n\nasync function obsidianPut(path, body, contentType = 'text/markdown') {\n  return await obsidianRequest.call(this, {\n    method: 'PUT',\n    url: vaultUrl(path),\n    headers: {\n      Authorization: 'Bearer ' + ctx.obsidian_rest_api_key,\n      'Content-Type': contentType,\n    },\n    body,\n    json: false,\n    skipSslCertificateValidation: !!ctx.allow_insecure_tls,\n    timeout: 120000,\n  });\n}\n\nasync function readOrEmpty(path) {\n  try {\n    const raw = await obsidianGet.call(this, path);\n    if (typeof raw === 'string') return raw;\n    return JSON.stringify(raw || '');\n  } catch (error) {\n    const status = Number(\n      (error && (error.statusCode || error.status || error.httpCode)) ||\n      (error && error.response ? (error.response.status || error.response.statusCode || 0) : 0)\n    );\n    if (status === 404 || /404/.test(String(error && error.message ? error.message : ''))) return '';\n    throw new Error('Obsidian read failed for ' + path + ': ' + (error.message || 'unknown'));\n  }\n}\n\nasync function ensureFile(path, fallbackBody, contentType = 'text/markdown') {\n  const current = await readOrEmpty.call(this, path);\n  if (current.trim()) return current;\n  const seeded = String(fallbackBody || '').trimEnd() + '\\n';\n  await obsidianPut.call(this, path, seeded, contentType);\n  return seeded;\n}\n\nfunction ensureArray(value) { return Array.isArray(value) ? value : []; }\nfunction ensureObject(value) {\n  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};\n}\nfunction yamlEscape(value) { return String(value || '').replace(/\"/g, '\\\\\"').replace(/\\n/g, ' '); }\nfunction tableCell(value) { return String(value == null ? '' : value).replace(/\\|/g, '/').replace(/\\n/g, ' ').trim(); }\nfunction jsonBlock(value) { return ['```json', JSON.stringify(value == null ? null : value, null, 2), '```'].join('\\n'); }\nfunction wiki(path, label) { return '[[' + String(path) + '|' + String(label) + ']]'; }\n\nfunction normalizeDateTime(ts) {\n  const dateObj = new Date(String(ts || ''));\n  if (Number.isNaN(dateObj.getTime())) return { datum: '', zeit: '', iso: '' };\n  const pad = (n) => String(n).padStart(2, '0');\n  const y = dateObj.getFullYear();\n  const m = pad(dateObj.getMonth() + 1);\n  const d = pad(dateObj.getDate());\n  const hh = pad(dateObj.getHours());\n  const mm = pad(dateObj.getMinutes());\n  const ss = pad(dateObj.getSeconds());\n  return { datum: y + '-' + m + '-' + d, zeit: hh + ':' + mm + ':' + ss, iso: dateObj.toISOString() };\n}\n\nfunction durationSeconds(startIso, endIso) {\n  const start = new Date(String(startIso || ''));\n  const end = new Date(String(endIso || ''));\n  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;\n  return Math.max(0, Math.round((end.getTime() - start.getTime()) / 1000));\n}\n\nfunction workflowOverviewTemplate() {\n  return [\n    '# BI Guide Workflow Uebersicht',\n    '',\n    '| Workflow | Schritt | Zwischenergebnis | Zweck | Beschreibung |',\n    '|---|---|---|---|---|',\n    '| BI-Guide Ablauf automatisch steuern | 1. Source Snapshot | source_snapshot | Repo-Zustand lesen | Liest Sandbank read-only und baut Snapshot, Register und Referenzsignale. |',\n    '| BI-Guide Ablauf automatisch steuern | 2. Artikelplanung | article_plan | Thema fokussieren | Waehlt oder konkretisiert einen Artikel inkl. Angle, Zielgruppe und Outline. |',\n    '| BI-Guide Ablauf automatisch steuern | 3. Artikelpaket | article_package | Entwurf erzeugen | Baut Frontmatter, MDX, Links, Quellen und Media-Brief. |',\n    '| BI-Guide Ablauf automatisch steuern | 4. Publication Fit | publication_fit_report | Publizierbarkeit pruefen | Validiert Contract, Links, Assets und Risiken. |',\n    '| BI-Guide Ablauf automatisch steuern | 5. Export Bundle | export_bundle | Import vorbereiten | Schreibt importbereite Pakete und Register nach Obsidian. |',\n  ].join('\\n');\n}\n\nfunction runsRegisterTemplate() {\n  return [\n    '# BI Guide Runs',\n    '',\n    '| run_id | datum | zeit | status | article_id | titel | fit_status | fit_score | review | export | detail |',\n    '|---|---|---|---|---|---|---|---:|---|---|---|',\n  ].join('\\n');\n}\n\nfunction articleRegisterTemplate() {\n  return [\n    '# Artikelregister',\n    '',\n    '| article_id | locale | category | source_status | workflow_status | target_path | last_run | recommendation |',\n    '|---|---|---|---|---|---|---|---|',\n  ].join('\\n');\n}\n\nfunction intermediateTemplate(workflowName, workflowSlug) {\n  return [\n    '---',\n    'type: workflow-zwischenergebnisse',\n    'workflow: \"' + yamlEscape(workflowName) + '\"',\n    'workflow_slug: ' + workflowSlug,\n    '---',\n    '',\n    '# Zwischenergebnisse - ' + workflowName,\n    '',\n    'Diese Datei enthaelt die vollstaendigen Schritt-Ergebnisse pro Run.',\n  ].join('\\n');\n}\n\nfunction stepPayloadByStage(step) {\n  const artifacts = ensureObject(ctx.artifacts);\n  if (step === 1) return artifacts.source_snapshot_summary || {};\n  if (step === 2) return artifacts.source_snapshot || {};\n  if (step === 3) return artifacts.article_plan_candidate || {};\n  if (step === 4) return artifacts.article_plan || {};\n  if (step === 5) return artifacts.external_research || {};\n  if (step === 6) return artifacts.article_package || {};\n  if (step === 7) return artifacts.publication_fit_report || {};\n  if (step === 8) return artifacts.export_bundle || {};\n  return {};\n}\n\nfunction buildRunSection(workflowName, stageRows) {\n  const completed = normalizeDateTime(ctx.completed_at || new Date().toISOString());\n  const lines = [\n    '',\n    '## Run ' + String(ctx.run_id || ''),\n    '- datum: ' + completed.datum,\n    '- zeit: ' + completed.zeit,\n    '- status: ' + String(ctx.status || 'completed'),\n    '- model_used: ' + String(ctx.model_used || ''),\n    '',\n  ];\n  for (const row of stageRows) {\n    lines.push('### Schritt ' + String(row.step) + ' - ' + String(row.stage));\n    lines.push('#### Kontext');\n    lines.push('- status: ' + String(row.status));\n    lines.push('- quality_score: ' + String(row.quality_score));\n    lines.push('- errors: ' + String(row.errors));\n    lines.push('- input_ref: ' + String(row.input_ref));\n    lines.push('- output_ref: ' + String(row.output_ref));\n    lines.push('');\n    lines.push('#### Ergebnis (vollstaendig)');\n    lines.push(jsonBlock(stepPayloadByStage(row.step)));\n    lines.push('');\n  }\n  return lines.join('\\n').trimEnd() + '\\n';\n}\n\nfunction stageRowsForRun(stageLogs) {\n  const rows = [];\n  for (const row of ensureArray(stageLogs)) {\n    rows.push({\n      step: Number(row.step || 0),\n      stage: String(row.stage || ''),\n      status: String(row.status || ''),\n      ts: String(row.ts || ''),\n      quality_score: Number(row.quality_score || 0).toFixed(2),\n      errors: Number(row.issues || 0),\n      input_ref: String(row.input_ref || ''),\n      output_ref: String(row.output_ref || ''),\n      notes: String(row.notes || ''),\n    });\n  }\n  rows.sort((a, b) => a.step - b.step || a.ts.localeCompare(b.ts));\n  return rows;\n}\n\nfunction stageTable(stageRows) {\n  const lines = [\n    '| step | stage | status | quality_score | errors | notes |',\n    '|---:|---|---|---:|---:|---|',\n  ];\n  for (const row of stageRows) {\n    lines.push('| ' + [\n      String(row.step),\n      tableCell(row.stage),\n      tableCell(row.status),\n      String(row.quality_score),\n      String(row.errors),\n      tableCell(row.notes),\n    ].join(' | ') + ' |');\n  }\n  return lines.join('\\n');\n}\n\nfunction buildRunDetailMarkdown(paths) {\n  const articlePlan = ensureObject(ctx.artifacts.article_plan);\n  const articlePackage = ensureObject(ctx.artifacts.article_package);\n  const publicationFit = ensureObject(ctx.artifacts.publication_fit_report);\n  const exportBundle = ensureObject(ctx.artifacts.export_bundle);\n  const dt = normalizeDateTime(ctx.completed_at || ctx.created_at || new Date().toISOString());\n  const durationSec = durationSeconds(ctx.created_at, ctx.completed_at || new Date().toISOString());\n  const stageRows = stageRowsForRun(ctx.stage_logs);\n  const bodyPreview = String(articlePackage.body_mdx || '').trim().slice(0, 2400);\n  return [\n    '---',\n    'type: workflow-detail',\n    'run_id: \"' + yamlEscape(ctx.run_id) + '\"',\n    'execution_id: \"' + yamlEscape(ctx.execution_id) + '\"',\n    'workflow: \"' + yamlEscape(ctx.workflow_name) + '\"',\n    'datum: \"' + dt.datum + '\"',\n    'zeit: \"' + dt.zeit + '\"',\n    'topic: \"' + yamlEscape(ctx.topic || articlePlan.working_title || '') + '\"',\n    'article_id: \"' + yamlEscape(articlePlan.article_id || '') + '\"',\n    'model_used: \"' + yamlEscape(ctx.model_used || '') + '\"',\n    'status: \"' + yamlEscape(ctx.status || '') + '\"',\n    'fit_status: \"' + yamlEscape(publicationFit.status || '') + '\"',\n    'fit_score: \"' + String(publicationFit.fit_score || 0) + '\"',\n    'human_review_required: \"' + String(publicationFit.human_review_required || false) + '\"',\n    'duration_sec: \"' + String(durationSec) + '\"',\n    '---',\n    '',\n    '# Laufdetail ' + String(ctx.run_id || ''),\n    '',\n    '## Kurzstatus',\n    '- artikel_id: ' + String(articlePlan.article_id || ''),\n    '- titel: ' + String(articlePlan.working_title || ''),\n    '- status: ' + String(ctx.status || ''),\n    '- fit_status: ' + String(publicationFit.status || ''),\n    '- fit_score: ' + String(publicationFit.fit_score || 0),\n    '- human_review_required: ' + String(publicationFit.human_review_required || false),\n    '- export_status: ' + String(exportBundle.status || ''),\n    '- target_source_path: ' + String(exportBundle.target_source_path || ''),\n    '',\n    '## Dateien',\n    '- run_detail: ' + wiki(paths.run_detail, 'Laufdetail'),\n    '- source_snapshot: ' + wiki(paths.source_snapshot, 'Quellensnapshot'),\n    '- article_package: ' + wiki(paths.article_package, 'Artikelpaket'),\n    '- export_note: ' + wiki(paths.export_note, 'Exportpaket'),\n    '- export_mdx: ' + wiki(paths.export_mdx, 'MDX Export'),\n    '',\n    '## Article Plan',\n    jsonBlock(articlePlan),\n    '',\n    '## Publication Fit',\n    jsonBlock(publicationFit),\n    '',\n    '## Export Bundle',\n    jsonBlock(exportBundle),\n    '',\n    '## Body Preview',\n    '```mdx',\n    bodyPreview,\n    '```',\n    '',\n    '## Laufschritte',\n    stageTable(stageRows),\n  ].join('\\n');\n}\n\nfunction buildSnapshotMarkdown() {\n  const snapshot = ensureObject(ctx.artifacts.source_snapshot);\n  return [\n    '---',\n    'type: source-snapshot',\n    'run_id: \"' + yamlEscape(ctx.run_id) + '\"',\n    'snapshot_id: \"' + yamlEscape(snapshot.snapshot_id || '') + '\"',\n    'created_at: \"' + yamlEscape(snapshot.created_at || '') + '\"',\n    '---',\n    '',\n    '# Quellensnapshot ' + String(snapshot.snapshot_id || ''),\n    '',\n    '## Summary',\n    '- tracked_files: ' + String(ensureArray(snapshot.tracked_files).length),\n    '- categories: ' + String(ensureArray(snapshot.categories).length),\n    '- articles: ' + String(ensureArray(snapshot.articles).length),\n    '- planned_topics: ' + String(ensureArray(snapshot.planned_topics).length),\n    '',\n    jsonBlock(snapshot),\n  ].join('\\n');\n}\n\nfunction buildArticlePackageMarkdown() {\n  const articlePlan = ensureObject(ctx.artifacts.article_plan);\n  const articlePackage = ensureObject(ctx.artifacts.article_package);\n  return [\n    '---',\n    'type: article-package',\n    'run_id: \"' + yamlEscape(ctx.run_id) + '\"',\n    'article_id: \"' + yamlEscape(articlePlan.article_id || '') + '\"',\n    'target_source_path: \"' + yamlEscape(articlePlan.target_source_path || '') + '\"',\n    '---',\n    '',\n    '# Artikelpaket ' + String(articlePlan.article_id || ''),\n    '',\n    '## Frontmatter',\n    '```yaml',\n    String(ensureObject(ctx.artifacts.export_bundle).frontmatter_preview || ''),\n    '```',\n    '',\n    '## Package',\n    jsonBlock(articlePackage),\n  ].join('\\n');\n}\n\nfunction buildExportNoteMarkdown(paths) {\n  const exportBundle = ensureObject(ctx.artifacts.export_bundle);\n  const publicationFit = ensureObject(ctx.artifacts.publication_fit_report);\n  return [\n    '---',\n    'type: export-bundle',\n    'run_id: \"' + yamlEscape(ctx.run_id) + '\"',\n    'article_id: \"' + yamlEscape(ensureObject(ctx.artifacts.article_plan).article_id || '') + '\"',\n    'status: \"' + yamlEscape(exportBundle.status || '') + '\"',\n    'target_source_path: \"' + yamlEscape(exportBundle.target_source_path || '') + '\"',\n    '---',\n    '',\n    '# Export Bundle ' + String(ensureObject(ctx.artifacts.article_plan).article_id || ''),\n    '',\n    '- status: ' + String(exportBundle.status || ''),\n    '- fit_status: ' + String(publicationFit.status || ''),\n    '- target_source_path: ' + String(exportBundle.target_source_path || ''),\n    '- target_category_path: ' + String(exportBundle.target_category_path || ''),\n    '- mdx_file: ' + wiki(paths.export_mdx, 'MDX Export'),\n    '',\n    '## Manual Followups',\n    ensureArray(exportBundle.manual_followups).length ? ensureArray(exportBundle.manual_followups).map((row) => '- ' + String(row)).join('\\n') : '- none',\n    '',\n    '## Notes',\n    ensureArray(exportBundle.notes).length ? ensureArray(exportBundle.notes).map((row) => '- ' + String(row)).join('\\n') : '- none',\n  ].join('\\n');\n}\n\nfunction mergeRegisterRows(baseRows) {\n  const rows = ensureArray(baseRows).map((row) => Object.assign({}, row));\n  const articlePlan = ensureObject(ctx.artifacts.article_plan);\n  const publicationFit = ensureObject(ctx.artifacts.publication_fit_report);\n  const exportBundle = ensureObject(ctx.artifacts.export_bundle);\n  const currentIndex = rows.findIndex((row) => String(row.article_id || '') === String(articlePlan.article_id || ''));\n  const currentRow = {\n    article_id: String(articlePlan.article_id || ''),\n    locale: String(articlePlan.target_locale || 'de'),\n    category: String(articlePlan.category_id || ''),\n    source_status: String((rows[currentIndex] && rows[currentIndex].source_status) || 'planned_backlog_only'),\n    workflow_status: String(ctx.status || exportBundle.status || 'content_ready'),\n    target_path: String(exportBundle.target_source_path || ''),\n    last_run: String(ctx.run_id || ''),\n    recommendation: publicationFit.status === 'pass' ? 'ready_for_import' : (publicationFit.status === 'revise' ? 'revise_export_bundle' : 'resolve_blocking_issues'),\n  };\n  if (currentIndex >= 0) rows[currentIndex] = currentRow;\n  else rows.push(currentRow);\n  rows.sort((a, b) => String(a.article_id || '').localeCompare(String(b.article_id || '')));\n  return rows;\n}\n\nfunction articleRegisterMarkdown(rows) {\n  const lines = [\n    '# Artikelregister',\n    '',\n    '| article_id | locale | category | source_status | workflow_status | target_path | last_run | recommendation |',\n    '|---|---|---|---|---|---|---|---|',\n  ];\n  for (const row of rows) {\n    lines.push('| ' + [\n      tableCell(row.article_id),\n      tableCell(row.locale),\n      tableCell(row.category),\n      tableCell(row.source_status),\n      tableCell(row.workflow_status),\n      tableCell(row.target_path),\n      tableCell(row.last_run),\n      tableCell(row.recommendation),\n    ].join(' | ') + ' |');\n  }\n  return lines.join('\\n');\n}\n\nfunction appendRunRow(currentText, detailPath) {\n  const articlePlan = ensureObject(ctx.artifacts.article_plan);\n  const publicationFit = ensureObject(ctx.artifacts.publication_fit_report);\n  const exportBundle = ensureObject(ctx.artifacts.export_bundle);\n  const dt = normalizeDateTime(ctx.completed_at || new Date().toISOString());\n  const row = '| ' + [\n    tableCell(ctx.run_id),\n    tableCell(dt.datum),\n    tableCell(dt.zeit),\n    tableCell(ctx.status),\n    tableCell(articlePlan.article_id || ''),\n    tableCell(articlePlan.working_title || ''),\n    tableCell(publicationFit.status || ''),\n    String(Number(publicationFit.fit_score || 0).toFixed(2)),\n    tableCell(publicationFit.human_review_required ? 'required' : 'not_required'),\n    tableCell(exportBundle.status || ''),\n    tableCell(wiki(detailPath, 'detail')),\n  ].join(' | ') + ' |';\n  const normalized = String(currentText || '').trimEnd();\n  return normalized + '\\n' + row + '\\n';\n}\n\nconst articlePlan = ensureObject(ctx.artifacts.article_plan);\nconst exportBundle = ensureObject(ctx.artifacts.export_bundle);\nif (!articlePlan.article_id || !exportBundle.mdx) {\n  throw new Error('Missing article_plan or export_bundle before persistence');\n}\n\nconst exportDir = ctx.workflow_export_dir + '/' + articlePlan.article_id;\nconst exportNotePath = exportDir + '/' + ctx.run_id + '-export.md';\nconst exportMdxPath = exportDir + '/' + ctx.run_id + '-' + String(exportBundle.article_file_name || articlePlan.article_id + '.mdx');\nconst paths = {\n  run_detail: ctx.workflow_detail_dir + '/' + ctx.run_id + '.md',\n  source_snapshot: ctx.workflow_snapshot_dir + '/' + ctx.run_id + '.md',\n  article_package: ctx.workflow_article_package_dir + '/' + ctx.run_id + '.md',\n  export_note: exportNotePath,\n  export_mdx: exportMdxPath,\n};\n\nawait ensureFile.call(this, ctx.workflow_overview_file, workflowOverviewTemplate());\nconst currentRuns = await ensureFile.call(this, ctx.workflow_runs_file, runsRegisterTemplate());\nawait ensureFile.call(this, ctx.workflow_register_file, articleRegisterTemplate());\nconst currentPlanIntermediate = await ensureFile.call(this, ctx.workflow_intermediate_dir + '/bi-guide-quellen-und-plan.md', intermediateTemplate('BI-Guide Quellen und Planung', 'bi-guide-quellen-und-plan'));\nconst currentContentIntermediate = await ensureFile.call(this, ctx.workflow_intermediate_dir + '/bi-guide-artikelpaket.md', intermediateTemplate('BI-Guide Artikelpaket erstellen', 'bi-guide-artikelpaket'));\n\nawait obsidianPut.call(this, paths.source_snapshot, buildSnapshotMarkdown());\nawait obsidianPut.call(this, paths.article_package, buildArticlePackageMarkdown());\nawait obsidianPut.call(this, paths.export_mdx, String(exportBundle.mdx || '').trimEnd() + '\\n', 'text/markdown');\nawait obsidianPut.call(this, paths.export_note, buildExportNoteMarkdown(paths));\nawait obsidianPut.call(this, paths.run_detail, buildRunDetailMarkdown(paths));\n\nconst registerRows = mergeRegisterRows(ensureArray(ctx.artifacts.article_register));\nawait obsidianPut.call(this, ctx.workflow_register_file, articleRegisterMarkdown(registerRows));\nawait obsidianPut.call(this, ctx.workflow_runs_file, appendRunRow(currentRuns, paths.run_detail));\n\nconst planRows = stageRowsForRun(ctx.stage_logs).filter((row) => row.step <= 4);\nconst contentRows = stageRowsForRun(ctx.stage_logs).filter((row) => row.step >= 5);\nawait obsidianPut.call(this, ctx.workflow_intermediate_dir + '/bi-guide-quellen-und-plan.md', String(currentPlanIntermediate || '').trimEnd() + '\\n' + buildRunSection('BI-Guide Quellen und Planung', planRows));\nawait obsidianPut.call(this, ctx.workflow_intermediate_dir + '/bi-guide-artikelpaket.md', String(currentContentIntermediate || '').trimEnd() + '\\n' + buildRunSection('BI-Guide Artikelpaket erstellen', contentRows));\n\nctx.output_paths = Object.assign({}, ensureObject(ctx.output_paths), {\n  run_detail: paths.run_detail,\n  source_snapshot: paths.source_snapshot,\n  article_package: paths.article_package,\n  export_note: paths.export_note,\n  export_mdx: paths.export_mdx,\n  workflow_runs: ctx.workflow_runs_file,\n  workflow_register: ctx.workflow_register_file,\n  workflow_intermediate_files: [\n    ctx.workflow_intermediate_dir + '/bi-guide-quellen-und-plan.md',\n    ctx.workflow_intermediate_dir + '/bi-guide-artikelpaket.md',\n  ],\n});\n\nctx.status = ctx.status || 'persisted';\n\nreturn [{ json: ctx }];\n"
+      },
+      "id": "code-persist",
+      "name": "Ergebnisse in Obsidian speichern",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        290
+      ]
+    }
+  ],
+  "connections": {
+    "Manuell starten": {
+      "main": [
+        [
+          {
+            "node": "Ergebnisse in Obsidian speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vom Ablauf gestartet": {
+      "main": [
+        [
+          {
+            "node": "Ergebnisse in Obsidian speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true
+  },
+  "versionId": "ac8ef271-b816-4e8a-a385-63fe4cf9a526"
+}

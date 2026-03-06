@@ -57,7 +57,7 @@ ctx.artifacts.human_review = reviewState;
 
 if (reviewState.decision === 'approve' && finalGate.status === 'pass') {
   ctx.status = 'content_ready';
-} else if (reviewState.decision === 'deny') {
+} else if (reviewState.decision === 'deny' || finalGate.status === 'hold') {
   ctx.status = 'hold';
 } else if (finalGate.human_review_required) {
   ctx.status = 'review_required';

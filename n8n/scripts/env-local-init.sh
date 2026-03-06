@@ -270,6 +270,21 @@ if is_placeholder "$current_model"; then
   set_env_value "OLLAMA_MODEL" "qwen3.5:27b"
 fi
 
+current_node_builtin="$(get_env_value "NODE_FUNCTION_ALLOW_BUILTIN")"
+if [[ -z "$current_node_builtin" || "$current_node_builtin" == "replace_with_"* ]]; then
+  set_env_value "NODE_FUNCTION_ALLOW_BUILTIN" "crypto,fs,path"
+fi
+
+current_sandbank_repo_dir="$(get_env_value "SANDBANK_REPO_DIR")"
+if [[ -z "$current_sandbank_repo_dir" || "$current_sandbank_repo_dir" == "replace_with_"* ]]; then
+  set_env_value "SANDBANK_REPO_DIR" "/Users/zweigen/Sites/sandbank"
+fi
+
+current_sandbank_readonly_root="$(get_env_value "SANDBANK_READONLY_ROOT")"
+if [[ -z "$current_sandbank_readonly_root" || "$current_sandbank_readonly_root" == "replace_with_"* ]]; then
+  set_env_value "SANDBANK_READONLY_ROOT" "/sandbank-readonly"
+fi
+
 # Generate SearXNG secret if still placeholder
 if [[ -f "$SEARX_SETTINGS" ]] && grep -q 'replace_me_with_openssl_rand_hex_32' "$SEARX_SETTINGS"; then
   searx_key="$(openssl rand -hex 32)"

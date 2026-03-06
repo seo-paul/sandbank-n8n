@@ -61,6 +61,9 @@ const sharedCtxInputContract = [
   { name: 'workflow_results_dir', type: 'string' },
   { name: 'workflow_detail_dir', type: 'string' },
   { name: 'workflow_error_dir', type: 'string' },
+  { name: 'workflow_export_dir', type: 'string' },
+  { name: 'workflow_snapshot_dir', type: 'string' },
+  { name: 'workflow_article_package_dir', type: 'string' },
   { name: 'workflow_intermediate_dir', type: 'string' },
   { name: 'workflow_prompts_dir', type: 'string' },
   { name: 'workflow_context_dir', type: 'string' },
@@ -69,6 +72,7 @@ const sharedCtxInputContract = [
   { name: 'workflow_schema_dir', type: 'string' },
   { name: 'workflow_ssot_manifest_file', type: 'string' },
   { name: 'workflow_runs_file', type: 'string' },
+  { name: 'workflow_register_file', type: 'string' },
   { name: 'workflow_overview_file', type: 'string' },
   { name: 'obsidian_rest_url', type: 'string' },
   { name: 'obsidian_rest_api_key', type: 'string' },
@@ -332,6 +336,132 @@ const performance = {
   versionId: 'ac6f4be2-29ac-4bd3-a4f4-a60ef4ce5d84',
 };
 
+const biGuideOrchestrator = {
+  name: 'BI-Guide Ablauf automatisch steuern',
+  active: false,
+  nodes: [
+    manualNode('manual-1', 'Manuell starten', [-1280, 280]),
+    codeNode('code-init', 'Ablaufdaten vorbereiten', [-1020, 280], readCode('bi-guide-orchestrator-init.js')),
+    codeNode('code-ssot', 'Prompt und Kontext SSOT laden', [-760, 280], readCode('bi-guide-orchestrator-load-ssot.js')),
+    executeWorkflowNode('exec-source', 'Quellen und Planung starten', [-500, 280], '/workflows/bi-guide-quellen-und-planung.json'),
+    executeWorkflowNode('exec-content', 'Artikelpaket starten', [-220, 280], '/workflows/bi-guide-artikelpaket-erstellen.json'),
+    executeWorkflowNode('exec-human-review', 'Review Schritt starten', [60, 280], '/workflows/bi-guide-human-review-pruefen.json'),
+    executeWorkflowNode('exec-persist', 'Speicher Schritt starten', [340, 280], '/workflows/bi-guide-ergebnisse-in-obsidian-speichern.json'),
+    codeNode('code-return', 'Ergebnis Uebersicht ausgeben', [620, 280], readCode('bi-guide-orchestrator-return.js')),
+  ],
+  connections: {
+    'Manuell starten': { main: [[{ node: 'Ablaufdaten vorbereiten', type: 'main', index: 0 }]] },
+    'Ablaufdaten vorbereiten': { main: [[{ node: 'Prompt und Kontext SSOT laden', type: 'main', index: 0 }]] },
+    'Prompt und Kontext SSOT laden': { main: [[{ node: 'Quellen und Planung starten', type: 'main', index: 0 }]] },
+    'Quellen und Planung starten': { main: [[{ node: 'Artikelpaket starten', type: 'main', index: 0 }]] },
+    'Artikelpaket starten': { main: [[{ node: 'Review Schritt starten', type: 'main', index: 0 }]] },
+    'Review Schritt starten': { main: [[{ node: 'Speicher Schritt starten', type: 'main', index: 0 }]] },
+    'Speicher Schritt starten': { main: [[{ node: 'Ergebnis Uebersicht ausgeben', type: 'main', index: 0 }]] },
+  },
+  settings: workflowSettings,
+  versionId: '1996e4cf-2e7e-4ef7-b1f4-3f3b80f8a8aa',
+};
+
+const biGuideSource = {
+  name: 'BI-Guide Quellen und Planung',
+  active: false,
+  nodes: [
+    manualNode('manual-1', 'Manuell starten', [-920, 220]),
+    executeTriggerNode('trigger-subflow', 'Vom Ablauf gestartet', [-920, 360], sharedCtxInputContract),
+    codeNode('code-source', 'Source Pipeline ausfuehren', [-620, 290], readCode('bi-guide-source-pipeline.js')),
+  ],
+  connections: {
+    'Manuell starten': { main: [[{ node: 'Source Pipeline ausfuehren', type: 'main', index: 0 }]] },
+    'Vom Ablauf gestartet': { main: [[{ node: 'Source Pipeline ausfuehren', type: 'main', index: 0 }]] },
+  },
+  settings: workflowSettings,
+  versionId: 'b56aec7d-cd99-45a1-87c4-939e3e0a1f7d',
+};
+
+const biGuideContent = {
+  name: 'BI-Guide Artikelpaket erstellen',
+  active: false,
+  nodes: [
+    manualNode('manual-1', 'Manuell starten', [-920, 220]),
+    executeTriggerNode('trigger-subflow', 'Vom Ablauf gestartet', [-920, 360], sharedCtxInputContract),
+    codeNode('code-content', 'Content Pipeline ausfuehren', [-620, 290], readCode('bi-guide-content-pipeline.js')),
+  ],
+  connections: {
+    'Manuell starten': { main: [[{ node: 'Content Pipeline ausfuehren', type: 'main', index: 0 }]] },
+    'Vom Ablauf gestartet': { main: [[{ node: 'Content Pipeline ausfuehren', type: 'main', index: 0 }]] },
+  },
+  settings: workflowSettings,
+  versionId: '5e4087f6-3f74-4ee8-b4d6-6edaf145c4bb',
+};
+
+const biGuidePersist = {
+  name: 'BI-Guide Ergebnisse in Obsidian speichern',
+  active: false,
+  nodes: [
+    manualNode('manual-1', 'Manuell starten', [-920, 220]),
+    executeTriggerNode('trigger-subflow', 'Vom Ablauf gestartet', [-920, 360], sharedCtxInputContract),
+    codeNode('code-persist', 'Ergebnisse in Obsidian speichern', [-620, 290], readCode('bi-guide-persist-results.js')),
+  ],
+  connections: {
+    'Manuell starten': { main: [[{ node: 'Ergebnisse in Obsidian speichern', type: 'main', index: 0 }]] },
+    'Vom Ablauf gestartet': { main: [[{ node: 'Ergebnisse in Obsidian speichern', type: 'main', index: 0 }]] },
+  },
+  settings: workflowSettings,
+  versionId: 'ac8ef271-b816-4e8a-a385-63fe4cf9a526',
+};
+
+const biGuideHumanReview = {
+  name: 'BI-Guide Human Review pruefen',
+  active: false,
+  nodes: [
+    manualNode('manual-1', 'Manuell starten', [-920, 220]),
+    executeTriggerNode('trigger-subflow', 'Vom Ablauf gestartet', [-920, 360], sharedCtxInputContract),
+    codeNode('code-human-review', 'Review Gate ausfuehren', [-620, 290], readCode('human-review-gate.js')),
+  ],
+  connections: {
+    'Manuell starten': { main: [[{ node: 'Review Gate ausfuehren', type: 'main', index: 0 }]] },
+    'Vom Ablauf gestartet': { main: [[{ node: 'Review Gate ausfuehren', type: 'main', index: 0 }]] },
+  },
+  settings: workflowSettings,
+  versionId: '6d675e56-c59f-47d0-90b3-3d1fd4825b09',
+};
+
+const biGuideErrorWorkflow = {
+  name: 'BI-Guide Fehlerlauf klar dokumentieren',
+  active: false,
+  nodes: [
+    errorTriggerNode('error-trigger', 'Bei Fehler starten', [-980, 260]),
+    codeNode('code-error', 'Fehlerdaten aufbereiten', [-700, 260], readCode('bi-guide-error-prepare.js')),
+    httpNode('http-save', 'Fehlerdetails speichern', [-430, 260], {
+      method: 'PUT',
+      url: '={{$env.OBSIDIAN_REST_URL + "/vault/" + $json.detailPath}}',
+      sendHeaders: true,
+      headerParameters: {
+        parameters: [
+          { name: 'Authorization', value: '={{"Bearer " + $env.OBSIDIAN_REST_API_KEY}}' },
+          { name: 'Content-Type', value: 'text/markdown' },
+        ],
+      },
+      sendBody: true,
+      contentType: 'raw',
+      rawContentType: 'text/markdown',
+      body: '={{$json.markdown}}',
+      options: {
+        allowUnauthorizedCerts: '={{($env.OBSIDIAN_ALLOW_INSECURE_TLS || "false") === "true"}}',
+        timeout: 15000,
+      },
+    }),
+    codeNode('code-error-return', 'Fehler Ergebnis ausgeben', [-170, 260], `return [{\n  json: {\n    run_id: $json.run_id,\n    execution_id: $json.execution_id,\n    workflow_name: $json.workflow_name,\n    workflow_id: $json.workflow_id,\n    status: 'failed_logged',\n    workflow_error_path: $json.detailPath,\n    error_message: $json.error_message,\n    last_node: $json.last_node,\n  },\n}];\n`),
+  ],
+  connections: {
+    'Bei Fehler starten': { main: [[{ node: 'Fehlerdaten aufbereiten', type: 'main', index: 0 }]] },
+    'Fehlerdaten aufbereiten': { main: [[{ node: 'Fehlerdetails speichern', type: 'main', index: 0 }]] },
+    'Fehlerdetails speichern': { main: [[{ node: 'Fehler Ergebnis ausgeben', type: 'main', index: 0 }]] },
+  },
+  settings: workflowSettings,
+  versionId: '6207f5f1-5781-4cc9-96eb-d8e2c81b4a44',
+};
+
 writeWorkflow('ablauf-automatisch-steuern.json', orchestrator);
 writeWorkflow('thema-und-quellen-sammeln.json', research);
 writeWorkflow('beitrag-aus-quellen-erstellen.json', content);
@@ -340,3 +470,9 @@ writeWorkflow('ergebnisse-in-obsidian-speichern.json', persist);
 writeWorkflow('system-verbindungen-pruefen.json', system);
 writeWorkflow('fehlerlauf-klar-dokumentieren.json', errorWorkflow);
 writeWorkflow('performance-zurueckfuehren.json', performance);
+writeWorkflow('bi-guide-ablauf-automatisch-steuern.json', biGuideOrchestrator);
+writeWorkflow('bi-guide-quellen-und-planung.json', biGuideSource);
+writeWorkflow('bi-guide-artikelpaket-erstellen.json', biGuideContent);
+writeWorkflow('bi-guide-human-review-pruefen.json', biGuideHumanReview);
+writeWorkflow('bi-guide-ergebnisse-in-obsidian-speichern.json', biGuidePersist);
+writeWorkflow('bi-guide-fehlerlauf-klar-dokumentieren.json', biGuideErrorWorkflow);

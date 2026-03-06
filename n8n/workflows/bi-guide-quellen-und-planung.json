@@ -1,0 +1,257 @@
+{
+  "name": "BI-Guide Quellen und Planung",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-1",
+      "name": "Manuell starten",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "run_id",
+              "type": "string"
+            },
+            {
+              "name": "execution_id",
+              "type": "string"
+            },
+            {
+              "name": "workflow_name",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "created_at",
+              "type": "string"
+            },
+            {
+              "name": "completed_at",
+              "type": "string"
+            },
+            {
+              "name": "topic",
+              "type": "string"
+            },
+            {
+              "name": "model_primary",
+              "type": "string"
+            },
+            {
+              "name": "model_used",
+              "type": "string"
+            },
+            {
+              "name": "workflow_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_results_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_detail_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_error_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_export_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_snapshot_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_article_package_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_intermediate_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_prompts_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_global_context_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_config_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_schema_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_ssot_manifest_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_runs_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_register_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_url",
+              "type": "string"
+            },
+            {
+              "name": "obsidian_rest_api_key",
+              "type": "string"
+            },
+            {
+              "name": "allow_insecure_tls",
+              "type": "boolean"
+            },
+            {
+              "name": "review_decision",
+              "type": "string"
+            },
+            {
+              "name": "human_review_decision",
+              "type": "string"
+            },
+            {
+              "name": "topic_hint",
+              "type": "string"
+            },
+            {
+              "name": "campaign_goal",
+              "type": "string"
+            },
+            {
+              "name": "output_language",
+              "type": "string"
+            },
+            {
+              "name": "quality_gate",
+              "type": "any"
+            },
+            {
+              "name": "prompts",
+              "type": "any"
+            },
+            {
+              "name": "context",
+              "type": "any"
+            },
+            {
+              "name": "configs",
+              "type": "any"
+            },
+            {
+              "name": "schemas",
+              "type": "any"
+            },
+            {
+              "name": "artifacts",
+              "type": "any"
+            },
+            {
+              "name": "stage_logs",
+              "type": "any"
+            },
+            {
+              "name": "stage_summaries",
+              "type": "any"
+            },
+            {
+              "name": "model_trace",
+              "type": "any"
+            },
+            {
+              "name": "generated",
+              "type": "any"
+            },
+            {
+              "name": "output_paths",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "trigger-subflow",
+      "name": "Vom Ablauf gestartet",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = items[0].json;\n\nconst requiredInputFields = [\n  'run_id',\n  'model_used',\n  'prompts',\n  'context',\n  'configs',\n  'schemas',\n];\n\nfor (const field of requiredInputFields) {\n  if (!(field in ctx)) {\n    throw new Error('Missing typed subworkflow input: ' + field);\n  }\n}\n\nconst fs = require('fs');\nconst path = require('path');\nconst crypto = require('crypto');\n\nfunction nowIso() { return new Date().toISOString(); }\nfunction ensureArray(value) { return Array.isArray(value) ? value : []; }\nfunction ensureObject(value) {\n  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};\n}\nfunction clamp(value, min, max, fallback) {\n  const numeric = Number(value);\n  if (!Number.isFinite(numeric)) return fallback;\n  return Math.min(max, Math.max(min, numeric));\n}\nfunction shortText(value, maxLen = 260) {\n  const text = typeof value === 'string' ? value : JSON.stringify(value || '');\n  return text.length <= maxLen ? text : text.slice(0, maxLen - 3) + '...';\n}\nfunction sanitizeText(value, maxLen = 4000) {\n  return String(value || '')\n    .replace(/<[^>]+>/g, ' ')\n    .replace(/\\{[^{}]*\\}/g, ' ')\n    .replace(/\\[[^\\]]*\\]\\([^)]+\\)/g, ' ')\n    .replace(/[`*_>#]/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .slice(0, maxLen);\n}\nfunction normalizeQualityScore(value) {\n  const numeric = Number(value);\n  if (!Number.isFinite(numeric)) return 0;\n  if (numeric <= 1) return Math.max(0, Math.min(100, numeric * 100));\n  if (numeric <= 10) return Math.max(0, Math.min(100, numeric * 10));\n  return Math.max(0, Math.min(100, numeric));\n}\nfunction parseBool(value, fallback = false) {\n  if (value === true || value === false) return value;\n  const normalized = String(value == null ? '' : value).trim().toLowerCase();\n  if (normalized === 'true') return true;\n  if (normalized === 'false') return false;\n  return fallback;\n}\nfunction uniqueStrings(values, maxLen = 180) {\n  const out = [];\n  const seen = new Set();\n  for (const value of ensureArray(values)) {\n    const text = sanitizeText(value, maxLen);\n    if (!text || seen.has(text)) continue;\n    seen.add(text);\n    out.push(text);\n  }\n  return out;\n}\nfunction transliterate(value) {\n  return String(value || '')\n    .replace(/Ae/g, 'Ae')\n    .replace(/Oe/g, 'Oe')\n    .replace(/Ue/g, 'Ue')\n    .replace(/ae/g, 'ae')\n    .replace(/oe/g, 'oe')\n    .replace(/ue/g, 'ue')\n    .replace(/ß/g, 'ss')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '');\n}\nfunction normalizeKey(value) {\n  return transliterate(value)\n    .toLowerCase()\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/^-+|-+$/g, '');\n}\nfunction slugify(value) {\n  return normalizeKey(value).slice(0, 80);\n}\nfunction yamlEscape(value) {\n  return String(value || '').replace(/\"/g, '\\\\\"').replace(/\\n/g, ' ');\n}\nfunction jsonClone(value) {\n  return JSON.parse(JSON.stringify(value));\n}\n\nif (String(ctx.model_used || '').trim() !== 'qwen3.5:27b') {\n  throw new Error('Nur qwen3.5:27b ist erlaubt. Aktuell: ' + String(ctx.model_used || 'leer'));\n}\n\nctx.stage_logs = ensureArray(ctx.stage_logs);\nctx.stage_summaries = ensureArray(ctx.stage_summaries);\nctx.model_trace = ensureArray(ctx.model_trace);\nctx.artifacts = ensureObject(ctx.artifacts);\nctx.context = ensureObject(ctx.context);\nctx.schemas = ensureObject(ctx.schemas);\nctx.configs = ensureObject(ctx.configs);\n\nconst sourceSnapshotSchema = ctx.schemas.source_snapshot;\nconst articlePlanSchema = ctx.schemas.article_plan;\nif (!sourceSnapshotSchema || !articlePlanSchema) {\n  throw new Error('Missing schema contracts: source_snapshot or article_plan');\n}\n\nfunction validateSchema(schema, value, atPath = 'value') {\n  if (!schema || typeof schema !== 'object') return;\n  const type = schema.type;\n  const isObjectSchema = type === 'object' || !!schema.properties || !!schema.required;\n  const isArraySchema = type === 'array' || !!schema.items;\n  if (schema.const !== undefined && value !== schema.const) {\n    throw new Error(atPath + ' const mismatch');\n  }\n  if (Array.isArray(schema.enum) && !schema.enum.includes(value)) {\n    throw new Error(atPath + ' enum mismatch');\n  }\n  if (isObjectSchema) {\n    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(atPath + ' must be object');\n    const properties = ensureObject(schema.properties);\n    for (const requiredKey of ensureArray(schema.required)) {\n      if (!(requiredKey in value)) throw new Error(atPath + '.' + requiredKey + ' is required');\n    }\n    for (const [key, child] of Object.entries(properties)) {\n      if (key in value) validateSchema(child, value[key], atPath + '.' + key);\n    }\n    if (schema.additionalProperties === false) {\n      for (const key of Object.keys(value)) {\n        if (!(key in properties)) throw new Error(atPath + '.' + key + ' is not allowed');\n      }\n    }\n    return;\n  }\n  if (isArraySchema) {\n    if (!Array.isArray(value)) throw new Error(atPath + ' must be array');\n    if (Number.isFinite(schema.minItems) && value.length < schema.minItems) {\n      throw new Error(atPath + ' minItems=' + schema.minItems);\n    }\n    if (schema.items) {\n      for (let i = 0; i < value.length; i++) {\n        validateSchema(schema.items, value[i], atPath + '[' + i + ']');\n      }\n    }\n    return;\n  }\n  if (type === 'string') {\n    if (typeof value !== 'string') throw new Error(atPath + ' must be string');\n    if (Number.isFinite(schema.minLength) && value.length < schema.minLength) {\n      throw new Error(atPath + ' minLength=' + schema.minLength);\n    }\n    return;\n  }\n  if (type === 'number') {\n    if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(atPath + ' must be number');\n    if (Number.isFinite(schema.minimum) && value < schema.minimum) throw new Error(atPath + ' minimum=' + schema.minimum);\n    if (Number.isFinite(schema.maximum) && value > schema.maximum) throw new Error(atPath + ' maximum=' + schema.maximum);\n    return;\n  }\n  if (type === 'boolean' && typeof value !== 'boolean') {\n    throw new Error(atPath + ' must be boolean');\n  }\n}\n\nfunction addStage(step, stage, status, inputRef, outputRef, quality, notes, issueCount = 0) {\n  ctx.stage_logs.push({\n    workflow: 'BI-Guide Quellen und Planung',\n    step,\n    stage,\n    status,\n    input_ref: inputRef,\n    output_ref: outputRef,\n    quality_score: normalizeQualityScore(quality),\n    notes: String(notes || ''),\n    issues: Number.isFinite(Number(issueCount)) ? Number(issueCount) : 0,\n    model_used: ctx.model_used,\n    ts: nowIso(),\n  });\n  ctx.model_trace.push({ step, stage, model_used: ctx.model_used, ts: nowIso() });\n}\n\nasync function addStageSummary(step, stage, payload) {\n  const enabled = parseBool($env.PIPELINE_STAGE_SUMMARY_ENABLED, false);\n  if (!enabled) {\n    ctx.stage_summaries.push({\n      step,\n      stage,\n      summary: shortText(typeof payload === 'string' ? payload : JSON.stringify(payload), 480),\n    });\n    return;\n  }\n  try {\n    const res = await callOllamaRaw.call(\n      this,\n      'Du erstellst knappe Workflow-Zusammenfassungen.',\n      buildPrompt(String(ctx.prompts.schritt_zusammenfassung || ''), {\n        workflow_name: 'BI-Guide Quellen und Planung',\n        step_name: stage,\n        output_summary: shortText(typeof payload === 'string' ? payload : JSON.stringify(payload), 1800),\n      }),\n      { temperature: 0.1, num_predict: 180, num_ctx: 2048, timeout: 120000, max_attempts: 2, thinking: false }\n    );\n    ctx.stage_summaries.push({ step, stage, summary: shortText(res.text, 480) });\n  } catch (error) {\n    ctx.stage_summaries.push({ step, stage, summary: 'Zusammenfassung fehlgeschlagen: ' + shortText(error.message || 'unknown', 180) });\n  }\n}\n\nfunction extractJsonCandidate(rawText) {\n  if (typeof rawText !== 'string') throw new Error('Model output is not string');\n  const fenced = rawText.match(/```(?:json)?\\s*([\\s\\S]*?)```/i);\n  const text = (fenced ? fenced[1] : rawText).trim();\n  try {\n    return JSON.parse(text);\n  } catch {}\n  const objStart = text.indexOf('{');\n  if (objStart < 0) throw new Error('No JSON object found');\n  let depth = 0;\n  let inString = false;\n  let escaped = false;\n  for (let i = objStart; i < text.length; i++) {\n    const ch = text[i];\n    if (inString) {\n      if (escaped) escaped = false;\n      else if (ch === '\\\\') escaped = true;\n      else if (ch === '\"') inString = false;\n      continue;\n    }\n    if (ch === '\"') { inString = true; continue; }\n    if (ch === '{') depth += 1;\n    if (ch === '}') {\n      depth -= 1;\n      if (depth === 0) return JSON.parse(text.slice(objStart, i + 1));\n    }\n  }\n  throw new Error('Could not extract valid JSON payload');\n}\n\nasync function callOllamaRaw(systemPrompt, userPrompt, options = {}) {\n  const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\\/+$/, ''));\n  const temperature = Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.15;\n  const maxPredict = clamp($env.OLLAMA_NUM_PREDICT_CAP, 80, 3000, 900);\n  const requestedPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 520;\n  const numPredict = clamp(requestedPredict, 80, maxPredict, 520);\n  const numCtx = Number.isFinite(Number(options.num_ctx)) ? Math.max(1024, Number(options.num_ctx)) : 8192;\n  const maxTimeout = clamp($env.OLLAMA_TIMEOUT_CAP_MS, 30000, 900000, 360000);\n  const requestedTimeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 240000;\n  const timeout = clamp(Math.min(requestedTimeout, maxTimeout), 30000, maxTimeout, 240000);\n  const attemptsCap = clamp($env.OLLAMA_MAX_ATTEMPTS_CAP, 1, 5, 2);\n  const requestedAttempts = Number.isFinite(Number(options.max_attempts)) ? Number(options.max_attempts) : 2;\n  const maxAttempts = clamp(requestedAttempts, 1, attemptsCap, 2);\n  const thinking = options.thinking !== false;\n\n  const userContent = thinking\n    ? userPrompt\n    : ('Antworte direkt und kompakt ohne Gedankenausfuehrung.\\n\\n' + userPrompt);\n\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      const body = {\n        model: ctx.model_used,\n        stream: false,\n        keep_alive: '30m',\n        think: thinking,\n        messages: [\n          { role: 'system', content: systemPrompt },\n          { role: 'user', content: userContent },\n        ],\n        options: { temperature, num_predict: numPredict, num_ctx: numCtx, enable_thinking: thinking },\n      };\n      if (options.format_schema) body.format = options.format_schema;\n\n      const data = await this.helpers.httpRequest({\n        method: 'POST',\n        url: baseUrl + '/api/chat',\n        body,\n        json: true,\n        timeout,\n      });\n      const text = String((data && data.message && data.message.content) || data.response || '').trim();\n      if (!text) throw new Error('empty response');\n      return { text, model_used: ctx.model_used };\n    } catch (error) {\n      const msg = String(error && error.message ? error.message : 'unknown');\n      const retryable = /timeout|timed out|5\\d\\d|socket|connection|empty response|runner process/i.test(msg);\n      if (retryable && attempt < maxAttempts) {\n        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));\n        continue;\n      }\n      throw error;\n    }\n  }\n  throw new Error('Ollama call failed');\n}\n\nasync function callOllamaJsonStrict(systemPrompt, userPrompt, options = {}) {\n  const raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);\n  try {\n    return {\n      parsed: extractJsonCandidate(raw.text),\n      raw_text: raw.text,\n      repair_used: false,\n    };\n  } catch (firstError) {\n    const repaired = await callOllamaRaw.call(\n      this,\n      'You are a strict JSON formatter. Return valid JSON only.',\n      [\n        'Convert this content to strict valid JSON.',\n        options.format_schema ? ('Schema:\\n' + JSON.stringify(options.format_schema)) : '',\n        'Input:',\n        raw.text,\n      ].filter(Boolean).join('\\n\\n'),\n      { temperature: 0, num_predict: 700, num_ctx: 8192, timeout: 240000, max_attempts: 2, thinking: false, format_schema: options.format_schema || null }\n    );\n    return {\n      parsed: extractJsonCandidate(repaired.text),\n      raw_text: raw.text + '\\n\\n[REPAIRED]\\n' + repaired.text,\n      repair_used: true,\n    };\n  }\n}\n\nfunction sectionTag(key, value) {\n  return '<' + key + '>\\n' + String(value == null ? '' : value) + '\\n</' + key + '>';\n}\n\nfunction buildPrompt(stagePrompt, sections) {\n  const globalSystem = String(ctx.prompts.global_system || '').trim();\n  const mergedSections = Object.assign({}, sections || {}, {\n    brand_profile: ctx.context.brand_profile || '',\n    audience_profile: ctx.context.audience_profile || '',\n    offer_context: ctx.context.offer_context || '',\n    voice_guide: ctx.context.voice_guide || '',\n    author_voice: ctx.context.author_voice || '',\n    red_lines: ctx.context.red_lines || '',\n    editorial_pattern: ctx.context.editorial_pattern || '',\n    publication_contract_note: ctx.context.publication_contract_note || '',\n    reference_articles_note: ctx.context.reference_articles_note || '',\n    backlog_steering_note: ctx.context.backlog_steering_note || '',\n    output_language: ctx.context.output_language || ctx.output_language || 'de',\n  });\n  const sectionLines = Object.entries(mergedSections).map(([key, value]) => sectionTag(key, value));\n  return [globalSystem, stagePrompt, ...sectionLines].filter(Boolean).join('\\n\\n');\n}\n\nfunction sha256File(filePath) {\n  const hash = crypto.createHash('sha256');\n  hash.update(fs.readFileSync(filePath));\n  return hash.digest('hex');\n}\n\nfunction splitFrontmatter(rawText) {\n  const text = String(rawText || '');\n  if (!text.startsWith('---')) return { frontmatter: '', body: text };\n  const endMarker = '\\n---';\n  const endIndex = text.indexOf(endMarker, 3);\n  if (endIndex < 0) return { frontmatter: '', body: text };\n  return {\n    frontmatter: text.slice(4, endIndex),\n    body: text.slice(endIndex + endMarker.length + 1),\n  };\n}\n\nfunction parseScalar(rawValue) {\n  const trimmed = String(rawValue || '').trim();\n  if (!trimmed) return '';\n  if ((trimmed.startsWith(\"'\") && trimmed.endsWith(\"'\")) || (trimmed.startsWith('\"') && trimmed.endsWith('\"'))) {\n    return trimmed.slice(1, -1);\n  }\n  if (trimmed === 'true') return true;\n  if (trimmed === 'false') return false;\n  if (/^-?\\d+(\\.\\d+)?$/.test(trimmed)) return Number(trimmed);\n  return trimmed;\n}\n\nfunction parseIndentedBlock(lines) {\n  const trimmed = ensureArray(lines).map((line) => String(line || '').trim()).filter(Boolean);\n  if (!trimmed.length) return '';\n  if (trimmed.every((line) => line.startsWith('- '))) {\n    return trimmed.map((line) => parseScalar(line.slice(2)));\n  }\n  return trimmed.join(' ');\n}\n\nfunction parseFrontmatter(rawFrontmatter) {\n  const lines = String(rawFrontmatter || '').split('\\n');\n  const out = {};\n  let index = 0;\n  while (index < lines.length) {\n    const line = lines[index];\n    const trimmed = line.trim();\n    if (!trimmed) {\n      index += 1;\n      continue;\n    }\n    const indent = line.match(/^\\s*/)[0].length;\n    if (indent !== 0) {\n      index += 1;\n      continue;\n    }\n    const match = trimmed.match(/^'?([^']+)'?:\\s*(.*)$/);\n    if (!match) {\n      index += 1;\n      continue;\n    }\n    const key = String(match[1] || '').trim();\n    const rest = String(match[2] || '');\n    if (rest) {\n      out[key] = parseScalar(rest);\n      index += 1;\n      continue;\n    }\n    const block = [];\n    index += 1;\n    while (index < lines.length) {\n      const nextLine = lines[index];\n      const nextIndent = nextLine.match(/^\\s*/)[0].length;\n      if (nextLine.trim() && nextIndent === 0) break;\n      block.push(nextLine);\n      index += 1;\n    }\n    out[key] = parseIndentedBlock(block);\n  }\n  return out;\n}\n\nfunction stripFrontmatter(rawText) {\n  return splitFrontmatter(rawText).body || rawText;\n}\n\nfunction bodyWordCount(body) {\n  return sanitizeText(body, 200000).split(/\\s+/).filter(Boolean).length;\n}\n\nfunction excerptBody(body, maxLen) {\n  return sanitizeText(body, maxLen);\n}\n\nfunction walkFiles(absPath, acc) {\n  if (!fs.existsSync(absPath)) return;\n  const stat = fs.statSync(absPath);\n  if (stat.isFile()) {\n    acc.push(absPath);\n    return;\n  }\n  for (const entry of fs.readdirSync(absPath)) {\n    walkFiles(path.join(absPath, entry), acc);\n  }\n}\n\nfunction fileListForTrackedRoot(rootPath) {\n  const files = [];\n  walkFiles(rootPath, files);\n  return files\n    .filter((filePath) => !path.basename(filePath).startsWith('.'))\n    .filter((filePath) => /\\.(mdx|md|json|ts)$/i.test(filePath))\n    .sort();\n}\n\nfunction readUtf8(absPath) {\n  return fs.readFileSync(absPath, 'utf8');\n}\n\nfunction relativeTrackedPath(absPath, sandbankRoot) {\n  return path.relative(sandbankRoot, absPath).replace(/\\\\/g, '/');\n}\n\nfunction readTrackedFiles(rootConfig, sandbankRoot) {\n  const tracked = [];\n  for (const relRoot of ensureArray(rootConfig.tracked_roots)) {\n    const absRoot = path.join(sandbankRoot, relRoot);\n    if (!fs.existsSync(absRoot)) continue;\n    const files = fileListForTrackedRoot(absRoot);\n    for (const filePath of files) {\n      tracked.push({\n        path: relativeTrackedPath(filePath, sandbankRoot),\n        sha256: sha256File(filePath),\n      });\n    }\n  }\n  tracked.sort((a, b) => a.path.localeCompare(b.path));\n  return tracked;\n}\n\nfunction parseArticleFiles(sandbankRoot) {\n  const localeRoots = [\n    { locale: 'de', rel: 'packages/help-content/sources/de/bi-guide' },\n    { locale: 'en', rel: 'packages/help-content/sources/en/bi-guide' },\n  ];\n  const articles = [];\n  const categories = [];\n  const categoryByDir = new Map();\n\n  for (const localeRoot of localeRoots) {\n    const absRoot = path.join(sandbankRoot, localeRoot.rel);\n    if (!fs.existsSync(absRoot)) continue;\n    const files = fileListForTrackedRoot(absRoot).filter((filePath) => filePath.endsWith('.mdx'));\n    const categoryFiles = files.filter((filePath) => path.basename(filePath) === '_category.mdx');\n    const articleFiles = files.filter((filePath) => path.basename(filePath) !== '_category.mdx');\n    for (const filePath of categoryFiles) {\n      const relPath = relativeTrackedPath(filePath, sandbankRoot);\n      const raw = readUtf8(filePath);\n      const parts = splitFrontmatter(raw);\n      const fm = parseFrontmatter(parts.frontmatter);\n      const dirName = path.basename(path.dirname(filePath));\n      const category = {\n        locale: localeRoot.locale,\n        category_id: String(fm.id || ''),\n        title: String(fm.title || ''),\n        help_slug: String(fm.helpSlug || ''),\n        category_order: Number(fm.categoryOrder || 0),\n        visibility: String(fm.visibility || 'internal'),\n        source_path: relPath,\n        source_dir: dirName,\n      };\n      categories.push(category);\n      categoryByDir.set(localeRoot.locale + ':' + dirName, category);\n    }\n    for (const filePath of articleFiles) {\n      const relPath = relativeTrackedPath(filePath, sandbankRoot);\n      const raw = readUtf8(filePath);\n      const parts = splitFrontmatter(raw);\n      const fm = parseFrontmatter(parts.frontmatter);\n      const dirName = path.basename(path.dirname(filePath));\n      const category = categoryByDir.get(localeRoot.locale + ':' + dirName) || {};\n      const article = {\n        locale: localeRoot.locale,\n        article_id: String(fm.id || slugify(path.basename(filePath, '.mdx'))),\n        title: String(fm.title || ''),\n        description: String(fm.description || ''),\n        category_id: String(fm.categoryId || category.category_id || ''),\n        category_slug: String(category.help_slug || ''),\n        category_title: String(category.title || ''),\n        help_slug: String(fm.helpSlug || slugify(fm.title || path.basename(filePath, '.mdx'))),\n        visibility: String(fm.visibility || 'internal'),\n        kind: String(fm.kind || 'cluster'),\n        article_order: Number(fm.articleOrder || 0),\n        article_number: String(fm.articleNumber || ''),\n        audience: String(fm.audience || ''),\n        author_id: String(fm.authorId || ''),\n        author_role: String(fm.authorRole || ''),\n        reviewer: String(fm.reviewer || ''),\n        source_path: relPath,\n        body_excerpt: excerptBody(parts.body, 1600),\n        body_words: bodyWordCount(parts.body),\n      };\n      articles.push(article);\n    }\n  }\n\n  categories.sort((a, b) => a.locale.localeCompare(b.locale) || a.category_order - b.category_order || a.category_id.localeCompare(b.category_id));\n  articles.sort((a, b) => a.locale.localeCompare(b.locale) || a.category_id.localeCompare(b.category_id) || a.article_order - b.article_order || a.article_id.localeCompare(b.article_id));\n  return { articles, categories };\n}\n\nfunction parseTableRows(markdownText) {\n  const lines = String(markdownText || '').split('\\n');\n  const rows = [];\n  for (const line of lines) {\n    if (!line.trim().startsWith('|')) continue;\n    const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());\n    if (!cells.length || /^-+$/.test(cells[0])) continue;\n    rows.push(cells);\n  }\n  return rows;\n}\n\nfunction parsePlannedTopics(markdownText) {\n  const rows = parseTableRows(markdownText);\n  const out = [];\n  for (const row of rows) {\n    if (row.length < 5) continue;\n    if (String(row[0] || '').toLowerCase() === 'nr.') continue;\n    const index = Number(row[0]);\n    if (!Number.isFinite(index)) continue;\n    out.push({\n      index,\n      category_label: String(row[1] || ''),\n      title: String(row[2] || ''),\n      audience: String(row[3] || ''),\n      status: String(row[4] || ''),\n    });\n  }\n  return out;\n}\n\nfunction buildRouteMap(categories, articles) {\n  const routes = [];\n  for (const category of categories) {\n    routes.push({\n      locale: category.locale,\n      type: 'category',\n      slug: category.help_slug,\n      path: '/' + category.locale + '/business-intelligence-guide/' + category.help_slug,\n    });\n  }\n  for (const article of articles) {\n    if (!article.category_slug || !article.help_slug) continue;\n    routes.push({\n      locale: article.locale,\n      type: 'article',\n      slug: article.help_slug,\n      path: '/' + article.locale + '/business-intelligence-guide/' + article.category_slug + '/' + article.help_slug,\n    });\n  }\n  return routes;\n}\n\nfunction loadJsonFile(absPath) {\n  return JSON.parse(readUtf8(absPath));\n}\n\nfunction selectReferenceArticles(articles, maxCount) {\n  return ensureArray(articles)\n    .filter((article) => article.locale === 'de')\n    .filter((article) => article.visibility === 'public')\n    .sort((a, b) => a.category_id.localeCompare(b.category_id) || a.article_order - b.article_order)\n    .slice(0, maxCount)\n    .map((article) => ({\n      article_id: article.article_id,\n      title: article.title,\n      source_path: article.source_path,\n      excerpt: article.body_excerpt,\n    }));\n}\n\nfunction tokenSet(value) {\n  return new Set(normalizeKey(value).split('-').filter(Boolean));\n}\n\nfunction overlapScore(left, right) {\n  const leftSet = tokenSet(left);\n  const rightSet = tokenSet(right);\n  if (!leftSet.size || !rightSet.size) return 0;\n  let hits = 0;\n  for (const token of leftSet) {\n    if (rightSet.has(token)) hits += 1;\n  }\n  return hits / Math.max(leftSet.size, rightSet.size);\n}\n\nfunction findExistingArticleForTopic(topic, articles) {\n  const normalizedTitle = normalizeKey(topic.title);\n  const direct = ensureArray(articles).find((article) => normalizeKey(article.title) === normalizedTitle);\n  if (direct) return direct;\n  let best = null;\n  let bestScore = 0;\n  for (const article of ensureArray(articles)) {\n    const score = Math.max(\n      overlapScore(topic.title, article.title),\n      overlapScore(topic.title, article.help_slug),\n      overlapScore(topic.title, article.article_id)\n    );\n    if (score > bestScore) {\n      best = article;\n      bestScore = score;\n    }\n  }\n  return bestScore >= 0.74 ? best : null;\n}\n\nfunction buildArticleRegister(plannedTopics, articles) {\n  const register = [];\n  const seenArticleIds = new Set();\n  for (const article of articles) {\n    seenArticleIds.add(article.article_id);\n    register.push({\n      article_id: article.article_id,\n      locale: article.locale,\n      category: article.category_title || article.category_id,\n      source_status: 'existing_' + article.visibility,\n      workflow_status: 'source_present',\n      target_path: article.source_path,\n      recommendation: article.visibility === 'public' ? 'refresh_or_expand' : 'review_publication_readiness',\n    });\n  }\n  for (const topic of plannedTopics) {\n    const existing = findExistingArticleForTopic(topic, articles);\n    if (existing) continue;\n    const articleId = slugify(topic.title);\n    if (seenArticleIds.has(articleId)) continue;\n    register.push({\n      article_id: articleId,\n      locale: 'de',\n      category: topic.category_label,\n      source_status: 'planned_backlog_only',\n      workflow_status: 'backlog_only',\n      target_path: '',\n      recommendation: 'candidate_for_generation',\n    });\n  }\n  register.sort((a, b) => a.article_id.localeCompare(b.article_id));\n  return register;\n}\n\nfunction resolveCategory(topicCategoryLabel, categories, planningRules) {\n  const aliases = ensureObject(planningRules.category_aliases);\n  const normalized = normalizeKey(topicCategoryLabel);\n  const aliasId = String(aliases[normalized] || '');\n  if (aliasId) {\n    const category = ensureArray(categories).find((row) => row.locale === 'de' && row.category_id === aliasId);\n    if (category) return category;\n  }\n  const byDirectTitle = ensureArray(categories).find((row) => row.locale === 'de' && normalizeKey(row.title) === normalized);\n  if (byDirectTitle) return byDirectTitle;\n  return ensureArray(categories).find((row) => row.locale === 'de') || null;\n}\n\nfunction nextArticleOrder(categoryId, articles) {\n  const sameCategory = ensureArray(articles).filter((article) => article.locale === 'de' && article.category_id === categoryId);\n  const maxOrder = sameCategory.reduce((best, article) => Math.max(best, Number(article.article_order || 0)), 0);\n  return maxOrder + 1;\n}\n\nfunction buildTargetPath(category, articleId, articleOrder, locale) {\n  const categoryOrder = String(category.category_order || 0).padStart(2, '0');\n  const articleOrderPadded = String(articleOrder).padStart(2, '0');\n  const fileName = categoryOrder + '-' + articleOrderPadded + '-' + articleId + '.mdx';\n  const categoryDir = 'packages/help-content/sources/' + locale + '/bi-guide/' + category.source_dir;\n  return {\n    target_source_path: categoryDir + '/' + fileName,\n    target_category_path: categoryDir + '/_category.mdx',\n    article_file_name: fileName,\n  };\n}\n\nfunction pickTopicCandidate(topicHint, plannedTopics, articles, categories, planningRules) {\n  const plannedOnly = ensureArray(plannedTopics).filter((topic) => String(topic.status || '').toLowerCase() === 'planned');\n  const missingPlanned = plannedOnly.filter((topic) => !findExistingArticleForTopic(topic, articles));\n  const candidates = missingPlanned.length ? missingPlanned : plannedOnly;\n  let chosen = null;\n  if (String(topicHint || '').trim()) {\n    const normalizedHint = normalizeKey(topicHint);\n    chosen = candidates.find((topic) => normalizeKey(topic.title).includes(normalizedHint) || normalizedHint.includes(normalizeKey(topic.title))) || null;\n  }\n  if (!chosen) chosen = candidates[0] || null;\n  if (!chosen) {\n    const fallbackCategory = ensureArray(categories).find((row) => row.locale === 'de') || {};\n    return {\n      article_id: 'bi-guide-neues-thema',\n      working_title: String(topicHint || 'Neuer BI-Guide-Artikel'),\n      target_locale: 'de',\n      category_id: String(fallbackCategory.category_id || ''),\n      category_slug: String(fallbackCategory.help_slug || ''),\n      category_order: Number(fallbackCategory.category_order || 0),\n      article_order: 1,\n      article_number: String((fallbackCategory.category_order || 0) + '.1'),\n      article_slug: slugify(topicHint || 'neuer-bi-guide-artikel'),\n      target_source_path: '',\n      target_category_path: '',\n      audience: 'Einsteiger',\n      source_status: 'manual_hint_only',\n      backlog_title: String(topicHint || 'Neuer BI-Guide-Artikel'),\n    };\n  }\n  const category = resolveCategory(chosen.category_label, categories, planningRules);\n  if (!category) {\n    throw new Error('No category found for planned topic: ' + chosen.title);\n  }\n  const articleIdBase = slugify(chosen.title) || 'bi-guide-artikel';\n  const existingIds = new Set(ensureArray(articles).map((article) => article.article_id));\n  let articleId = articleIdBase;\n  let suffix = 2;\n  while (existingIds.has(articleId)) {\n    articleId = articleIdBase + '-' + suffix;\n    suffix += 1;\n  }\n  const articleOrder = nextArticleOrder(category.category_id, articles);\n  const target = buildTargetPath(category, articleId, articleOrder, 'de');\n  return {\n    article_id: articleId,\n    working_title: chosen.title,\n    target_locale: 'de',\n    category_id: category.category_id,\n    category_slug: category.help_slug,\n    category_order: Number(category.category_order || 0),\n    article_order: articleOrder,\n    article_number: String(Number(category.category_order || 0)) + '.' + String(articleOrder),\n    article_slug: slugify(chosen.title),\n    target_source_path: target.target_source_path,\n    target_category_path: target.target_category_path,\n    article_file_name: target.article_file_name,\n    audience: chosen.audience || ensureObject(planningRules.audience_defaults)[category.category_id] || 'Einsteiger',\n    source_status: 'planned_backlog_only',\n    backlog_title: chosen.title,\n    category_label: chosen.category_label,\n  };\n}\n\nconst sourceRoots = ensureObject(ctx.configs.source_roots);\nconst planningRules = ensureObject(ctx.configs.planning_rules);\nconst sandbankRoot = String($env.SANDBANK_READONLY_ROOT || sourceRoots.sandbank_root || '').trim();\nif (!sandbankRoot) {\n  throw new Error('Missing SANDBANK_READONLY_ROOT or source_roots.sandbank_root');\n}\nif (!fs.existsSync(sandbankRoot)) {\n  throw new Error('Sandbank read-only root not found: ' + sandbankRoot);\n}\n\nconst trackedFiles = readTrackedFiles(sourceRoots, sandbankRoot);\nif (!trackedFiles.length) {\n  throw new Error('No tracked source files found under sandbank root');\n}\naddStage(1, 'source_snapshot_read', 'ok', 'sandbank:' + sandbankRoot, 'tracked_files', 96, 'Tracked files hashed: ' + trackedFiles.length);\nawait addStageSummary.call(this, 1, 'source_snapshot_read', trackedFiles.slice(0, 12));\n\nconst parsedSources = parseArticleFiles(sandbankRoot);\nconst articles = parsedSources.articles;\nconst categories = parsedSources.categories;\nif (!categories.length || !articles.length) {\n  throw new Error('Failed to parse BI-Guide categories or articles from sandbank sources');\n}\n\nconst plannedTopicsPath = path.join(sandbankRoot, String(sourceRoots.topic_backlog_doc || 'apps/docs/docs/product/bi-guide/article-topics.mdx'));\nconst plannedTopics = parsePlannedTopics(readUtf8(plannedTopicsPath));\nconst authorsPath = path.join(sandbankRoot, 'packages/help-content/authors.json');\nconst mediaPath = path.join(sandbankRoot, 'packages/assets/registry/bi-guide-media.json');\nconst authors = loadJsonFile(authorsPath);\nconst mediaRegistry = loadJsonFile(mediaPath);\nconst mediaAssets = ensureArray(mediaRegistry.assets);\nconst routeMap = buildRouteMap(categories, articles);\nconst referenceArticles = selectReferenceArticles(articles, clamp(sourceRoots.max_reference_articles, 1, 12, 6));\n\nconst sourceSnapshot = {\n  snapshot_id: 'snapshot-' + ctx.run_id,\n  created_at: nowIso(),\n  sandbank_root: sandbankRoot,\n  tracked_files: trackedFiles,\n  categories: categories.map((category) => ({\n    locale: category.locale,\n    category_id: category.category_id,\n    title: category.title,\n    help_slug: category.help_slug,\n    category_order: Number(category.category_order || 0),\n    visibility: category.visibility,\n    source_path: category.source_path,\n  })),\n  articles: articles.map((article) => ({\n    locale: article.locale,\n    article_id: article.article_id,\n    title: article.title,\n    category_id: article.category_id,\n    category_slug: article.category_slug,\n    help_slug: article.help_slug,\n    visibility: article.visibility,\n    kind: article.kind,\n    article_order: Number(article.article_order || 0),\n    article_number: article.article_number,\n    audience: article.audience,\n    source_path: article.source_path,\n  })),\n  planned_topics: plannedTopics,\n  route_map: routeMap,\n  authors: ensureArray(authors).map((author) => ({\n    id: String(author.id || ''),\n    name: String(author.name || ''),\n    role: String(author.role || ''),\n    url: String(author.url || ''),\n    bio: String(author.bio || ''),\n  })),\n  media_assets: mediaAssets.map((asset) => ({\n    id: String(asset.id || ''),\n    src: String(asset.src || ''),\n    type: String(asset.type || ''),\n  })),\n  reference_articles: referenceArticles,\n  style_signals: {\n    tone_keywords: ['klar', 'ruhig', 'leitfaden', 'in-der-praxis', 'ohne-hype', 'verstaendlich'],\n    banned_patterns: ['game-changer', 'viral', 'unglaublich', 'revolutionaer', 'must-have'],\n    structure_notes: [\n      'definition-vor-bewertung',\n      'kurze-abschnitte',\n      'saubere-h2-h3-logik',\n      'mindestens-zwei-interne-links',\n      'belege-als-fussnoten',\n    ],\n  },\n};\nvalidateSchema(sourceSnapshotSchema, sourceSnapshot, 'source_snapshot');\nctx.artifacts.source_snapshot = sourceSnapshot;\nctx.artifacts.article_register = buildArticleRegister(plannedTopics, articles);\nctx.artifacts.source_snapshot_summary = {\n  article_count: articles.length,\n  category_count: categories.length,\n  planned_topic_count: plannedTopics.length,\n  route_count: routeMap.length,\n};\naddStage(2, 'source_snapshot_validated', 'ok', 'tracked_files', 'source_snapshot', 96, 'Snapshot parsed and validated');\nawait addStageSummary.call(this, 2, 'source_snapshot_validated', ctx.artifacts.source_snapshot_summary);\n\nconst candidate = pickTopicCandidate(ctx.topic_hint, plannedTopics, articles, categories, planningRules);\nctx.artifacts.article_plan_candidate = candidate;\naddStage(3, 'topic_candidate_selected', 'ok', 'planned_topics', 'article_plan_candidate', 93, 'Candidate selected: ' + candidate.article_id);\nawait addStageSummary.call(this, 3, 'topic_candidate_selected', candidate);\n\nconst compactSnapshot = {\n  categories: categories.filter((row) => row.locale === 'de').map((row) => ({\n    category_id: row.category_id,\n    title: row.title,\n    help_slug: row.help_slug,\n    category_order: row.category_order,\n  })),\n  existing_articles: articles.filter((row) => row.locale === 'de').map((row) => ({\n    article_id: row.article_id,\n    title: row.title,\n    category_id: row.category_id,\n    article_number: row.article_number,\n    help_slug: row.help_slug,\n    visibility: row.visibility,\n  })),\n  planned_topics: plannedTopics.slice(0, 20),\n  reference_articles: referenceArticles.slice(0, 4),\n};\n\nconst planPrompt = buildPrompt(String(ctx.prompts.source_analysis || ''), {\n  topic_hint: ctx.topic_hint || '',\n  selected_candidate: JSON.stringify(candidate, null, 2),\n  source_snapshot_overview: JSON.stringify(compactSnapshot, null, 2),\n  quality_gates: JSON.stringify(ctx.configs.quality_gates || {}, null, 2),\n  planning_rules: JSON.stringify(ctx.configs.planning_rules || {}, null, 2),\n});\n\nconst planResponse = await callOllamaJsonStrict.call(\n  this,\n  'Du planst exakt einen BI-Guide-Artikel. Nutze den Kandidaten als strukturelle Wahrheit und liefere nur JSON.',\n  planPrompt,\n  {\n    format_schema: articlePlanSchema,\n    temperature: 0.1,\n    num_predict: 900,\n    num_ctx: 12288,\n    timeout: 300000,\n    max_attempts: 2,\n    thinking: false,\n  }\n);\n\nconst planCandidate = ensureObject(planResponse.parsed);\nconst articlePlan = Object.assign({}, planCandidate, {\n  article_id: candidate.article_id,\n  working_title: String(planCandidate.working_title || candidate.working_title),\n  target_locale: candidate.target_locale,\n  category_id: candidate.category_id,\n  category_slug: candidate.category_slug,\n  category_order: candidate.category_order,\n  article_order: candidate.article_order,\n  article_number: candidate.article_number,\n  article_slug: String(planCandidate.article_slug || candidate.article_slug),\n  target_source_path: candidate.target_source_path,\n  target_category_path: candidate.target_category_path,\n  audience: String(planCandidate.audience || candidate.audience),\n  internal_link_targets: uniqueStrings(planCandidate.internal_link_targets, 160).length\n    ? uniqueStrings(planCandidate.internal_link_targets, 160)\n    : routeMap.filter((row) => row.locale === 'de' && row.type === 'article').slice(0, 3).map((row) => row.path),\n  source_strategy: uniqueStrings(planCandidate.source_strategy, 180),\n  risks: uniqueStrings(planCandidate.risks, 180),\n});\n\nvalidateSchema(articlePlanSchema, articlePlan, 'article_plan');\nctx.artifacts.article_plan = articlePlan;\nctx.artifacts.article_plan_raw = {\n  raw_text: planResponse.raw_text,\n  repair_used: !!planResponse.repair_used,\n};\nctx.topic = articlePlan.working_title;\nctx.status = 'planned';\naddStage(4, 'article_plan_created', 'ok', 'article_plan_candidate', 'article_plan', 91, 'Article plan created and validated');\nawait addStageSummary.call(this, 4, 'article_plan_created', articlePlan);\n\nreturn [{ json: ctx }];\n"
+      },
+      "id": "code-source",
+      "name": "Source Pipeline ausfuehren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        290
+      ]
+    }
+  ],
+  "connections": {
+    "Manuell starten": {
+      "main": [
+        [
+          {
+            "node": "Source Pipeline ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vom Ablauf gestartet": {
+      "main": [
+        [
+          {
+            "node": "Source Pipeline ausfuehren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true
+  },
+  "versionId": "b56aec7d-cd99-45a1-87c4-939e3e0a1f7d"
+}

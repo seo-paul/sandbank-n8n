@@ -1,5 +1,5 @@
 {
-  "name": "Human Review pruefen",
+  "name": "BI-Guide Human Review pruefen",
   "active": false,
   "nodes": [
     {
@@ -253,5 +253,5 @@
     "saveDataSuccessExecution": "all",
     "saveManualExecutions": true
   },
-  "versionId": "2911ce2b-6d0f-487e-b22c-f31500f5f5ce"
+  "versionId": "6d675e56-c59f-47d0-90b3-3d1fd4825b09"
 }
