@@ -29,13 +29,12 @@
   - Topic gate
   - LinkedIn brief
   - Reddit router (`comment|post_text_only|post_with_link|skip`)
-  - Draft generation (+ first_comment, reply_seeds, cta_variants, follow_up_angles)
+  - Draft generation (+ first_comment, reply_seeds)
   - Tone critique
   - Strategy critique
   - Final gate
-- Side workflows:
+- Side workflow:
   - Performance feedback
-  - Evaluations
 
 ## Layer 3: Prompt Design
 - Global system prompt (`00-global-system.md`)
@@ -54,6 +53,10 @@
 - FinalGate
 - PerformanceLearnings
 
+## Context Boundary
+- Global shared context in `Workflows/Kontext`
+- Workflow-local context in `.../Beitraege-Workflow/Kontext` (nur LinkedIn/Reddit-spezifisch)
+
 ## Quality Gates
 - Hard fail on model mismatch
 - SSOT manifest hash mismatch fails run
@@ -70,6 +73,5 @@
 - Rebuild workflows from `n8n/code/*.js`
 - Import clean via `import_workflows.sh`
 - Sync SSOT via `sync_obsidian_ssot.sh`
-- Archive legacy artifacts outside workflow root (`Marketing/Social-Media/Beitraege/_Archiv/Workflow`)
-- Validate via `validate_cutover.sh`
-- No transitional compatibility layer
+- Remove legacy artifacts outside active workflow root
+- No transition layer and no evaluation side channel

@@ -1,19 +1,18 @@
 # Cutover Checklist
 
-Letzte dokumentierte Vollausfuehrung:
-- siehe `docs/CUTOVER_EXECUTION_2026-03-05.md`
-
-## Vor dem Cutover
-- [ ] `.env` ist gesetzt und ohne Platzhalter.
-- [ ] `OLLAMA_MODEL=qwen3.5:27b` ist aktiv.
-- [ ] Obsidian REST ist erreichbar.
+## Vorher
+- [ ] `.env` auf neue Pfade gesetzt (`Workflows` global, `Beitraege-Workflow` lokal).
+- [ ] `OBSIDIAN_WORKFLOWS_CONTEXT_DIR` gesetzt.
 - [ ] `OBSIDIAN_WORKFLOW_SCHEMA_DIR` gesetzt.
 - [ ] `OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE` gesetzt.
-- [ ] `OBSIDIAN_WORKFLOW_ARCHIVE_DIR` gesetzt und ausserhalb von `OBSIDIAN_WORKFLOW_DIR`.
 
-## Import
-- [ ] `./dev.sh import` ausgefuehrt.
-- [ ] In n8n sind exakt diese Workflows vorhanden:
+## Build + Import
+- [ ] `node n8n/scripts/build_workflows_from_code.mjs` erfolgreich.
+- [ ] `./n8n/scripts/import_workflows.sh` erfolgreich.
+- [ ] Keine Workflow-Duplikate in `workflow_entity`.
+
+## Workflow-Set
+- [ ] Aktiv vorhanden:
   - `System Verbindungen pruefen`
   - `Thema und Quellen sammeln`
   - `Beitrag aus Quellen erstellen`
@@ -22,32 +21,23 @@ Letzte dokumentierte Vollausfuehrung:
   - `Ablauf automatisch steuern`
   - `Fehlerlauf klar dokumentieren`
   - `Performance zurueckfuehren`
-  - `Evaluationslauf ausfuehren`
+- [ ] Nicht vorhanden:
+  - Legacy-Workflows ausserhalb der aktiven 8 Workflow-Namen
 
-## SSOT Sync
-- [ ] `make sync-ssot` ausgefuehrt.
-- [ ] Prompts unter `Prompts/` synchron.
-- [ ] Kontext unter `Kontext/` synchron.
-- [ ] Schemas unter `Schemas/` synchron.
-- [ ] Manifest unter `SSOT/manifest.json` synchron.
-- [ ] Eval-Dataset wurde **nicht** ueberschrieben (ausser `SEED_EVAL_DATASET=true`).
+## SSOT
+- [ ] `./n8n/scripts/sync_obsidian_ssot.sh` erfolgreich.
+- [ ] `Prompts/` vollstaendig.
+- [ ] `Schemas/` vollstaendig.
+- [ ] `SSOT/manifest.json` vorhanden.
+- [ ] Globaler Kontext in `Workflows/Kontext` vorhanden.
+- [ ] Workflowlokaler Kontext (`linkedin-context.md`, `reddit-communities.md`) vorhanden.
 
-## Erfolgslauf
-- [ ] Orchestrator laeuft erfolgreich durch.
-- [ ] SSOT-Manifest-Check ist gruen.
-- [ ] Detaildatei vorhanden: `Ergebnisse/Laufdetails/<run_id>.md`.
-- [ ] Runs-Tabelle aktualisiert: `Ergebnisse/00-Runs.md`.
-- [ ] Zwischenergebnisse aktualisiert: `Zwischenergebnisse/<workflow-slug>.md`.
-- [ ] Human-Review-Status wurde korrekt gesetzt.
+## Obsidian Struktur
+- [ ] Aktiver Root: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`.
+- [ ] `Beitraege-Workflow-Uebersicht.md` vorhanden.
+- [ ] Kein `_legacy` und kein `Evaluations` unter aktivem Root.
 
-## Fehlerlauf
-- [ ] Fehlerfall getestet.
-- [ ] Fehlerdetail vorhanden: `Ergebnisse/Fehlerdetails/<run_id>.md`.
-
-## Nach dem Cutover
-- [ ] Legacy-Schemafiles entfernt.
-- [ ] Kein `_legacy` mehr unter `Marketing/Social-Media/Beitraege/Workflow`.
-- [ ] Performance-Feedback-Workflow getestet (`Ergebnisse/Performance/<run_id>.md`).
-- [ ] Prompt-Change-Log aktualisiert (`Evaluations/prompt-change-log.md`).
-- [ ] Evaluationslauf getestet (`Evaluations/reports/<run_id>.md`).
-- [ ] `./n8n/scripts/validate_cutover.sh` erfolgreich.
+## Runtime
+- [ ] Modell-Pin aktiv: `qwen3.5:27b`.
+- [ ] Subworkflow-Inputs sind typed.
+- [ ] SSOT-Mismatch fuehrt zu Hard Fail.

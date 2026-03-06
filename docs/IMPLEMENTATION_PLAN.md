@@ -3,7 +3,7 @@
 ## Phase 1 Contracts + SSOT
 - Schema-Contracts zentralisiert (`Schemas/`)
 - SSOT-Manifest eingefuehrt und Lauf-Hashcheck aktiviert
-- Legacy-Schemas entfernt
+- Global/Local Kontextgrenze umgesetzt
 
 ## Phase 2 Research + Content Architecture
 - Research-Pipeline: Query -> Retrieval -> Dedupe/Scoring -> Evidence/Angle
@@ -12,22 +12,17 @@
 
 ## Phase 3 Operational Gates
 - Human-Review als eigener Subworkflow
-- Typed Subworkflow-Input-Verträge (ExecuteWorkflowTrigger Inputs + Runtime-Checks)
+- Typed Subworkflow-Input-Vertraege (ExecuteWorkflowTrigger Inputs + Runtime-Checks)
 - Stage-spezifische Thinking-Steuerung
 
-## Phase 4 Engagement Assets
-- Draft-Contract erweitert um `cta_variants` + `follow_up_angles`
-- Ton-/Strategie-Kritik erweitert um numerische Dimensionsscores
+## Phase 4 Structure Cleanup
+- Global shared folder: `Workflows`
+- Workflow root: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
+- ASCII naming for workflow files
+- Evaluations und Prompt-Change-Log komplett entfernt
 
-## Phase 5 Evaluation + Feedback Loop
-- Evaluation v2 mit active/planned Cases und Variantenvergleich
-- Performance-Workflow schreibt Learnings in Prompt-Change-Log
-- `next_tests` werden als geplante Eval-Cases ins Dataset rueckgefuehrt
-- Produktionsfehler werden als geplante Regression-Cases erfasst
-
-## Phase 6 Hardening + Cutover
+## Phase 5 Hardening + Cutover
 - Retry-Logik fuer kritische Obsidian-IO
-- Sync-Guard: Eval-Dataset nur mit `SEED_EVAL_DATASET=true`
-- Legacy-Archivierung ausserhalb aktivem Workflow-Root (`OBSIDIAN_WORKFLOW_ARCHIVE_DIR`)
 - URL-Allowlist-Hardening in Retrieval
-- Cutover-Validierung erweitert
+- Legacy-Bereinigung ohne Rueckwaertskompatibilitaets-Layer
+- Cutover-Validierung auf neue Pfadstruktur erweitert

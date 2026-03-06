@@ -2,8 +2,8 @@
 
 ## SSOT
 - Source of truth: `local-files/_managed/schemas/*.schema.json`
-- Runtime source: `Workflow/Schemas/*.schema.json` (Obsidian)
-- SSOT parity gate: `Workflow/SSOT/manifest.json`
+- Runtime source: `.../Beitraege-Workflow/Schemas/*.schema.json` (Obsidian)
+- SSOT parity gate: `.../Beitraege-Workflow/SSOT/manifest.json`
 
 ## Stage -> Output Schema
 - recherche-signale -> `research_output.schema.json`

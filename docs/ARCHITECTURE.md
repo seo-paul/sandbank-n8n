@@ -4,7 +4,7 @@
 - Vollstaendig lokal
 - Kein automatischer Modell-Fallback
 - Obsidian ist SSOT fuer Prompts, Kontext, Schemas und Ergebnisdokumentation
-- Legacy-Archive liegen ausserhalb des aktiven Workflow-Root
+- Keine Evaluations- oder Prompt-Change-Log-Schicht im aktiven Workflow
 
 ## Komponenten
 - `n8n`: Orchestrierung und Quality Gates
@@ -23,7 +23,6 @@
 - `Ablauf automatisch steuern`
 - `Fehlerlauf klar dokumentieren`
 - `Performance zurueckfuehren`
-- `Evaluationslauf ausfuehren`
 
 ## Layered Architektur
 - Plattformlogik:
@@ -35,7 +34,7 @@
   - Research: Query-Planung -> Retrieval -> Dedupe/Scoring -> Evidence/Angle-Slate
   - Content: Topic-Gate -> LinkedIn Brief -> Reddit Router -> Draft -> Ton/Strategie/Final Gate
   - Human Review Gate
-  - Persistenz, Performance-Feedback, Evaluation
+  - Persistenz, Performance-Feedback
 - Prompt-Design:
   - Globales Systemprompt + stage-spezifische Prompts
   - JSON-only fuer Zwischenstufen
@@ -60,9 +59,9 @@
   - `artifacts.human_review`
 
 ## Pfadgrenzen Obsidian
-- Aktiv: `Marketing/Social-Media/Beitraege/Workflow`
-- Archiv: `Marketing/Social-Media/Beitraege/_Archiv/Workflow`
-- Keine `_legacy`-Ablage innerhalb des aktiven Workflow-Ordners
+- Global shared context: `Workflows/Kontext`
+- Aktiv: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
+- Kein `_legacy` und kein `Evaluations` im aktiven Workflow-Root
 
 ## Modellstrategie
 - Zulassiges Modell: `qwen3.5:27b`
@@ -77,4 +76,4 @@
 5. Content-Subworkflow ausfuehren
 6. Human-Review-Subworkflow ausfuehren
 7. Persistenz-Subworkflow ausfuehren
-8. Optional: Performance-Rueckfluss und Evaluationslauf
+8. Optional: Performance-Rueckfluss

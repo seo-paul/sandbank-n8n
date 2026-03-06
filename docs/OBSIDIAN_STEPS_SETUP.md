@@ -1,10 +1,10 @@
 # Obsidian Workflow Setup
 
-Alle automatischen Laufdaten liegen unter:
-`Marketing/Social-Media/Beitraege/Workflow`
+Globale Shared-Artefakte liegen unter:
+`Workflows`
 
-Archiv liegt separat unter:
-`Marketing/Social-Media/Beitraege/_Archiv/Workflow`
+Aktive Laufdaten liegen unter:
+`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
 
 ## Minimale Struktur
 - `Ergebnisse/00-Runs.md`
@@ -13,12 +13,14 @@ Archiv liegt separat unter:
 - `Ergebnisse/Performance/`
 - `Zwischenergebnisse/`
 - `Prompts/`
-- `Kontext/`
+- `Kontext/` (workflowlokal)
 - `Schemas/`
 - `SSOT/manifest.json`
-- `Workflow Übersicht.md`
+- `Beitraege-Workflow-Uebersicht.md`
 
 ## Relevante `.env`-Variablen
+- `OBSIDIAN_WORKFLOWS_DIR`
+- `OBSIDIAN_WORKFLOWS_CONTEXT_DIR`
 - `OBSIDIAN_WORKFLOW_DIR`
 - `OBSIDIAN_WORKFLOW_ARCHIVE_DIR`
 - `OBSIDIAN_WORKFLOW_RESULTS_DIR`

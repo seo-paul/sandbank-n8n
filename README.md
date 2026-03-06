@@ -10,27 +10,25 @@ Lokaler Stack fuer Social-Content-Workflows:
 - Ein Lauf erzeugt genau eine Detaildatei: `Ergebnisse/Laufdetails/<run_id>.md`.
 - Eine Basistabelle sammelt alle Laeufe: `Ergebnisse/00-Runs.md`.
 - Zwischenergebnisse liegen pro Workflow als vollstaendige Datei unter: `Zwischenergebnisse/*.md`.
-- Keine separaten Draft- oder Success-Log-Dateien mehr.
 - Fehlerlaeufe landen in: `Ergebnisse/Fehlerdetails/<run_id>.md`.
+- Kein `Evaluations/`-Ordner und kein Prompt-Change-Log.
 
 ## Obsidian Zielstruktur
-Root:
-`Marketing/Social-Media/Beitraege/Workflow`
+Global:
+- `Workflows/Kontext`
 
-Relevante Pfade:
-- `Ergebnisse/00-Runs.md`
-- `Ergebnisse/Laufdetails/`
-- `Ergebnisse/Fehlerdetails/`
-- `Zwischenergebnisse/`
-- `Prompts/`
-- `Kontext/`
-- `Schemas/`
-- `SSOT/manifest.json`
-- `Workflow Übersicht.md` (Ein-Tabelle mit Schritten, Zwischenergebnissen, Zweck, Beschreibung)
-
-Archiv (ausserhalb aktivem Workflow-Pfad):
-- `Marketing/Social-Media/Beitraege/_Archiv/Workflow/`
-- `_legacy` bleibt **nicht** unter `.../Workflow/`.
+Workflow-spezifisch:
+- `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
+- `.../Ergebnisse/00-Runs.md`
+- `.../Ergebnisse/Laufdetails/`
+- `.../Ergebnisse/Fehlerdetails/`
+- `.../Ergebnisse/Performance/`
+- `.../Zwischenergebnisse/`
+- `.../Prompts/`
+- `.../Kontext/` (nur `linkedin-context.md`, `reddit-communities.md`)
+- `.../Schemas/`
+- `.../SSOT/manifest.json`
+- `.../Beitraege-Workflow-Uebersicht.md`
 
 ## Modell- und Qualitaetsregeln
 - Modell ist hart gepinnt: `qwen3.5:27b`.
@@ -79,7 +77,7 @@ make sync-ssot
 
 ## Prompt-Steuerung
 Prompt-SSOT liegt unter:
-`Marketing/Social-Media/Beitraege/Workflow/Prompts`
+`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts`
 
 Pflichtdateien:
 - `00-global-system.md`
@@ -96,26 +94,18 @@ Pflichtdateien:
 
 ## Schema-Steuerung
 Schema-SSOT liegt unter:
-`Marketing/Social-Media/Beitraege/Workflow/Schemas`
+`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas`
 
 SSOT-Paritaet wird ueber:
-`Marketing/Social-Media/Beitraege/Workflow/SSOT/manifest.json`
+`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/SSOT/manifest.json`
 erzwungen.
 
 ## Kontext-SSOT
-Kontext-SSOT liegt unter:
-`Marketing/Social-Media/Beitraege/Workflow/Kontext`
+Global:
+`Workflows/Kontext`
 
-Pflichtdateien:
-- `brand.md`
-- `audience.md`
-- `offer.md`
-- `voice.md`
-- `proof-library.md`
-- `red-lines.md`
-- `cta-goals.md`
-- `reddit-communities.md`
-- `linkedin-context.md`
+Workflowlokal:
+`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext`
 
 ## Dateien
 - Workflows: `n8n/workflows/`
