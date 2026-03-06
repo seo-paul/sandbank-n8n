@@ -1,0 +1,40 @@
+# Content Feedback Runbook
+
+## Trigger
+- Wenn reale LinkedIn- oder Reddit-Metriken fuer einen veroeffentlichten Beitrag vorliegen.
+- Wenn Kommentare, qualitative Rueckmeldungen oder offensichtliche Channel-Mismatches eine Neubewertung sinnvoll machen.
+
+## Required Inputs
+- `parent_run_id`
+- `content_package` oder `artifacts.content_package`
+- `selected_angle` oder `artifacts.topic_gate.selected_angle`
+- Kanalmetriken (`linkedin_metrics`, `reddit_metrics`)
+- relevante Kommentare (`comments`)
+
+## Ablauf
+1. `Performance zurueckfuehren` mit dem Parent-Run und den Metriken ausfuehren.
+2. Sicherstellen, dass `Ergebnisse/Performance/<perf_run_id>.md` geschrieben wurde.
+3. Sicherstellen, dass `Kontext/performance-memory.md` aktualisiert wurde.
+4. Nur kuratierte, nachvollziehbare Learnings in Prompts oder Workflow-Logik uebernehmen.
+
+## Decision Taxonomy
+- `keep`: Muster bleibt aktiv in `performance-memory.md`
+- `watch`: Muster bleibt mit niedrigerem Vertrauen sichtbar, aber ohne direkte Workflow-Aenderung
+- `retire`: altes Muster verliert Plausibilitaet gegenueber neuer Evidenz
+- `promote`: Learning rechtfertigt Prompt-/Workflow-Anpassung
+
+## SLA
+- Analyse innerhalb von 48h nach Vorliegen der relevanten Metriken.
+- Rueckkopplung in `performance-memory.md` im selben Lauf.
+
+## Audit Fields
+- `run_id`
+- `parent_run_id`
+- `learning_note_path`
+- `performance_memory_path`
+- `diagnostics.repair_used`
+- `diagnostics.raw_output_excerpt`
+
+## Escalation
+- Bei widerspruechlichen Learnings: zuerst `performance-memory.md` kuratieren, dann Prompts anfassen.
+- Bei fehlender Provenienz oder schwacher Evidenz: Learning nicht in Prompt-/Workflow-Logik uebernehmen.

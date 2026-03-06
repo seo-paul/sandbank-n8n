@@ -6,12 +6,12 @@ Lokaler Stack fuer Social-Content-Workflows:
 - SearXNG Recherche
 - Obsidian Local REST als Ziel fuer Ergebnisse
 
-## Zielbild
-- Ein Lauf erzeugt genau eine Detaildatei: `Ergebnisse/Laufdetails/<run_id>.md`.
-- Eine Basistabelle sammelt alle Laeufe: `Ergebnisse/00-Runs.md`.
-- Zwischenergebnisse liegen pro Workflow als vollstaendige Datei unter: `Zwischenergebnisse/*.md`.
-- Fehlerlaeufe landen in: `Ergebnisse/Fehlerdetails/<run_id>.md`.
-- Kein `Evaluations/`-Ordner und kein Prompt-Change-Log.
+## Betriebsmodell
+- Prompts, Kontext, Schemas und Konfigurationen werden in Obsidian bearbeitet.
+- Das Repo ist der versionierte Mirror fuer Code-Review, Workflow-Build und statische Validierung.
+- `make pull-ssot` holt den Obsidian-Stand ins Repo.
+- `make sync-ssot` spiegelt den Repo-Stand nach Obsidian.
+- `make refresh-obsidian-manifest` aktualisiert den SSOT-Manifest-Hash aus dem aktuellen Obsidian-Inhalt.
 
 ## Obsidian Zielstruktur
 Global:
@@ -25,10 +25,19 @@ Workflow-spezifisch:
 - `.../Ergebnisse/Performance/`
 - `.../Zwischenergebnisse/`
 - `.../Prompts/`
-- `.../Kontext/` (nur `linkedin-context.md`, `reddit-communities.md`)
+- `.../Kontext/` (`linkedin-context.md`, `reddit-communities.md`, `performance-memory.md`)
+- `.../Config/`
 - `.../Schemas/`
 - `.../SSOT/manifest.json`
 - `.../Beitraege-Workflow-Uebersicht.md`
+
+## Zielbild
+- Ein Lauf erzeugt genau eine Detaildatei: `Ergebnisse/Laufdetails/<run_id>.md`.
+- Eine Basistabelle sammelt alle Laeufe: `Ergebnisse/00-Runs.md`.
+- Zwischenergebnisse liegen pro Workflow als vollstaendige Datei unter: `Zwischenergebnisse/*.md`.
+- Fehlerlaeufe landen in: `Ergebnisse/Fehlerdetails/<run_id>.md`.
+- Performance-Learnings landen als Einzelnotiz unter `Ergebnisse/Performance/` und kuratiert in `Kontext/performance-memory.md`.
+- Kein `Evaluations/`-Ordner, kein stiller Schema-Fallback und kein Prompt-Change-Log.
 
 ## Modell- und Qualitaetsregeln
 - Modell ist hart gepinnt: `qwen3.5:27b`.
@@ -60,7 +69,9 @@ cd /Users/zweigen/Sites/sandbank-n8n
 ./dev.sh import
 ./dev.sh export
 make workflow-build
+make pull-ssot
 make sync-ssot
+make refresh-obsidian-manifest
 ./n8n/scripts/reset_obsidian_workflow_artifacts.sh
 ./n8n/scripts/legacy_cleanup.sh --apply
 ```
@@ -106,6 +117,18 @@ Global:
 
 Workflowlokal:
 `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext`
+
+Wichtige Kontextdateien:
+- Global: `brand.md`, `audience.md`, `offer.md`, `voice.md`, `author-voice.md`, `proof-library.md`, `red-lines.md`, `cta-goals.md`
+- Workflowlokal: `linkedin-context.md`, `reddit-communities.md`, `performance-memory.md`
+
+## Konfigurations-SSOT
+Workflowkonfiguration liegt unter:
+`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config`
+
+Pflichtdateien:
+- `source-policy.json`
+- `platform-profiles.json`
 
 ## Dateien
 - Workflows: `n8n/workflows/`

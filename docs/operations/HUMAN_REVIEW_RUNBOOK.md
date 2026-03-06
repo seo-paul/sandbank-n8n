@@ -4,6 +4,7 @@
 - `final_gate.human_review_required = true`
 - oder `final_gate.status != pass`
 - oder explizite manuelle Vorgabe `review_decision`
+- Ein bewusstes Reddit-`skip` allein ist kein Review-Trigger.
 
 ## Freigabewege
 - `review_decision=approve`

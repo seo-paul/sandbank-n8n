@@ -3,7 +3,8 @@
 ## Scope
 - Vollstaendig lokal
 - Kein automatischer Modell-Fallback
-- Obsidian ist SSOT fuer Prompts, Kontext, Schemas und Ergebnisdokumentation
+- Obsidian ist Authoring-SSOT fuer Prompts, Kontext, Schemas, Konfiguration und Ergebnisdokumentation
+- Das Repo ist versionierter Mirror fuer Review, Build und statische Validierung
 - Keine Evaluations- oder Prompt-Change-Log-Schicht im aktiven Workflow
 
 ## Komponenten
@@ -13,6 +14,13 @@
 - `searxng + valkey`: Retrieval
 - `ollama` (Host): LLM Inferenz (`qwen3.5:27b`)
 - `obsidian-local-rest-api`: Datei-IO fuer SSOT und Run-Artefakte
+
+## Architekturentscheidungen
+- SSOT-Paritaet wird vor jedem orchestrierten Lauf ueber `manifest.json` erzwungen.
+- Research und Content arbeiten contract-first mit JSON-Schemas und harten Pflichtfeldern.
+- Modellfehler fuehren zu expliziten Stage-Fehlern; es gibt keinen stillen Schema-Fallback mehr.
+- Reddit `skip` ist ein legitimer Strategieausgang und kein impliziter Fail.
+- Performance-Learnings werden mit Provenienz in `Ergebnisse/Performance/` dokumentiert und kuratiert in `Kontext/performance-memory.md` rueckgefuehrt.
 
 ## Workflows
 - `System Verbindungen pruefen`
@@ -29,6 +37,7 @@
   - Modell-Pin, Gate-Parameter, Laufkontext
   - Obsidian REST Zugriff mit Retry
   - SSOT-Manifest Pruefung
+  - Obsidian-Authoring plus Repo-Mirror
 - Workflow-Architektur:
   - Kontext/Prompt/Schema laden
   - Research: Query-Planung -> Retrieval -> Dedupe/Scoring -> Evidence/Angle-Slate
@@ -39,6 +48,7 @@
   - Globales Systemprompt + stage-spezifische Prompts
   - JSON-only fuer Zwischenstufen
   - Plattformregeln inkl. Reddit `skip`-Pfad
+  - `author_voice` und `performance_memory` als kontextuelle Steuerung fuer Menschlichkeit und Rueckkopplung
 
 ## Datengrenzen
 - Recherche-Output:
@@ -48,6 +58,7 @@
   - `artifacts.research_output`
   - `artifacts.evidence_packets`
   - `artifacts.angle_slate`
+  - `artifacts.research_diagnostics`
 - Content-Output:
   - `artifacts.topic_gate`
   - `artifacts.linkedin_brief`
@@ -57,10 +68,18 @@
   - `artifacts.strategy_critique`
   - `artifacts.final_gate`
   - `artifacts.human_review`
+  - `artifacts.content_diagnostics`
+- Performance-Output:
+  - `learning_note_path`
+  - `performance_memory_path`
+  - `learnings`
+  - `diagnostics`
 
 ## Pfadgrenzen Obsidian
 - Global shared context: `Workflows/Kontext`
 - Aktiv: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
+- Workflow-Config: `.../Beitraege-Workflow/Config`
+- Workflow-Memory: `.../Beitraege-Workflow/Kontext/performance-memory.md`
 - Kein `_legacy` und kein `Evaluations` im aktiven Workflow-Root
 
 ## Modellstrategie
@@ -70,10 +89,10 @@
 
 ## Run-Fluss
 1. Kontext aufbauen (run_id, Pfade, Gates)
-2. Prompt-/Kontext-/Schema-SSOT laden
+2. Prompt-/Kontext-/Schema-/Config-SSOT laden
 3. SSOT-Manifest-Hash validieren
 4. Recherche-Subworkflow ausfuehren
 5. Content-Subworkflow ausfuehren
 6. Human-Review-Subworkflow ausfuehren
 7. Persistenz-Subworkflow ausfuehren
-8. Optional: Performance-Rueckfluss
+8. Optional separat: Performance-Rueckfluss mit Note plus `performance_memory`-Update

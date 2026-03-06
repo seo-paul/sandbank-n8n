@@ -9,7 +9,8 @@
 ## Layer 1: Platform Logic
 - Model pin: `qwen3.5:27b`
 - Central run context (`ctx`) with hard gates
-- Obsidian SSOT for prompts, context, schemas and run artifacts
+- Obsidian authoring SSOT for prompts, context, schemas, configs and run artifacts
+- Repo mirror for review, workflow build and static validation
 - SSOT manifest parity gate before execution
 
 ## Layer 2: Workflow Architecture
@@ -34,13 +35,14 @@
   - Strategy critique
   - Final gate
 - Side workflow:
-  - Performance feedback
+  - Performance feedback with note + curated memory update
 
 ## Layer 3: Prompt Design
 - Global system prompt (`00-global-system.md`)
 - Stage prompts with explicit IO contract
 - JSON-only outputs for intermediate stages
 - Platform-native behavior rules for LinkedIn and Reddit
+- `author_voice` and `performance_memory` as explicit steering context
 
 ## Contracts (Schemas)
 - ResearchOutput
@@ -55,13 +57,15 @@
 
 ## Context Boundary
 - Global shared context in `Workflows/Kontext`
-- Workflow-local context in `.../Beitraege-Workflow/Kontext` (nur LinkedIn/Reddit-spezifisch)
+- Workflow-local context in `.../Beitraege-Workflow/Kontext`
+- Workflow-local config in `.../Beitraege-Workflow/Config`
 
 ## Quality Gates
 - Hard fail on model mismatch
 - SSOT manifest hash mismatch fails run
 - Final content state: `pass|revise|hold`
 - Human review required on risk/high uncertainty/low score
+- No silent schema fallback in content, research or performance feedback
 
 ## Security Model
 - Bearer auth for Obsidian REST

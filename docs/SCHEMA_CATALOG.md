@@ -1,8 +1,8 @@
 # Schema Catalog
 
 ## SSOT
-- Source of truth: `local-files/_managed/schemas/*.schema.json`
-- Runtime source: `.../Beitraege-Workflow/Schemas/*.schema.json` (Obsidian)
+- Authoring source of truth: Obsidian `.../Beitraege-Workflow/Schemas/*.schema.json`
+- Repo mirror: `local-files/_managed/schemas/*.schema.json`
 - SSOT parity gate: `.../Beitraege-Workflow/SSOT/manifest.json`
 
 ## Stage -> Output Schema
@@ -23,12 +23,14 @@
 
 ## Validation Rules
 - JSON parsing + schema validation in Code-Nodes.
-- Parse-repair Pfad fuer LLM-Ausgaben.
+- Parse-repair ist nur fuer JSON-Reparatur zulaessig.
+- Kein Schema-Fallback bei Modell- oder Parsefehlern.
 - Hard error bei ungueltiger Struktur.
 
 ## Hard Fail Conditions
 - Modellabweichung von `qwen3.5:27b`
 - Fehlende Pflicht-Prompts/Kontext/Schemas
+- Fehlende Pflicht-Konfigurationen
 - SSOT-Manifest Mismatch
 - Duplicate `evidence_id`
 

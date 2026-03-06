@@ -16,14 +16,18 @@
 - `Zwischenergebnisse/`
 - `Prompts/`
 - `Kontext/` (nur workflowlokal)
+- `Config/`
 - `Schemas/`
 - `SSOT/manifest.json`
 - `Beitraege-Workflow-Uebersicht.md`
 - `README.md`
 
 ## Kontext-Zuordnung
-- Global: `brand.md`, `audience.md`, `offer.md`, `voice.md`, `proof-library.md`, `red-lines.md`, `cta-goals.md`
-- Workflowlokal: `linkedin-context.md`, `reddit-communities.md`
+- Global: `brand.md`, `audience.md`, `offer.md`, `voice.md`, `author-voice.md`, `proof-library.md`, `red-lines.md`, `cta-goals.md`
+- Workflowlokal: `linkedin-context.md`, `reddit-communities.md`, `performance-memory.md`
+
+## Config-Zuordnung
+- Workflowlokal: `source-policy.json`, `platform-profiles.json`
 
 ## Verbote
 - Keine Umlaute in Pfaden/Dateinamen.
