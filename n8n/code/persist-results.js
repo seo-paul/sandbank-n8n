@@ -99,6 +99,9 @@ async function ensureFile(path, fallbackBody) {
 }
 
 function ensureArray(value) { return Array.isArray(value) ? value : []; }
+function ensureObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
 function tableCell(value) { return String(value == null ? '' : value).replace(/\|/g, '/').replace(/\n/g, ' ').trim(); }
 function yamlEscape(value) { return String(value || '').replace(/"/g, '\\"').replace(/\n/g, ' '); }
 function wiki(path, label) { return '[[' + String(path) + '|' + String(label) + ']]'; }
@@ -201,6 +204,28 @@ function baseIntermediateFile(workflowName, workflowSlug) {
     '',
     'Diese Datei enthaelt die vollstaendigen Schritt-Ergebnisse pro Run.',
   ].join('\n');
+}
+
+function sanitizeIntermediateFile(text) {
+  let next = String(text || '');
+  next = next.replace(/\n## Run <run_id>[\s\S]*$/m, '\n');
+  next = next.replace(/\n{3,}/g, '\n\n');
+  return next.trimEnd() + '\n';
+}
+
+function sanitizeRunsRegister(text, header) {
+  const lines = String(text || '').split('\n');
+  const cleaned = lines.filter((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return true;
+    if (trimmed.includes('run-<execution_id>-<timestamp>')) return false;
+    if (trimmed.includes('| <thema> |')) return false;
+    if (trimmed.includes('[[Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/Laufdetails/<run_id>.md')) return false;
+    return true;
+  }).join('\n');
+  const normalized = cleaned.trim();
+  if (!normalized) return String(header || '').trimEnd() + '\n';
+  return normalized.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 
 function stepPayloadByNumber(step) {
@@ -323,7 +348,7 @@ for (const wf of workflowsForFiles) intermediatePaths[wf.name] = intermediateDir
 const runIntermediateFiles = [];
 for (const wf of workflowsForFiles) {
   const filePath = intermediatePaths[wf.name];
-  const current = await ensureFile.call(this, filePath, baseIntermediateFile(wf.name, wf.slug));
+  const current = sanitizeIntermediateFile(await ensureFile.call(this, filePath, baseIntermediateFile(wf.name, wf.slug)));
   if (current.includes('## Run ' + String(ctx.run_id || ''))) continue;
 
   let section = '';
@@ -403,6 +428,13 @@ const detailMarkdown = [
   '## Evidenz Referenzen',
   ...(ensureArray(ctx.generated && ctx.generated.evidence_refs).length ? ensureArray(ctx.generated.evidence_refs).map((url) => '- ' + String(url)) : ['- n/a']),
   '',
+  '## Diagnostik',
+  '### Research Diagnostics',
+  jsonBlock(ensureObject(ctx.artifacts && ctx.artifacts.research_diagnostics)),
+  '',
+  '### Content Diagnostics',
+  jsonBlock(ensureObject(ctx.artifacts && ctx.artifacts.content_diagnostics)),
+  '',
   '## Inhalte',
   String((ctx.generated && ctx.generated.linkedin_research_markdown) || '').trim(),
   '',
@@ -427,7 +459,7 @@ const runsHeader = [
   '|---|---|---|---|---|---|---|---|---|---:|---:|---|---|',
 ].join('\n');
 
-let runsContent = await ensureFile.call(this, runsPath, runsHeader);
+let runsContent = sanitizeRunsRegister(await ensureFile.call(this, runsPath, runsHeader), runsHeader);
 const intermediateLinks = runIntermediateFiles.map((item) => wikiPlain(item.path)).join(', ');
 const runsRow = [
   '| ' + tableCell(ctx.run_id),
@@ -519,8 +551,10 @@ const workflowCatalog = [
   {
     workflow: 'Performance zurueckfuehren',
     steps: [
-      { step: '1. Input normalisieren', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Metriken vorbereiten', description: 'Nimmt LinkedIn/Reddit Metriken und Kommentare als Input.' },
-      { step: '2. Learnings ableiten', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Datengetriebene Learnings', description: 'Erzeugt datenbasierte Muster und konkrete naechste Optimierungsschritte.' },
+      { step: '1. Input normalisieren', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Metriken vorbereiten', description: 'Fuehrt Parent-Run, Content-Snapshot, Kanalstatus und Metriken in einen analysierbaren Kontext zusammen.' },
+      { step: '2. Performance Analyse ausfuehren', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Datengetriebene Learnings', description: 'Leitet strukturierte Muster, Voice-Signale und naechste Tests aus Metriken und Kommentaren ab.' },
+      { step: '3. Lernnotiz schreiben', intermediate: 'Ergebnisse/Performance/<perf_run_id>.md', purpose: 'Provenienz', description: 'Schreibt den vollstaendigen Performance-Eintrag mit Content-, Kommentar- und Metrik-Snapshot.' },
+      { step: '4. performance_memory aktualisieren', intermediate: 'Kontext/performance-memory.md', purpose: 'Rueckkopplung', description: 'Aktualisiert den kuratierten Learning-Store fuer kommende Research- und Content-Laeufe.' },
     ],
   },
 ];

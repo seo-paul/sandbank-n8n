@@ -64,6 +64,7 @@ const ctx = {
   workflow_prompts_dir: input.workflow_prompts_dir || $env.OBSIDIAN_WORKFLOW_PROMPTS_DIR || (workflowDir + '/Prompts'),
   workflow_context_dir: input.workflow_context_dir || $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR || (workflowDir + '/Kontext'),
   workflow_global_context_dir: globalContextDir,
+  workflow_config_dir: input.workflow_config_dir || $env.OBSIDIAN_WORKFLOW_CONFIG_DIR || (workflowDir + '/Config'),
   workflow_schema_dir: input.workflow_schema_dir || $env.OBSIDIAN_WORKFLOW_SCHEMA_DIR || (workflowDir + '/Schemas'),
 
   workflow_runs_file: input.workflow_runs_file || $env.OBSIDIAN_WORKFLOW_RUNS_FILE || (workflowDir + '/Ergebnisse/00-Runs.md'),
@@ -76,6 +77,7 @@ const ctx = {
 
   prompts: {},
   context: {},
+  configs: (input.configs && typeof input.configs === 'object') ? input.configs : {},
   model_trace: Array.isArray(input.model_trace) ? input.model_trace : [],
   stage_logs: Array.isArray(input.stage_logs) ? input.stage_logs : [],
   stage_summaries: Array.isArray(input.stage_summaries) ? input.stage_summaries : [],

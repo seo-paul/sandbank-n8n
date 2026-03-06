@@ -5,6 +5,7 @@ const requiredInputFields = [
   'model_used',
   'prompts',
   'context',
+  'configs',
   'schemas',
   'obsidian_rest_url',
   'obsidian_rest_api_key',
@@ -18,6 +19,9 @@ for (const field of requiredInputFields) {
 
 function nowIso() { return new Date().toISOString(); }
 function ensureArray(value) { return Array.isArray(value) ? value : []; }
+function ensureObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
 function shortText(value, maxLen = 260) {
   const text = typeof value === 'string' ? value : JSON.stringify(value || '');
   return text.length <= maxLen ? text : text.slice(0, maxLen - 3) + '...';
@@ -48,6 +52,20 @@ function parseBool(value, fallback = false) {
   if (normalized === 'true') return true;
   if (normalized === 'false') return false;
   return fallback;
+}
+function uniqueStrings(values) {
+  return Array.from(new Set(ensureArray(values).map((value) => String(value || '').trim()).filter(Boolean)));
+}
+function lowerList(values) {
+  return uniqueStrings(values).map((value) => value.toLowerCase());
+}
+function firstListItem(markdown) {
+  const lines = String(markdown || '').split('\n');
+  for (const line of lines) {
+    const normalized = line.replace(/^[-*]\s*/, '').trim();
+    if (normalized && normalized !== line.trim()) return normalized;
+  }
+  return '';
 }
 
 function parseIpv4(host) {
@@ -95,25 +113,38 @@ function isPrivateOrSpecialIpv6(host) {
   return false;
 }
 
-function isAllowedExternalUrl(urlValue) {
+function safeUrl(urlValue) {
   try {
-    const raw = String(urlValue || '').trim();
-    if (!raw) return false;
-    const url = new URL(raw);
-    const protocol = String(url.protocol || '').toLowerCase();
-    if (protocol !== 'http:' && protocol !== 'https:') return false;
-    if (url.username || url.password) return false;
-
-    const host = String(url.hostname || '').toLowerCase();
-    if (!host) return false;
-    if (host === 'localhost' || host.endsWith('.localhost')) return false;
-    if (host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.home.arpa')) return false;
-    if (isPrivateOrSpecialIpv4(host)) return false;
-    if (isPrivateOrSpecialIpv6(host)) return false;
-    return true;
+    return new URL(String(urlValue || '').trim());
   } catch (error) {
-    return false;
+    return null;
   }
+}
+
+function getDomain(urlValue) {
+  const url = safeUrl(urlValue);
+  return url ? String(url.hostname || '').toLowerCase() : '';
+}
+
+function hasPattern(value, patterns) {
+  const haystack = String(value || '').toLowerCase();
+  return ensureArray(patterns).some((pattern) => haystack.includes(String(pattern || '').toLowerCase()));
+}
+
+function isAllowedExternalUrl(urlValue) {
+  const url = safeUrl(urlValue);
+  if (!url) return false;
+  const protocol = String(url.protocol || '').toLowerCase();
+  if (protocol !== 'http:' && protocol !== 'https:') return false;
+  if (url.username || url.password) return false;
+
+  const host = String(url.hostname || '').toLowerCase();
+  if (!host) return false;
+  if (host === 'localhost' || host.endsWith('.localhost')) return false;
+  if (host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.home.arpa')) return false;
+  if (isPrivateOrSpecialIpv4(host)) return false;
+  if (isPrivateOrSpecialIpv6(host)) return false;
+  return true;
 }
 
 if (String(ctx.model_used || '') !== 'qwen3.5:27b') {
@@ -123,9 +154,10 @@ if (String(ctx.model_used || '') !== 'qwen3.5:27b') {
 ctx.stage_logs = ensureArray(ctx.stage_logs);
 ctx.stage_summaries = ensureArray(ctx.stage_summaries);
 ctx.model_trace = ensureArray(ctx.model_trace);
-ctx.artifacts = (ctx.artifacts && typeof ctx.artifacts === 'object') ? ctx.artifacts : {};
-ctx.context = (ctx.context && typeof ctx.context === 'object') ? ctx.context : {};
-ctx.schemas = (ctx.schemas && typeof ctx.schemas === 'object') ? ctx.schemas : {};
+ctx.artifacts = ensureObject(ctx.artifacts);
+ctx.context = ensureObject(ctx.context);
+ctx.configs = ensureObject(ctx.configs);
+ctx.schemas = ensureObject(ctx.schemas);
 const stageSummaryEnabled = parseBool($env.PIPELINE_STAGE_SUMMARY_ENABLED, false);
 
 function validateSchema(schema, value, path = 'value') {
@@ -161,12 +193,32 @@ function validateSchema(schema, value, path = 'value') {
     if (Number.isFinite(schema.maximum) && value > schema.maximum) throw new Error(path + ' maximum=' + schema.maximum);
     return;
   }
+  if (type === 'boolean' && typeof value !== 'boolean') {
+    throw new Error(path + ' must be boolean');
+  }
 }
 
 const researchOutputSchema = ctx.schemas.research_output;
 if (!researchOutputSchema || typeof researchOutputSchema !== 'object') {
   throw new Error('Missing schema contract: research_output');
 }
+
+const sourcePolicy = ensureObject(ctx.configs.source_policy);
+if (!sourcePolicy.mode) {
+  throw new Error('Missing runtime config: source_policy');
+}
+
+const policy = {
+  minimumExternalSignals: clamp(sourcePolicy.minimum_external_signals, 1, 20, 4),
+  minimumDistinctDomains: clamp(sourcePolicy.minimum_distinct_domains, 1, 20, 3),
+  minimumPrimarySources: clamp(sourcePolicy.minimum_primary_sources, 0, 10, 1),
+  allowedSourceTypes: new Set(lowerList(sourcePolicy.allowed_source_types)),
+  blockedDomainPatterns: lowerList(sourcePolicy.blocked_domain_patterns),
+  downgradedDomainPatterns: lowerList(sourcePolicy.downgraded_domain_patterns),
+  officialDomainMarkers: lowerList(sourcePolicy.official_domain_markers),
+  researchDomainPatterns: lowerList(sourcePolicy.research_domain_patterns),
+  communityDomains: lowerList(sourcePolicy.community_domains),
+};
 
 function addStage(step, stage, status, inputRef, outputRef, quality, notes, issueCount = 0) {
   ctx.stage_logs.push({
@@ -246,72 +298,13 @@ function extractJsonCandidate(rawText) {
   throw new Error('Could not extract valid JSON payload');
 }
 
-function pickEnumFallback(enumValues) {
-  const values = ensureArray(enumValues);
-  if (!values.length) return '';
-  const preferred = ['weak', 'hold', 'skip', 'pending', 'comment', 'post_text_only', 'post_with_link', 'usable', 'strong'];
-  for (const token of preferred) {
-    const found = values.find((value) => String(value).toLowerCase() === token);
-    if (found !== undefined) return found;
-  }
-  return values[0];
-}
-
-function fallbackFromSchema(schema, depth = 0) {
-  if (!schema || typeof schema !== 'object' || depth > 20) return null;
-
-  if (schema.const !== undefined) return schema.const;
-  if (Array.isArray(schema.enum) && schema.enum.length) return pickEnumFallback(schema.enum);
-
-  const schemaType = Array.isArray(schema.type)
-    ? schema.type.find((t) => t !== 'null') || schema.type[0]
-    : schema.type;
-
-  if (schemaType === 'object' || schema.properties || schema.required) {
-    const out = {};
-    const required = ensureArray(schema.required);
-    const props = schema.properties || {};
-    for (const key of required) {
-      if (props[key]) out[key] = fallbackFromSchema(props[key], depth + 1);
-      else out[key] = 'n/a';
-    }
-    return out;
-  }
-
-  if (schemaType === 'array') {
-    const out = [];
-    const minItems = Number.isFinite(schema.minItems) ? Number(schema.minItems) : 0;
-    const itemSchema = schema.items || {};
-    for (let i = 0; i < minItems; i++) out.push(fallbackFromSchema(itemSchema, depth + 1));
-    return out;
-  }
-
-  if (schemaType === 'boolean') return false;
-
-  if (schemaType === 'number' || schemaType === 'integer') {
-    let value = 0;
-    if (Number.isFinite(schema.minimum)) value = Number(schema.minimum);
-    if (Number.isFinite(schema.maximum) && value > Number(schema.maximum)) value = Number(schema.maximum);
-    return schemaType === 'integer' ? Math.round(value) : value;
-  }
-
-  if (schemaType === 'string' || !schemaType) {
-    const minLength = Number.isFinite(schema.minLength) ? Number(schema.minLength) : 0;
-    let value = 'n/a';
-    if (minLength > value.length) value = value + 'x'.repeat(minLength - value.length);
-    return value;
-  }
-
-  return null;
-}
-
 async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
   const baseUrl = (($env.OLLAMA_BASE_URL || 'http://host.docker.internal:11434').replace(/\/+$/, ''));
-  const temperature = Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.2;
+  const temperature = Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.15;
   const maxPredict = clamp($env.OLLAMA_NUM_PREDICT_CAP, 80, 2000, 900);
-  const requestedPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 360;
-  const numPredict = clamp(requestedPredict, 80, maxPredict, 360);
-  const numCtx = Number.isFinite(Number(options.num_ctx)) ? Math.max(1024, Number(options.num_ctx)) : 4096;
+  const requestedPredict = Number.isFinite(Number(options.num_predict)) ? Number(options.num_predict) : 520;
+  const numPredict = clamp(requestedPredict, 80, maxPredict, 520);
+  const numCtx = Number.isFinite(Number(options.num_ctx)) ? Math.max(1024, Number(options.num_ctx)) : 8192;
   const maxTimeout = clamp($env.OLLAMA_TIMEOUT_CAP_MS, 30000, 900000, 360000);
   const requestedTimeout = Number.isFinite(Number(options.timeout)) ? Number(options.timeout) : 240000;
   const timeout = clamp(Math.min(requestedTimeout, maxTimeout), 30000, maxTimeout, 240000);
@@ -320,26 +313,23 @@ async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
   const maxAttempts = clamp(requestedAttempts, 1, attemptsCap, 2);
   const thinking = options.thinking !== false;
 
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: thinking ? userPrompt : ('Antworte direkt ohne Gedankenausfuehrung.\n\n' + userPrompt) }
-  ];
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const body = {
-        model: ctx.model_used,
-        stream: false,
-        keep_alive: '30m',
-        messages,
-        think: thinking,
-        options: { temperature, num_predict: numPredict, num_ctx: numCtx, enable_thinking: thinking },
-      };
-      if (options.format_schema) body.format = options.format_schema;
       const data = await this.helpers.httpRequest({
         method: 'POST',
         url: baseUrl + '/api/chat',
-        body,
+        body: {
+          model: ctx.model_used,
+          stream: false,
+          keep_alive: '30m',
+          think: thinking,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: thinking ? userPrompt : ('Antworte direkt ohne Gedankenausfuehrung.\n\n' + userPrompt) },
+          ],
+          options: { temperature, num_predict: numPredict, num_ctx: numCtx, enable_thinking: thinking },
+          format: options.format_schema || undefined,
+        },
         json: true,
         timeout,
       });
@@ -359,23 +349,16 @@ async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
   throw new Error('Ollama call failed');
 }
 
-async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
+async function callOllamaJsonStrict(systemPrompt, userPrompt, options = {}) {
   let raw;
   try {
     raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);
-  } catch (rawError) {
-    if (options.format_schema) {
-      return {
-        parsed: fallbackFromSchema(options.format_schema),
-        raw_text: '[FALLBACK:model_error] ' + shortText(rawError.message || 'unknown', 240),
-        model_used: ctx.model_used,
-      };
-    }
-    throw rawError;
+  } catch (error) {
+    throw new Error('research_model_error: ' + shortText(error.message || 'unknown', 220));
   }
 
   try {
-    return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, model_used: raw.model_used };
+    return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, repair_used: false, model_used: raw.model_used };
   } catch (firstError) {
     const repairPrompt = [
       'Convert this content to strict valid JSON.',
@@ -395,22 +378,19 @@ async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
           temperature: 0,
           num_predict: 520,
           num_ctx: 4096,
-          timeout: 240000,
+          timeout: 180000,
           max_attempts: 2,
           thinking: false,
         }
       );
-
-      return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text, model_used: repaired.model_used };
+      return {
+        parsed: extractJsonCandidate(repaired.text),
+        raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text,
+        repair_used: true,
+        model_used: repaired.model_used,
+      };
     } catch (repairError) {
-      if (options.format_schema) {
-        return {
-          parsed: fallbackFromSchema(options.format_schema),
-          raw_text: '[FALLBACK:repair_error] ' + shortText(repairError.message || 'unknown', 240),
-          model_used: ctx.model_used,
-        };
-      }
-      throw repairError;
+      throw new Error('research_json_error: ' + shortText(repairError.message || 'unknown', 220));
     }
   }
 }
@@ -421,11 +401,13 @@ function buildContextBundle() {
     audience_profile: String(ctx.context.audience_profile || ''),
     offer_context: String(ctx.context.offer_context || ''),
     voice_guide: String(ctx.context.voice_guide || ''),
+    author_voice: String(ctx.context.author_voice || ''),
     proof_library: String(ctx.context.proof_library || ''),
     red_lines: String(ctx.context.red_lines || ''),
     cta_goals: String(ctx.context.cta_goals || ''),
     linkedin_context: String(ctx.context.linkedin_context || ''),
     reddit_context: String(ctx.context.reddit_context || ''),
+    performance_memory: String(ctx.context.performance_memory || ''),
     campaign_goal: String(ctx.context.campaign_goal || ctx.campaign_goal || ''),
     output_language: String(ctx.context.output_language || ctx.output_language || 'de'),
   };
@@ -457,6 +439,7 @@ async function addStageSummary(step, stage, payload) {
       next_action: 'continue',
     }
   );
+
   try {
     const res = await callOllamaRaw.call(
       this,
@@ -471,31 +454,34 @@ async function addStageSummary(step, stage, payload) {
 }
 
 function buildQueryPlan() {
-  const topic = String(ctx.topic_hint || '').trim();
-  const plan = [];
-  const base = topic
+  const topic = sanitizeExternalText(String(ctx.topic_hint || ''), 120);
+  const audienceCue = sanitizeExternalText(firstListItem(ctx.context.audience_profile || ''), 120);
+  const offerCue = sanitizeExternalText(firstListItem(ctx.context.offer_context || ''), 120);
+  const genericSeed = sanitizeExternalText(topic || audienceCue || offerCue || 'b2b analytics reporting', 120);
+
+  const candidates = topic
     ? [
-        topic + ' b2b practical insights',
-        topic + ' official docs',
-        topic + ' research study',
-        'site:reddit.com ' + topic,
+        `${topic} official documentation`,
+        `${topic} original research study`,
+        `${topic} implementation lessons b2b`,
+        `${topic} failure lessons case study`,
+        `site:reddit.com ${topic} pain point`,
+        `site:reddit.com ${topic} unpopular opinion`,
       ]
     : [
-        'b2b analytics reporting pain points 2026',
-        'data infrastructure saas trends 2026',
-        'site:reddit.com dataengineering dashboard reporting',
-        'site:reddit.com marketing analytics reporting',
+        `${genericSeed} official documentation`,
+        `${genericSeed} original research study`,
+        `${genericSeed} implementation lessons`,
+        `${genericSeed} failure lessons`,
+        `site:reddit.com ${genericSeed} pain point`,
+        `site:reddit.com ${genericSeed} buying friction`,
       ];
 
-  for (let i = 0; i < base.length; i++) {
-    plan.push({
-      query: sanitizeExternalText(base[i], 200),
-      priority: i < 2 ? 'high' : 'medium',
-      reason: i === 0 ? 'topic-focus' : 'coverage',
-    });
-  }
-
-  return plan.slice(0, 6);
+  return candidates.map((query, index) => ({
+    query: sanitizeExternalText(query, 200),
+    priority: index < 3 ? 'high' : 'medium',
+    reason: index < 2 ? 'primary_evidence' : (index < 4 ? 'operator_examples' : 'community_signal'),
+  }));
 }
 
 function dedupeSignals(signals) {
@@ -504,20 +490,35 @@ function dedupeSignals(signals) {
   for (const signal of ensureArray(signals)) {
     const url = String(signal.url || '').trim().toLowerCase();
     const title = String(signal.title || '').trim().toLowerCase();
-    const key = (url || '') + '|' + (title || '');
-    if (!key || seen.has(key)) continue;
+    const key = url + '|' + title;
+    if (!url || seen.has(key)) continue;
     seen.add(key);
     out.push(signal);
   }
   return out;
 }
 
-function inferAuthority(url, sourceType) {
-  const u = String(url || '').toLowerCase();
-  if (/\.gov|\.edu|docs\.|standards\./.test(u)) return 'high';
-  if (String(sourceType || '').includes('reddit') || /reddit\.com/.test(u)) return 'medium';
-  if (/blog|medium|substack/.test(u)) return 'low';
+function inferSourceType(urlValue, query) {
+  const domain = getDomain(urlValue);
+  if (policy.communityDomains.includes(domain) || /site:reddit\.com/i.test(String(query || ''))) return 'community';
+  if (hasPattern(domain, policy.officialDomainMarkers)) return 'official';
+  if (hasPattern(domain, policy.researchDomainPatterns)) return 'research';
+  if (/news|press|magazine|journal|techcrunch|theverge|wired/i.test(domain)) return 'media';
+  return 'vendor';
+}
+
+function inferAuthority(domain, sourceType, downgraded) {
+  if (downgraded) return 'low';
+  if (sourceType === 'official' || sourceType === 'research') return 'high';
+  if (sourceType === 'community') return 'medium';
+  if (sourceType === 'media') return 'medium';
   return 'medium';
+}
+
+function inferSourceTier(sourceType, authority) {
+  if (sourceType === 'community') return 'community_signal';
+  if (sourceType === 'official' || sourceType === 'research' || authority === 'high') return 'primary';
+  return 'supporting';
 }
 
 function inferFreshness(publishedAt) {
@@ -532,135 +533,235 @@ function inferFreshness(publishedAt) {
   return 'recent';
 }
 
+function summarizeSourceMix(signals) {
+  const counts = new Map();
+  for (const signal of ensureArray(signals)) {
+    const key = String(signal.source_type || 'vendor');
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return Array.from(counts.entries()).map(([sourceType, count]) => ({ source_type: sourceType, count }));
+}
+
+function buildRetrievalSummary(allowedSignals, blockedSignals) {
+  const distinctDomains = new Set(ensureArray(allowedSignals).map((signal) => String(signal.domain || '')).filter(Boolean));
+  const primarySourceCount = ensureArray(allowedSignals).filter((signal) => signal.source_tier === 'primary').length;
+  return {
+    external_signal_count: ensureArray(allowedSignals).length,
+    allowed_signal_count: ensureArray(allowedSignals).length,
+    blocked_signal_count: ensureArray(blockedSignals).length,
+    distinct_domains: distinctDomains.size,
+    primary_source_count: primarySourceCount,
+    source_mix: summarizeSourceMix(allowedSignals),
+    external_evidence_ready:
+      ensureArray(allowedSignals).length >= policy.minimumExternalSignals &&
+      distinctDomains.size >= policy.minimumDistinctDomains &&
+      primarySourceCount >= policy.minimumPrimarySources,
+  };
+}
+
+function buildWeakResearchOutput(queryDiagnostics, retrievalSummary, discardedSignals) {
+  const recommendedQueries = queryDiagnostics
+    .filter((row) => row.status !== 'ok')
+    .slice(0, 3)
+    .map((row) => row.query);
+
+  return {
+    research_verdict: 'weak',
+    retrieval_summary: retrievalSummary,
+    topic_candidates: [],
+    evidence_packets: [],
+    missing_evidence: [
+      'primary_source',
+      'distinct_domains',
+      'evidence_ready_story',
+    ],
+    next_queries: recommendedQueries.length ? recommendedQueries : ['refine topic and collect stronger primary evidence'],
+    discarded_signals: discardedSignals,
+    query_diagnostics: queryDiagnostics,
+  };
+}
+
 const queryPlan = buildQueryPlan();
 ctx.artifacts.query_plan = queryPlan;
-addStage(1, 'Query Planung', 'ok', 'run/' + ctx.run_id + '/research/input', 'run/' + ctx.run_id + '/research/query_plan', 82, 'queries=' + queryPlan.length, 0);
+addStage(1, 'Query Planung', 'ok', 'run/' + ctx.run_id + '/research/input', 'run/' + ctx.run_id + '/research/query_plan', 84, 'queries=' + queryPlan.length, 0);
 await addStageSummary.call(this, 1, 'Query Planung', queryPlan);
 
 const rawSignals = [];
 const blockedSignals = [];
-const failedQueries = [];
-let retrievalFallbackUsed = false;
+const queryDiagnostics = [];
+let successfulQueries = 0;
+
 for (const row of queryPlan) {
   const query = String(row.query || '').trim();
   if (!query) continue;
+
   try {
     const response = await callSearx.call(this, query);
-    const results = ensureArray(response && response.results).slice(0, 6);
+    successfulQueries += 1;
+    const results = ensureArray(response && response.results).slice(0, 8);
+    let acceptedCount = 0;
+    let blockedCount = 0;
+
     for (const result of results) {
       const url = sanitizeExternalText(result.url || '', 420);
+      const title = sanitizeExternalText(result.title || '', 260);
+      const domain = getDomain(url);
+
       if (!isAllowedExternalUrl(url)) {
-        blockedSignals.push({
-          query,
-          url,
-          reason: 'blocked_or_invalid_url',
-        });
+        blockedSignals.push({ source_ref: url || query, reason: 'blocked_or_invalid_url' });
+        blockedCount += 1;
         continue;
       }
+
+      const sourceType = inferSourceType(url, query);
+      if (policy.allowedSourceTypes.size && !policy.allowedSourceTypes.has(sourceType)) {
+        blockedSignals.push({ source_ref: url, reason: 'source_type_not_allowed' });
+        blockedCount += 1;
+        continue;
+      }
+
+      if (hasPattern(domain, policy.blockedDomainPatterns)) {
+        blockedSignals.push({ source_ref: url, reason: 'blocked_domain_pattern' });
+        blockedCount += 1;
+        continue;
+      }
+
+      const downgraded = hasPattern(domain, policy.downgradedDomainPatterns);
+      const authority = inferAuthority(domain, sourceType, downgraded);
+      const freshness = inferFreshness(result.publishedDate || result.published_at || '');
+      const sourceTier = inferSourceTier(sourceType, authority);
+      const freshnessBoost = freshness === 'current' ? 0.08 : freshness === 'recent' ? 0.04 : freshness === 'dated' ? -0.08 : 0;
+      const sourceScore = clamp(
+        (authority === 'high' ? 0.84 : authority === 'medium' ? 0.72 : 0.52) + freshnessBoost - (downgraded ? 0.12 : 0),
+        0,
+        1,
+        0.5
+      );
+
       rawSignals.push({
         query,
-        source_type: /site:reddit.com/.test(query) ? 'community' : 'web',
-        title: sanitizeExternalText(result.title || '', 260),
+        source_type: sourceType,
+        source_tier: sourceTier,
+        title,
         url,
+        domain,
         summary: sanitizeExternalText(result.content || result.snippet || '', 700),
         published_at: sanitizeExternalText(result.publishedDate || result.published_at || '', 80),
+        authority,
+        freshness,
+        source_score: sourceScore,
+        downgraded,
       });
+      acceptedCount += 1;
     }
-  } catch (error) {
-    failedQueries.push({ query, reason: shortText(error.message || 'unknown', 160) });
-  }
-}
 
-if (!rawSignals.length) {
-  const fallbackSummary = sanitizeExternalText(
-    String(ctx.context.proof_library || ctx.context.linkedin_context || ctx.context.reddit_context || ctx.context.brand_profile || ''),
-    700
-  );
-  if (fallbackSummary) {
-    retrievalFallbackUsed = true;
-    rawSignals.push({
-      query: String((queryPlan[0] && queryPlan[0].query) || ctx.topic_hint || 'context-fallback'),
-      source_type: 'context',
-      title: 'Kontextbasierter Fallback ohne externe Treffer',
-      url: 'context://workflow-context',
-      summary: fallbackSummary,
-      published_at: '',
+    queryDiagnostics.push({
+      query,
+      status: acceptedCount > 0 ? 'ok' : (blockedCount > 0 ? 'blocked' : 'empty'),
+      result_count: acceptedCount,
+      notes: acceptedCount > 0 ? ('accepted=' + acceptedCount) : (blockedCount > 0 ? ('blocked=' + blockedCount) : 'no usable results'),
+    });
+  } catch (error) {
+    queryDiagnostics.push({
+      query,
+      status: 'failed',
+      result_count: 0,
+      notes: shortText(error.message || 'unknown', 160),
     });
   }
 }
 
-if (!rawSignals.length) {
-  throw new Error('No research signals collected and no context fallback available. Failed queries: ' + JSON.stringify(failedQueries));
+if (!successfulQueries && queryDiagnostics.length) {
+  throw new Error('Research retrieval failed for all queries: ' + JSON.stringify(queryDiagnostics));
 }
 
+const dedupedSignals = dedupeSignals(rawSignals);
+const retrievalSummary = buildRetrievalSummary(dedupedSignals, blockedSignals);
+
 ctx.artifacts.raw_signals = rawSignals;
+ctx.artifacts.scored_signals = dedupedSignals;
 ctx.artifacts.blocked_signals = blockedSignals;
+ctx.artifacts.query_diagnostics = queryDiagnostics;
+ctx.artifacts.retrieval_summary = retrievalSummary;
+
 addStage(
   2,
   'Retrieval',
   'ok',
   'run/' + ctx.run_id + '/research/query_plan',
   'run/' + ctx.run_id + '/research/raw_signals',
-  retrievalFallbackUsed ? 55 : (rawSignals.length >= 8 ? 85 : 70),
-  'signals=' + rawSignals.length + '; failed=' + failedQueries.length + '; blocked=' + blockedSignals.length + '; fallback=' + (retrievalFallbackUsed ? 'context' : 'none'),
-  failedQueries.length + blockedSignals.length
+  retrievalSummary.external_evidence_ready ? 88 : (dedupedSignals.length ? 68 : 40),
+  'signals=' + dedupedSignals.length + '; blocked=' + blockedSignals.length + '; domains=' + retrievalSummary.distinct_domains,
+  blockedSignals.length + queryDiagnostics.filter((row) => row.status === 'failed').length
 );
-await addStageSummary.call(this, 2, 'Retrieval', rawSignals.slice(0, 6));
-
-const dedupedSignals = dedupeSignals(rawSignals);
-const scoredSignals = dedupedSignals.map((signal) => {
-  const authority = inferAuthority(signal.url, signal.source_type);
-  const freshness = inferFreshness(signal.published_at);
-  const base = authority === 'high' ? 0.86 : authority === 'medium' ? 0.72 : 0.58;
-  const freshnessBoost = freshness === 'current' ? 0.08 : freshness === 'recent' ? 0.04 : freshness === 'dated' ? -0.08 : 0;
-  return {
-    ...signal,
-    authority,
-    freshness,
-    source_score: clamp(base + freshnessBoost, 0, 1, 0.5),
-  };
+await addStageSummary.call(this, 2, 'Retrieval', {
+  retrieval_summary: retrievalSummary,
+  query_diagnostics: queryDiagnostics,
+  blocked_signals: blockedSignals.slice(0, 6),
 });
 
-ctx.artifacts.scored_signals = scoredSignals;
-addStage(3, 'Dedupe und Source Scoring', 'ok', 'run/' + ctx.run_id + '/research/raw_signals', 'run/' + ctx.run_id + '/research/scored_signals', scoredSignals.length >= 6 ? 84 : 70, 'deduped=' + scoredSignals.length, 0);
-await addStageSummary.call(this, 3, 'Dedupe und Source Scoring', scoredSignals.slice(0, 6));
-
-const prompt = buildPrompt(
-  String(ctx.prompts.recherche_signale || ''),
-  {
-    topic_seed: String(ctx.topic_hint || ''),
-    raw_signals: JSON.stringify(scoredSignals.slice(0, 20)),
-    existing_context: JSON.stringify(buildContextBundle()),
-  }
+addStage(
+  3,
+  'Dedupe und Source Scoring',
+  'ok',
+  'run/' + ctx.run_id + '/research/raw_signals',
+  'run/' + ctx.run_id + '/research/scored_signals',
+  retrievalSummary.external_evidence_ready ? 86 : (dedupedSignals.length >= 4 ? 70 : 35),
+  'deduped=' + dedupedSignals.length + '; primary=' + retrievalSummary.primary_source_count,
+  0
 );
+await addStageSummary.call(this, 3, 'Dedupe und Source Scoring', dedupedSignals.slice(0, 6));
 
-const stage4 = await callOllamaJson.call(
-  this,
-  'You are a research synthesis engine. Return valid JSON only.',
-  prompt,
-  {
-    format_schema: researchOutputSchema,
-    temperature: 0.1,
-    num_predict: 700,
-    num_ctx: 8192,
-    timeout: 300000,
-    max_attempts: 3,
-    thinking: true,
-  }
-);
+let researchOutput;
+let researchMeta = {
+  repair_used: false,
+  raw_output_excerpt: '',
+};
 
-const researchOutput = stage4.parsed;
-researchOutput.discarded_signals = ensureArray(researchOutput.discarded_signals);
-for (const blocked of blockedSignals) {
-  researchOutput.discarded_signals.push({
-    source_ref: String(blocked.url || blocked.query || 'blocked'),
-    reason: String(blocked.reason || 'blocked_or_invalid_url'),
-  });
+if (!dedupedSignals.length) {
+  researchOutput = buildWeakResearchOutput(queryDiagnostics, retrievalSummary, blockedSignals);
+} else {
+  const prompt = buildPrompt(
+    String(ctx.prompts.recherche_signale || ''),
+    {
+      topic_seed: String(ctx.topic_hint || ''),
+      raw_signals: JSON.stringify(dedupedSignals.slice(0, 20)),
+      existing_context: JSON.stringify(buildContextBundle()),
+      source_policy: JSON.stringify(sourcePolicy),
+      query_diagnostics: JSON.stringify(queryDiagnostics),
+      retrieval_summary: JSON.stringify(retrievalSummary),
+    }
+  );
+
+  const stage4 = await callOllamaJsonStrict.call(
+    this,
+    'You are a research synthesis engine. Return valid JSON only.',
+    prompt,
+    {
+      format_schema: researchOutputSchema,
+      temperature: 0.1,
+      num_predict: 900,
+      num_ctx: 12288,
+      timeout: 300000,
+      max_attempts: 3,
+      thinking: true,
+    }
+  );
+
+  researchOutput = ensureObject(stage4.parsed);
+  researchOutput.retrieval_summary = retrievalSummary;
+  researchOutput.query_diagnostics = queryDiagnostics;
+  researchOutput.discarded_signals = ensureArray(researchOutput.discarded_signals).concat(blockedSignals);
+  researchMeta = {
+    repair_used: !!stage4.repair_used,
+    raw_output_excerpt: shortText(stage4.raw_text || '', 1800),
+  };
 }
+
 validateSchema(researchOutputSchema, researchOutput, 'research_output');
 
 const ids = new Set();
-for (const packet of researchOutput.evidence_packets) {
+for (const packet of ensureArray(researchOutput.evidence_packets)) {
   const id = String(packet.evidence_id || '').trim();
   if (ids.has(id)) {
     throw new Error('duplicate evidence_id: ' + id);
@@ -669,14 +770,20 @@ for (const packet of researchOutput.evidence_packets) {
 }
 
 ctx.artifacts.research_output = researchOutput;
-ctx.artifacts.evidence_packets = researchOutput.evidence_packets;
-ctx.artifacts.angle_slate = researchOutput.topic_candidates;
-ctx.artifacts.research_missing_evidence = researchOutput.missing_evidence;
-ctx.artifacts.research_next_queries = researchOutput.next_queries;
+ctx.artifacts.evidence_packets = ensureArray(researchOutput.evidence_packets);
+ctx.artifacts.angle_slate = ensureArray(researchOutput.topic_candidates);
+ctx.artifacts.research_missing_evidence = ensureArray(researchOutput.missing_evidence);
+ctx.artifacts.research_next_queries = ensureArray(researchOutput.next_queries);
+ctx.artifacts.research_diagnostics = {
+  retrieval_summary: retrievalSummary,
+  query_diagnostics: queryDiagnostics,
+  repair_used: researchMeta.repair_used,
+  raw_output_excerpt: researchMeta.raw_output_excerpt,
+};
 
 const quality =
   researchOutput.research_verdict === 'strong' ? 92 :
-  researchOutput.research_verdict === 'usable' ? 78 : 60;
+  researchOutput.research_verdict === 'usable' ? 78 : 52;
 
 addStage(
   4,
@@ -685,7 +792,7 @@ addStage(
   'run/' + ctx.run_id + '/research/scored_signals',
   'run/' + ctx.run_id + '/research/research_output',
   quality,
-  'evidence=' + researchOutput.evidence_packets.length + '; angles=' + researchOutput.topic_candidates.length,
+  'evidence=' + researchOutput.evidence_packets.length + '; angles=' + researchOutput.topic_candidates.length + '; ready=' + retrievalSummary.external_evidence_ready,
   ensureArray(researchOutput.discarded_signals).length
 );
 await addStageSummary.call(this, 4, 'Evidence Extraction und Angle Slate', researchOutput);

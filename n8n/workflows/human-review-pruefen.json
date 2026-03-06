@@ -86,6 +86,10 @@
               "type": "string"
             },
             {
+              "name": "workflow_config_dir",
+              "type": "string"
+            },
+            {
               "name": "workflow_schema_dir",
               "type": "string"
             },
@@ -143,6 +147,10 @@
             },
             {
               "name": "context",
+              "type": "any"
+            },
+            {
+              "name": "configs",
               "type": "any"
             },
             {

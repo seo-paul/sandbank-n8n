@@ -247,11 +247,13 @@ const contextPaths = {
   audience_profile: globalContextDir + '/audience.md',
   offer_context: globalContextDir + '/offer.md',
   voice_guide: globalContextDir + '/voice.md',
+  author_voice: globalContextDir + '/author-voice.md',
   proof_library: globalContextDir + '/proof-library.md',
   red_lines: globalContextDir + '/red-lines.md',
   cta_goals: globalContextDir + '/cta-goals.md',
   reddit_context: workflowLocalContextDir + '/reddit-communities.md',
   linkedin_context: workflowLocalContextDir + '/linkedin-context.md',
+  performance_memory: workflowLocalContextDir + '/performance-memory.md',
 };
 
 const schemaPaths = {
@@ -266,11 +268,23 @@ const schemaPaths = {
   performance_learnings: ctx.workflow_schema_dir + '/performance_learnings.schema.json',
 };
 
+const configDir =
+  String(
+    ctx.workflow_config_dir ||
+    $env.OBSIDIAN_WORKFLOW_CONFIG_DIR ||
+    ((ctx.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow') + '/Config')
+  );
+const configPaths = {
+  source_policy: configDir + '/source-policy.json',
+  platform_profiles: configDir + '/platform-profiles.json',
+};
+
 const manifestPath = ctx.workflow_ssot_manifest_file;
 
 ctx.prompts = ctx.prompts && typeof ctx.prompts === 'object' ? ctx.prompts : {};
 ctx.context = ctx.context && typeof ctx.context === 'object' ? ctx.context : {};
 ctx.schemas = ctx.schemas && typeof ctx.schemas === 'object' ? ctx.schemas : {};
+ctx.configs = ctx.configs && typeof ctx.configs === 'object' ? ctx.configs : {};
 
 for (const [key, path] of Object.entries(promptPaths)) {
   ctx.prompts[key] = await readRequiredTextFile.call(this, path, 'prompt:' + key);
@@ -282,6 +296,10 @@ for (const [key, path] of Object.entries(contextPaths)) {
 
 for (const [key, path] of Object.entries(schemaPaths)) {
   ctx.schemas[key] = await readRequiredJsonFile.call(this, path, 'schema:' + key);
+}
+
+for (const [key, path] of Object.entries(configPaths)) {
+  ctx.configs[key] = await readRequiredJsonFile.call(this, path, 'config:' + key);
 }
 
 ctx.context.campaign_goal = ctx.campaign_goal || 'conversation_and_authority';
@@ -301,6 +319,9 @@ for (const key of Object.keys(contextPaths)) {
 }
 for (const key of Object.keys(schemaPaths)) {
   calculated['schema:' + key] = await hashTextHex(stableStringify(ctx.schemas[key]));
+}
+for (const key of Object.keys(configPaths)) {
+  calculated['config:' + key] = await hashTextHex(stableStringify(ctx.configs[key]));
 }
 
 const expectedItems = manifest.items;

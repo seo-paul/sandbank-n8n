@@ -8,6 +8,7 @@ const requiredInputFields = [
   'context',
   'schemas',
   'quality_gate',
+  'configs',
 ];
 
 for (const field of requiredInputFields) {
@@ -18,9 +19,15 @@ for (const field of requiredInputFields) {
 
 function nowIso() { return new Date().toISOString(); }
 function ensureArray(value) { return Array.isArray(value) ? value : []; }
+function ensureObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
 function shortText(value, maxLen = 320) {
   const text = typeof value === 'string' ? value : JSON.stringify(value || '');
   return text.length <= maxLen ? text : text.slice(0, maxLen - 3) + '...';
+}
+function compact(value, maxLen = 2500) {
+  return shortText(typeof value === 'string' ? value : JSON.stringify(value || ''), maxLen);
 }
 function sanitizeExternalText(value, maxLen = 5000) {
   const cleaned = String(value || '')
@@ -52,6 +59,39 @@ function parseBool(value, fallback = false) {
 function yamlEscape(value) {
   return String(value || '').replace(/"/g, '\\"').replace(/\n/g, ' ');
 }
+function uniqueStrings(values, maxLen = 220) {
+  const out = [];
+  const seen = new Set();
+  for (const value of ensureArray(values)) {
+    const text = sanitizeExternalText(value, maxLen);
+    if (!text) continue;
+    if (seen.has(text)) continue;
+    seen.add(text);
+    out.push(text);
+  }
+  return out;
+}
+function uniqueLowerStrings(values) {
+  return uniqueStrings(values, 120).map((value) => value.toLowerCase());
+}
+function average(values, fallback = 0) {
+  const numeric = ensureArray(values).map((value) => Number(value)).filter((value) => Number.isFinite(value));
+  if (!numeric.length) return fallback;
+  return numeric.reduce((sum, value) => sum + value, 0) / numeric.length;
+}
+function normalizeLengthRange(value, fallbackMin, fallbackMax) {
+  if (Array.isArray(value) && value.length >= 2) {
+    const min = Number(value[0]);
+    const max = Number(value[1]);
+    if (Number.isFinite(min) && Number.isFinite(max) && min > 0 && max >= min) {
+      return [Math.round(min), Math.round(max)];
+    }
+  }
+  return [fallbackMin, fallbackMax];
+}
+function sectionTag(key, value) {
+  return '<' + key + '>\n' + String(value == null ? '' : value) + '\n</' + key + '>';
+}
 
 if (String(ctx.model_used || '').trim() !== 'qwen3.5:27b') {
   throw new Error('Nur qwen3.5:27b ist erlaubt. Aktuell: ' + String(ctx.model_used || 'leer'));
@@ -60,9 +100,12 @@ if (String(ctx.model_used || '').trim() !== 'qwen3.5:27b') {
 ctx.stage_logs = ensureArray(ctx.stage_logs);
 ctx.stage_summaries = ensureArray(ctx.stage_summaries);
 ctx.model_trace = ensureArray(ctx.model_trace);
-ctx.artifacts = (ctx.artifacts && typeof ctx.artifacts === 'object') ? ctx.artifacts : {};
-ctx.context = (ctx.context && typeof ctx.context === 'object') ? ctx.context : {};
-ctx.schemas = (ctx.schemas && typeof ctx.schemas === 'object') ? ctx.schemas : {};
+ctx.artifacts = ensureObject(ctx.artifacts);
+ctx.context = ensureObject(ctx.context);
+ctx.schemas = ensureObject(ctx.schemas);
+ctx.configs = ensureObject(ctx.configs);
+ctx.artifacts.content_diagnostics = ensureObject(ctx.artifacts.content_diagnostics);
+
 const stageSummaryEnabled = parseBool($env.PIPELINE_STAGE_SUMMARY_ENABLED, false);
 
 function resolveJsonPointer(rootSchema, pointer) {
@@ -79,6 +122,24 @@ function resolveJsonPointer(rootSchema, pointer) {
 function validateSchema(schema, value, path = 'value', rootSchema = schema) {
   if (!schema || typeof schema !== 'object') return;
 
+  if (schema.const !== undefined && value !== schema.const) {
+    throw new Error(path + ' const mismatch');
+  }
+
+  if (Array.isArray(schema.allOf)) {
+    for (const child of schema.allOf) validateSchema(child, value, path, rootSchema);
+  }
+
+  if (schema.if && typeof schema.if === 'object') {
+    let matched = true;
+    try {
+      validateSchema(schema.if, value, path, rootSchema);
+    } catch (error) {
+      matched = false;
+    }
+    if (matched && schema.then) validateSchema(schema.then, value, path, rootSchema);
+  }
+
   if (schema.$ref) {
     const resolved = resolveJsonPointer(rootSchema, String(schema.$ref));
     if (!resolved) throw new Error(path + ' unresolved $ref ' + String(schema.$ref));
@@ -87,7 +148,10 @@ function validateSchema(schema, value, path = 'value', rootSchema = schema) {
   }
 
   const type = schema.type;
-  if (type === 'object') {
+  const isObjectSchema = type === 'object' || !!schema.properties || !!schema.required;
+  const isArraySchema = type === 'array' || !!schema.items;
+
+  if (isObjectSchema) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(path + ' must be object');
     for (const key of ensureArray(schema.required)) {
       if (!(key in value)) throw new Error(path + '.' + key + ' is required');
@@ -96,9 +160,14 @@ function validateSchema(schema, value, path = 'value', rootSchema = schema) {
     for (const [key, child] of Object.entries(properties)) {
       if (key in value) validateSchema(child, value[key], path + '.' + key, rootSchema);
     }
+    if (schema.additionalProperties === false) {
+      for (const key of Object.keys(value)) {
+        if (!(key in properties)) throw new Error(path + '.' + key + ' is not allowed');
+      }
+    }
     return;
   }
-  if (type === 'array') {
+  if (isArraySchema) {
     if (!Array.isArray(value)) throw new Error(path + ' must be array');
     if (Number.isFinite(schema.minItems) && value.length < schema.minItems) throw new Error(path + ' minItems=' + schema.minItems);
     if (schema.items) {
@@ -162,6 +231,10 @@ function addStage(step, stage, status, inputRef, outputRef, quality, notes, issu
   ctx.model_trace.push({ step, stage, model_used: ctx.model_used, ts: nowIso() });
 }
 
+function recordDiagnostic(stageKey, payload) {
+  ctx.artifacts.content_diagnostics[stageKey] = Object.assign({ ts: nowIso() }, ensureObject(payload));
+}
+
 function extractJsonCandidate(rawText) {
   if (typeof rawText !== 'string') throw new Error('Model output is not string');
   const fenced = rawText.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -193,73 +266,6 @@ function extractJsonCandidate(rawText) {
     }
   }
   throw new Error('Could not extract valid JSON payload');
-}
-
-function pickEnumFallback(enumValues) {
-  const values = ensureArray(enumValues);
-  if (!values.length) return '';
-  const preferred = ['hold', 'skip', 'revise', 'weak', 'pending', 'deny', 'comment', 'post_text_only', 'post_with_link', 'ready', 'pass', 'publish'];
-  for (const token of preferred) {
-    const found = values.find((value) => String(value).toLowerCase() === token);
-    if (found !== undefined) return found;
-  }
-  return values[0];
-}
-
-function fallbackFromSchema(schema, rootSchema = schema, depth = 0) {
-  if (!schema || typeof schema !== 'object' || depth > 20) return null;
-
-  if (schema.$ref) {
-    const resolved = resolveJsonPointer(rootSchema, String(schema.$ref));
-    if (resolved) return fallbackFromSchema(resolved, rootSchema, depth + 1);
-  }
-
-  if (schema.const !== undefined) return schema.const;
-  if (Array.isArray(schema.enum) && schema.enum.length) return pickEnumFallback(schema.enum);
-
-  const schemaType = Array.isArray(schema.type)
-    ? schema.type.find((t) => t !== 'null') || schema.type[0]
-    : schema.type;
-
-  if (schemaType === 'object' || schema.properties || schema.required) {
-    const out = {};
-    const required = ensureArray(schema.required);
-    const props = schema.properties || {};
-    for (const key of required) {
-      if (props[key]) out[key] = fallbackFromSchema(props[key], rootSchema, depth + 1);
-      else out[key] = 'n/a';
-    }
-    return out;
-  }
-
-  if (schemaType === 'array') {
-    const out = [];
-    const minItems = Number.isFinite(schema.minItems) ? Number(schema.minItems) : 0;
-    const itemSchema = schema.items || {};
-    for (let i = 0; i < minItems; i++) {
-      out.push(fallbackFromSchema(itemSchema, rootSchema, depth + 1));
-    }
-    return out;
-  }
-
-  if (schemaType === 'boolean') return false;
-
-  if (schemaType === 'number' || schemaType === 'integer') {
-    let value = 0;
-    if (Number.isFinite(schema.minimum)) value = Number(schema.minimum);
-    if (Number.isFinite(schema.maximum) && value > Number(schema.maximum)) value = Number(schema.maximum);
-    return schemaType === 'integer' ? Math.round(value) : value;
-  }
-
-  if (schemaType === 'string' || !schemaType) {
-    const minLength = Number.isFinite(schema.minLength) ? Number(schema.minLength) : 0;
-    const format = String(schema.format || '').toLowerCase();
-    let value = format === 'uri' ? 'https://example.invalid' : 'n/a';
-    if (minLength > value.length) value = value + 'x'.repeat(minLength - value.length);
-    return value;
-  }
-
-  return null;
 }
 
 async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
@@ -319,23 +325,16 @@ async function callOllamaRaw(systemPrompt, userPrompt, options = {}) {
   throw new Error('Ollama call failed');
 }
 
-async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
+async function callOllamaJsonStrict(systemPrompt, userPrompt, options = {}) {
   let raw;
   try {
     raw = await callOllamaRaw.call(this, systemPrompt, userPrompt, options);
-  } catch (rawError) {
-    if (options.format_schema) {
-      return {
-        parsed: fallbackFromSchema(options.format_schema),
-        raw_text: '[FALLBACK:model_error] ' + shortText(rawError.message || 'unknown', 240),
-        model_used: ctx.model_used,
-      };
-    }
-    throw rawError;
+  } catch (error) {
+    throw new Error('content_model_error: ' + shortText(error.message || 'unknown', 220));
   }
 
   try {
-    return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, model_used: raw.model_used };
+    return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, repair_used: false, model_used: raw.model_used };
   } catch (firstError) {
     const repairPrompt = [
       'Convert this content to strict valid JSON.',
@@ -361,16 +360,14 @@ async function callOllamaJson(systemPrompt, userPrompt, options = {}) {
         }
       );
 
-      return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text, model_used: repaired.model_used };
+      return {
+        parsed: extractJsonCandidate(repaired.text),
+        raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text,
+        repair_used: true,
+        model_used: repaired.model_used,
+      };
     } catch (repairError) {
-      if (options.format_schema) {
-        return {
-          parsed: fallbackFromSchema(options.format_schema),
-          raw_text: '[FALLBACK:repair_error] ' + shortText(repairError.message || 'unknown', 240),
-          model_used: ctx.model_used,
-        };
-      }
-      throw repairError;
+      throw new Error('content_json_error: ' + shortText(repairError.message || 'unknown', 220));
     }
   }
 }
@@ -382,17 +379,17 @@ function buildPrompt(stagePrompt, sections) {
     audience_profile: ctx.context.audience_profile || '',
     offer_context: ctx.context.offer_context || '',
     voice_guide: ctx.context.voice_guide || '',
+    author_voice: ctx.context.author_voice || '',
     proof_library: ctx.context.proof_library || '',
     red_lines: ctx.context.red_lines || '',
     cta_goals: ctx.context.cta_goals || '',
     linkedin_context: ctx.context.linkedin_context || '',
     reddit_context: ctx.context.reddit_context || '',
+    performance_memory: ctx.context.performance_memory || '',
     campaign_goal: ctx.context.campaign_goal || ctx.campaign_goal || '',
     output_language: ctx.context.output_language || ctx.output_language || 'de',
   });
-  const sectionLines = Object.entries(mergedSections).map(([key, value]) => {
-    return '<' + key + '>\n' + String(value == null ? '' : value) + '\n</' + key + '>';
-  });
+  const sectionLines = Object.entries(mergedSections).map(([key, value]) => sectionTag(key, value));
   return [globalSystem, stagePrompt, ...sectionLines].filter(Boolean).join('\n\n');
 }
 
@@ -430,59 +427,117 @@ async function addStageSummary(step, stage, payload) {
 
 function compactEvidence(packets, limit = 8) {
   return ensureArray(packets).slice(0, limit).map((packet) => ({
-    evidence_id: shortText(packet.evidence_id || '', 20),
-    claim: shortText(packet.claim || '', 180),
-    source_ref: shortText(packet.source_ref || '', 200),
-    authority: shortText(packet.authority || '', 20),
-    freshness: shortText(packet.freshness || '', 20),
-    support_type: shortText(packet.support_type || '', 20),
+    evidence_id: shortText(packet.evidence_id || '', 24),
+    claim: shortText(packet.claim || '', 220),
+    source_ref: shortText(packet.source_ref || '', 220),
+    domain: shortText(packet.domain || '', 120),
+    source_tier: shortText(packet.source_tier || '', 40),
+    authority: shortText(packet.authority || '', 30),
+    freshness: shortText(packet.freshness || '', 30),
+    support_type: shortText(packet.support_type || '', 30),
+    why_it_matters: shortText(packet.why_it_matters || '', 220),
+    linkedin_use: shortText(packet.linkedin_use || '', 180),
+    reddit_use: shortText(packet.reddit_use || '', 180),
   }));
 }
 
-function normalizeContentPackage(payload, redditModeDefault) {
-  const src = payload && typeof payload === 'object' ? payload : {};
-  const linkedin = src.linkedin && typeof src.linkedin === 'object' ? src.linkedin : {};
-  const reddit = src.reddit && typeof src.reddit === 'object' ? src.reddit : {};
-
-  const normalized = {
-    linkedin: {
-      status: linkedin.status === 'skip' ? 'skip' : 'ready',
-      hook_used: sanitizeExternalText(linkedin.hook_used || '', 180),
-      post_markdown: String(linkedin.post_markdown || ''),
-      first_comment: String(linkedin.first_comment || ''),
-      cta_goal: sanitizeExternalText(linkedin.cta_goal || '', 120),
-      evidence_refs: ensureArray(linkedin.evidence_refs).map((v) => sanitizeExternalText(v, 80)),
-      reply_seeds: ensureArray(linkedin.reply_seeds).map((v) => sanitizeExternalText(v, 180)),
-      cta_variants: ensureArray(linkedin.cta_variants).map((v) => sanitizeExternalText(v, 180)),
-      follow_up_angles: ensureArray(linkedin.follow_up_angles).map((v) => sanitizeExternalText(v, 180)),
+function compactAngles(values, limit = 6) {
+  return ensureArray(values).slice(0, limit).map((row) => ({
+    angle_id: shortText(row.angle_id || '', 32),
+    angle: shortText(row.angle || '', 220),
+    audience_problem: shortText(row.audience_problem || '', 180),
+    why_now: shortText(row.why_now || '', 180),
+    evidence_refs: uniqueStrings(row.evidence_refs, 40),
+    novelty_score: clamp(row.novelty_score, 0, 1, 0),
+    confidence: clamp(row.confidence, 0, 1, 0),
+    engagement_hypothesis: shortText(row.engagement_hypothesis || '', 220),
+    selection_reason: shortText(row.selection_reason || '', 220),
+    channel_fit: {
+      linkedin: clamp(row.channel_fit && row.channel_fit.linkedin, 0, 1, 0),
+      reddit: clamp(row.channel_fit && row.channel_fit.reddit, 0, 1, 0),
     },
-    reddit: {
-      status: reddit.status === 'skip' ? 'skip' : 'ready',
-      mode: ['comment', 'post_text_only', 'post_with_link', 'skip'].includes(reddit.mode) ? reddit.mode : redditModeDefault,
-      title: String(reddit.title || ''),
-      body_markdown: String(reddit.body_markdown || ''),
-      disclosure_line: String(reddit.disclosure_line || ''),
-      soft_cta: String(reddit.soft_cta || ''),
-      evidence_refs: ensureArray(reddit.evidence_refs).map((v) => sanitizeExternalText(v, 80)),
-      reply_seeds: ensureArray(reddit.reply_seeds).map((v) => sanitizeExternalText(v, 180)),
-      cta_variants: ensureArray(reddit.cta_variants).map((v) => sanitizeExternalText(v, 180)),
-      follow_up_angles: ensureArray(reddit.follow_up_angles).map((v) => sanitizeExternalText(v, 180)),
-    },
-  };
-
-  if (normalized.reddit.mode === 'skip') normalized.reddit.status = 'skip';
-  if (normalized.reddit.status === 'skip') {
-    normalized.reddit.title = normalized.reddit.title || '';
-    normalized.reddit.body_markdown = normalized.reddit.body_markdown || '';
-  }
-
-  if (!normalized.linkedin.cta_variants.length) normalized.linkedin.cta_variants = [normalized.linkedin.first_comment || 'Frage nach Perspektiven im Kommentar'];
-  if (!normalized.linkedin.follow_up_angles.length) normalized.linkedin.follow_up_angles = ['Einwaende aus Kommentaren gezielt aufgreifen'];
-  if (!normalized.reddit.cta_variants.length) normalized.reddit.cta_variants = [normalized.reddit.soft_cta || 'Nach konkreten Erfahrungswerten fragen'];
-  if (!normalized.reddit.follow_up_angles.length) normalized.reddit.follow_up_angles = ['Top-Kommentare mit Evidenzbezug beantworten'];
-
-  return normalized;
+  }));
 }
+
+function evidenceIdSet(packets) {
+  return new Set(ensureArray(packets).map((packet) => String(packet.evidence_id || '').trim()).filter(Boolean));
+}
+
+function sanitizeEvidenceRefs(values, validIds, requiredRefs = []) {
+  const refs = uniqueStrings(values, 40).filter((ref) => validIds.has(ref));
+  for (const ref of uniqueStrings(requiredRefs, 40)) {
+    if (validIds.has(ref) && !refs.includes(ref)) refs.push(ref);
+  }
+  return refs;
+}
+
+function normalizeLinkedInProfile(rawProfile) {
+  const profile = ensureObject(rawProfile);
+  const targetRaw = ensureObject(profile.target_length_chars);
+  const postRange = Array.isArray(profile.target_length_chars)
+    ? normalizeLengthRange(profile.target_length_chars, 700, 1600)
+    : normalizeLengthRange(targetRaw.post, 700, 1600);
+  const firstCommentRange = normalizeLengthRange(targetRaw.first_comment, 80, 420);
+  const allowedFormats = uniqueLowerStrings(ensureArray(profile.allowed_formats).length ? profile.allowed_formats : ['text', 'document', 'video', 'poll']);
+  const allowedCtaGoals = uniqueLowerStrings(ensureArray(profile.allowed_cta_goals).length ? profile.allowed_cta_goals : ['comments', 'profile_visit', 'link_click', 'save', 'share']);
+  const objectives = uniqueLowerStrings(ensureArray(profile.objectives).length ? profile.objectives : ['conversation', 'authority', 'profile_visits', 'link_clicks', 'lead_gen']);
+
+  return {
+    platform: 'linkedin',
+    target_length_chars: {
+      post: postRange,
+      first_comment: firstCommentRange,
+    },
+    allowed_formats: allowedFormats.length ? allowedFormats : ['text'],
+    style: uniqueStrings(profile.style, 80),
+    cta: uniqueStrings(profile.cta, 80),
+    allowed_cta_goals: allowedCtaGoals.length ? allowedCtaGoals : ['comments'],
+    objectives: objectives.length ? objectives : ['conversation'],
+  };
+}
+
+function normalizeRedditProfile(rawProfile) {
+  const profile = ensureObject(rawProfile);
+  const targetRaw = ensureObject(profile.target_length_chars);
+  const postFallback = Array.isArray(profile.target_length_chars)
+    ? normalizeLengthRange(profile.target_length_chars, 500, 2800)
+    : null;
+  const commentRange = normalizeLengthRange(targetRaw.comment, 180, 900);
+  const postTextOnlyRange = postFallback || normalizeLengthRange(targetRaw.post_text_only, 500, 2800);
+  const postWithLinkRange = normalizeLengthRange(targetRaw.post_with_link, 350, 2200);
+  const modes = uniqueLowerStrings(ensureArray(profile.modes).length ? profile.modes : ['comment', 'post_text_only', 'post_with_link', 'skip']);
+  const allowedSelfReference = uniqueLowerStrings(ensureArray(profile.allowed_self_reference).length ? profile.allowed_self_reference : ['none', 'light_disclosure', 'direct_when_asked']);
+
+  return {
+    platform: 'reddit',
+    target_length_chars: {
+      comment: commentRange,
+      post_text_only: postTextOnlyRange,
+      post_with_link: postWithLinkRange,
+    },
+    style: uniqueStrings(profile.style, 80),
+    cta: uniqueStrings(profile.cta, 80),
+    allowed_cta_patterns: uniqueStrings(ensureArray(profile.allowed_cta_patterns).length ? profile.allowed_cta_patterns : profile.cta, 80),
+    allowed_self_reference: allowedSelfReference.length ? allowedSelfReference : ['none'],
+    modes: modes.length ? modes : ['skip'],
+  };
+}
+
+const platformProfilesConfig = ensureObject(ctx.configs.platform_profiles);
+const platformProfiles = ensureArray(platformProfilesConfig.profiles);
+const linkedinProfileRaw = platformProfiles.find((row) => String(row && row.platform || '').toLowerCase() === 'linkedin');
+const redditProfileRaw = platformProfiles.find((row) => String(row && row.platform || '').toLowerCase() === 'reddit');
+
+if (!linkedinProfileRaw || !redditProfileRaw) {
+  throw new Error('platform_profiles must define linkedin and reddit profiles');
+}
+
+const linkedinProfile = normalizeLinkedInProfile(linkedinProfileRaw);
+const redditProfile = normalizeRedditProfile(redditProfileRaw);
+ctx.artifacts.channel_profiles = {
+  linkedin: linkedinProfile,
+  reddit: redditProfile,
+};
 
 function markdownLinkedInBrief(brief, topic) {
   return [
@@ -592,19 +647,44 @@ function markdownRedditDraft(pkg, topic, score) {
   ].join('\n');
 }
 
+function makeSkippedToneChannel(reason) {
+  return {
+    score: 100,
+    pass: true,
+    dimension_scores: { authenticity: 100, specificity: 100, platform_naturalness: 100, clarity: 100 },
+    must_fix: [],
+    should_fix: [],
+    phrases_to_cut: [],
+    reason,
+  };
+}
+
+function makeSkippedStrategyChannel(reason) {
+  return {
+    score: 100,
+    pass: true,
+    dimension_scores: { evidence_strength: 100, hook_strength: 100, platform_fit: 100, commentability: 100, cta_naturalness: 100, rule_risk: 100, clarity: 100 },
+    must_fix: [],
+    should_fix: [],
+    risk_flags: [],
+    reason,
+  };
+}
+
 function applyHoldResult(reason, priorityFixes = []) {
   const holdReason = shortText(String(reason || 'hold_decision'), 220);
-  const fixes = ensureArray(priorityFixes).map((x) => shortText(String(x || ''), 180)).filter(Boolean);
-  const uniqueFixes = Array.from(new Set(fixes.length ? fixes : ['collect stronger evidence']));
+  const fixes = uniqueStrings(priorityFixes, 180);
+  const uniqueFixes = fixes.length ? fixes : ['collect stronger evidence'];
 
   if (!ctx.artifacts.topic_gate || typeof ctx.artifacts.topic_gate !== 'object') {
     ctx.artifacts.topic_gate = {
       decision: 'hold',
       reason: holdReason,
+      selected_angle_id: 'hold',
       selected_angle: {
         title: 'Hold - insufficient evidence',
         core_thesis: 'Insufficient evidence for publish-ready claim.',
-        audience_problem: 'Audience-relevant pain point not evidence-backed yet.',
+        audience_problem: 'Audience-relevant pain point is not evidence-backed yet.',
         why_this_angle_wins: 'No reliable angle selected.',
         why_now: 'Need stronger source coverage first.',
         conversion_bridge: 'Pause publication and collect better proof.',
@@ -623,54 +703,23 @@ function applyHoldResult(reason, priorityFixes = []) {
     };
   }
 
-  ctx.artifacts.linkedin_brief = ctx.artifacts.linkedin_brief && typeof ctx.artifacts.linkedin_brief === 'object' ? ctx.artifacts.linkedin_brief : {};
-  ctx.artifacts.reddit_brief = ctx.artifacts.reddit_brief && typeof ctx.artifacts.reddit_brief === 'object' ? ctx.artifacts.reddit_brief : { mode: 'skip', risk_flags: ['hold_decision'] };
+  ctx.artifacts.active_channels = { linkedin: false, reddit: false };
+  ctx.artifacts.linkedin_brief = ensureObject(ctx.artifacts.linkedin_brief);
+  ctx.artifacts.reddit_brief = ensureObject(ctx.artifacts.reddit_brief);
   ctx.artifacts.content_package = {
     linkedin: { status: 'skip', hook_used: '', post_markdown: '', first_comment: '', cta_goal: '', evidence_refs: [], reply_seeds: [], cta_variants: [], follow_up_angles: [] },
     reddit: { status: 'skip', mode: 'skip', title: '', body_markdown: '', disclosure_line: '', soft_cta: '', evidence_refs: [], reply_seeds: [], cta_variants: [], follow_up_angles: [] },
   };
   ctx.artifacts.tone_critique = {
-    overall_score: 0,
-    linkedin: {
-      score: 0,
-      pass: false,
-      dimension_scores: { authenticity: 0, specificity: 0, platform_naturalness: 0, clarity: 0 },
-      must_fix: [],
-      should_fix: [],
-      phrases_to_cut: [],
-      reason: 'skipped',
-    },
-    reddit: {
-      score: 0,
-      pass: false,
-      dimension_scores: { authenticity: 0, specificity: 0, platform_naturalness: 0, clarity: 0 },
-      must_fix: [],
-      should_fix: [],
-      phrases_to_cut: [],
-      reason: 'skipped',
-    },
+    overall_score: 100,
+    linkedin: makeSkippedToneChannel('not_evaluated_due_to_hold'),
+    reddit: makeSkippedToneChannel('not_evaluated_due_to_hold'),
     cross_platform: [],
   };
   ctx.artifacts.strategy_critique = {
-    overall_score: 0,
-    linkedin: {
-      score: 0,
-      pass: false,
-      dimension_scores: { evidence_strength: 0, hook_strength: 0, platform_fit: 0, commentability: 0, cta_naturalness: 0, rule_risk: 0, clarity: 0 },
-      must_fix: [],
-      should_fix: [],
-      risk_flags: [],
-      reason: 'skipped',
-    },
-    reddit: {
-      score: 0,
-      pass: false,
-      dimension_scores: { evidence_strength: 0, hook_strength: 0, platform_fit: 0, commentability: 0, cta_naturalness: 0, rule_risk: 0, clarity: 0 },
-      must_fix: [],
-      should_fix: [],
-      risk_flags: [],
-      reason: 'skipped',
-    },
+    overall_score: 100,
+    linkedin: makeSkippedStrategyChannel('not_evaluated_due_to_hold'),
+    reddit: makeSkippedStrategyChannel('not_evaluated_due_to_hold'),
     cross_platform: [],
   };
   ctx.artifacts.final_gate = {
@@ -687,6 +736,10 @@ function applyHoldResult(reason, priorityFixes = []) {
     },
     priority_fixes: uniqueFixes,
   };
+  recordDiagnostic('hold_result', {
+    reason: holdReason,
+    priority_fixes: uniqueFixes,
+  });
 
   const topic = String(
     (ctx.artifacts.topic_gate && ctx.artifacts.topic_gate.selected_angle && ctx.artifacts.topic_gate.selected_angle.title)
@@ -707,47 +760,284 @@ function applyHoldResult(reason, priorityFixes = []) {
   };
 }
 
-const evidencePackets = ensureArray(ctx.artifacts && ctx.artifacts.evidence_packets);
-if (!evidencePackets.length) {
+function normalizeLinkedInBrief(payload, evidenceIds) {
+  const brief = ensureObject(payload);
+  const format = String(brief.recommended_format || '').trim().toLowerCase();
+  const objective = String(brief.post_objective || '').trim().toLowerCase();
+  if (!linkedinProfile.allowed_formats.includes(format)) {
+    throw new Error('linkedin_brief.recommended_format not allowed by profile: ' + format);
+  }
+  if (!linkedinProfile.objectives.includes(objective)) {
+    throw new Error('linkedin_brief.post_objective not allowed by profile: ' + objective);
+  }
+
+  const proofPoints = ensureArray(brief.proof_points)
+    .map((row) => ({
+      evidence_ref: sanitizeExternalText(row && row.evidence_ref || '', 40),
+      point: sanitizeExternalText(row && row.point || '', 220),
+    }))
+    .filter((row) => row.evidence_ref && evidenceIds.has(row.evidence_ref) && row.point);
+
+  if (!proofPoints.length) {
+    throw new Error('linkedin_brief.proof_points must reference known evidence packets');
+  }
+
+  const ctaOptions = ensureArray(brief.cta_options)
+    .map((row) => ({
+      goal: sanitizeExternalText(row && row.goal || '', 40).toLowerCase(),
+      cta: sanitizeExternalText(row && row.cta || '', 220),
+    }))
+    .filter((row) => linkedinProfile.allowed_cta_goals.includes(row.goal) && row.cta);
+
+  if (!ctaOptions.length) {
+    throw new Error('linkedin_brief.cta_options must use allowed_cta_goals');
+  }
+
+  return {
+    recommended_format: format,
+    post_objective: objective,
+    hook_options: ensureArray(brief.hook_options).map((row) => ({
+      type: sanitizeExternalText(row && row.type || '', 40),
+      hook: sanitizeExternalText(row && row.hook || '', 220),
+    })).filter((row) => row.type && row.hook),
+    outline: uniqueStrings(brief.outline, 220),
+    proof_points: proofPoints,
+    cta_options: ctaOptions,
+    first_comment_goal: sanitizeExternalText(brief.first_comment_goal || '', 160),
+    reply_seed_topics: uniqueStrings(brief.reply_seed_topics, 180),
+    hard_rules: uniqueStrings(brief.hard_rules, 180),
+  };
+}
+
+function normalizeRedditBrief(payload) {
+  const brief = ensureObject(payload);
+  const mode = String(brief.mode || '').trim().toLowerCase();
+  const selfReference = String(brief.allowed_self_reference || '').trim().toLowerCase();
+  if (!redditProfile.modes.includes(mode)) {
+    throw new Error('reddit_brief.mode not allowed by profile: ' + mode);
+  }
+  if (!redditProfile.allowed_self_reference.includes(selfReference)) {
+    throw new Error('reddit_brief.allowed_self_reference not allowed by profile: ' + selfReference);
+  }
+
+  return {
+    mode,
+    community_fit_score: clamp(brief.community_fit_score, 0, 1, 0),
+    rationale: sanitizeExternalText(brief.rationale || '', 500),
+    title_options: uniqueStrings(brief.title_options, 180),
+    opening_options: uniqueStrings(brief.opening_options, 220),
+    outline: uniqueStrings(brief.outline, 220),
+    allowed_self_reference: selfReference,
+    disclosure_line: sanitizeExternalText(brief.disclosure_line || '', 220),
+    soft_cta: sanitizeExternalText(brief.soft_cta || '', 220),
+    reply_seed_topics: uniqueStrings(brief.reply_seed_topics, 180),
+    risk_flags: uniqueStrings(brief.risk_flags, 180),
+    must_avoid: uniqueStrings(brief.must_avoid, 180),
+  };
+}
+
+function normalizeContentPackage(payload, redditModeDefault, validEvidenceIds, requiredEvidenceRefs, linkedinBrief, redditBrief) {
+  const src = ensureObject(payload);
+  const linkedin = ensureObject(src.linkedin);
+  const reddit = ensureObject(src.reddit);
+
+  const linkedinEvidenceRefs = sanitizeEvidenceRefs(linkedin.evidence_refs, validEvidenceIds, requiredEvidenceRefs);
+  if (!linkedinEvidenceRefs.length) {
+    throw new Error('linkedin draft must reference known evidence packets');
+  }
+
+  const normalized = {
+    linkedin: {
+      status: 'ready',
+      hook_used: sanitizeExternalText(linkedin.hook_used || '', 180),
+      post_markdown: String(linkedin.post_markdown || ''),
+      first_comment: String(linkedin.first_comment || ''),
+      cta_goal: sanitizeExternalText(linkedin.cta_goal || '', 120).toLowerCase(),
+      evidence_refs: linkedinEvidenceRefs,
+      reply_seeds: uniqueStrings(ensureArray(linkedin.reply_seeds).length ? linkedin.reply_seeds : linkedinBrief.reply_seed_topics, 180),
+      cta_variants: uniqueStrings(ensureArray(linkedin.cta_variants).length ? linkedin.cta_variants : ensureArray(linkedinBrief.cta_options).map((row) => row.cta), 180),
+      follow_up_angles: uniqueStrings(ensureArray(linkedin.follow_up_angles).length ? linkedin.follow_up_angles : ensureArray(linkedinBrief.outline).slice(0, 3), 180),
+    },
+    reddit: {
+      status: redditModeDefault === 'skip' ? 'skip' : 'ready',
+      mode: redditModeDefault,
+      title: String(reddit.title || ''),
+      body_markdown: String(reddit.body_markdown || ''),
+      disclosure_line: String(reddit.disclosure_line || ''),
+      soft_cta: String(reddit.soft_cta || ''),
+      evidence_refs: [],
+      reply_seeds: [],
+      cta_variants: [],
+      follow_up_angles: [],
+    },
+  };
+
+  if (!linkedinProfile.allowed_cta_goals.includes(normalized.linkedin.cta_goal)) {
+    normalized.linkedin.cta_goal = ensureArray(linkedinBrief.cta_options)[0] ? String(linkedinBrief.cta_options[0].goal) : linkedinProfile.allowed_cta_goals[0];
+  }
+
+  if (normalized.reddit.mode === 'skip') {
+    normalized.reddit.title = '';
+    normalized.reddit.body_markdown = '';
+    normalized.reddit.disclosure_line = '';
+    normalized.reddit.soft_cta = '';
+  } else {
+    const redditEvidenceRefs = sanitizeEvidenceRefs(reddit.evidence_refs, validEvidenceIds, requiredEvidenceRefs);
+    if (!redditEvidenceRefs.length) {
+      throw new Error('reddit draft must reference known evidence packets');
+    }
+    normalized.reddit.evidence_refs = redditEvidenceRefs;
+    normalized.reddit.reply_seeds = uniqueStrings(ensureArray(reddit.reply_seeds).length ? reddit.reply_seeds : redditBrief.reply_seed_topics, 180);
+    normalized.reddit.cta_variants = uniqueStrings(ensureArray(reddit.cta_variants).length ? reddit.cta_variants : [reddit.soft_cta || redditBrief.soft_cta], 180);
+    normalized.reddit.follow_up_angles = uniqueStrings(ensureArray(reddit.follow_up_angles).length ? reddit.follow_up_angles : ensureArray(redditBrief.outline).slice(0, 3), 180);
+  }
+
+  return normalized;
+}
+
+function activeChannelsFromContentPackage(pkg) {
+  const contentPackage = ensureObject(pkg);
+  const linkedin = ensureObject(contentPackage.linkedin);
+  const reddit = ensureObject(contentPackage.reddit);
+  return {
+    linkedin: String(linkedin.status || '') === 'ready',
+    reddit: String(reddit.status || '') === 'ready' && String(reddit.mode || '') !== 'skip',
+  };
+}
+
+function normalizeToneCritiquePayload(payload, activeChannels) {
+  const src = ensureObject(payload);
+  const normalized = {
+    overall_score: normalizeQualityScore(src.overall_score),
+    linkedin: activeChannels.linkedin ? ensureObject(src.linkedin) : makeSkippedToneChannel('skipped_by_strategy'),
+    reddit: activeChannels.reddit ? ensureObject(src.reddit) : makeSkippedToneChannel('skipped_by_strategy'),
+    cross_platform: activeChannels.linkedin && activeChannels.reddit ? uniqueStrings(src.cross_platform, 180) : [],
+  };
+  const activeScores = [];
+  if (activeChannels.linkedin) activeScores.push(Number(normalized.linkedin.score || 0));
+  if (activeChannels.reddit) activeScores.push(Number(normalized.reddit.score || 0));
+  normalized.overall_score = Math.round(average(activeScores, normalized.overall_score || 0));
+  return normalized;
+}
+
+function normalizeStrategyCritiquePayload(payload, activeChannels) {
+  const src = ensureObject(payload);
+  const normalized = {
+    overall_score: normalizeQualityScore(src.overall_score),
+    linkedin: activeChannels.linkedin ? ensureObject(src.linkedin) : makeSkippedStrategyChannel('skipped_by_strategy'),
+    reddit: activeChannels.reddit ? ensureObject(src.reddit) : makeSkippedStrategyChannel('skipped_by_strategy'),
+    cross_platform: activeChannels.linkedin && activeChannels.reddit ? uniqueStrings(src.cross_platform, 180) : [],
+  };
+  const activeScores = [];
+  if (activeChannels.linkedin) activeScores.push(Number(normalized.linkedin.score || 0));
+  if (activeChannels.reddit) activeScores.push(Number(normalized.reddit.score || 0));
+  normalized.overall_score = Math.round(average(activeScores, normalized.overall_score || 0));
+  return normalized;
+}
+
+function filterInactiveChannelIssues(values, activeChannels) {
+  return uniqueStrings(values, 220).filter((value) => {
+    const lower = value.toLowerCase();
+    if (!activeChannels.linkedin && lower.includes('linkedin')) return false;
+    if (!activeChannels.reddit && lower.includes('reddit')) return false;
+    return true;
+  });
+}
+
+function normalizeFinalGatePayload(payload, activeChannels) {
+  const src = ensureObject(payload);
+  return {
+    status: String(src.status || '').trim().toLowerCase(),
+    human_review_required: !!src.human_review_required,
+    blocking_issues: filterInactiveChannelIssues(src.blocking_issues, activeChannels),
+    release_notes: uniqueStrings(src.release_notes, 220),
+    final_checks: ensureObject(src.final_checks),
+    priority_fixes: filterInactiveChannelIssues(src.priority_fixes, activeChannels),
+  };
+}
+
+function statusWeight(status) {
+  if (status === 'pass') return 100;
+  if (status === 'revise') return 70;
+  return 40;
+}
+
+function lengthIssuesForContent(contentPackage, qualityGate) {
+  const hardIssues = [];
+  const minDraftLen = Number(qualityGate && qualityGate.min_draft_body_len) || 180;
+  const linkedinBody = String(contentPackage.linkedin && contentPackage.linkedin.post_markdown || '').trim();
+  const linkedinComment = String(contentPackage.linkedin && contentPackage.linkedin.first_comment || '').trim();
+  const redditBody = String(contentPackage.reddit && contentPackage.reddit.body_markdown || '').trim();
+  const redditMode = String(contentPackage.reddit && contentPackage.reddit.mode || 'skip');
+  const linkedinRange = linkedinProfile.target_length_chars.post;
+  const linkedinCommentRange = linkedinProfile.target_length_chars.first_comment;
+
+  if (linkedinBody.length < Math.max(minDraftLen, linkedinRange[0])) hardIssues.push('linkedin_body_too_short');
+  if (linkedinBody.length > linkedinRange[1]) hardIssues.push('linkedin_body_too_long');
+  if (linkedinComment && linkedinComment.length < linkedinCommentRange[0]) hardIssues.push('linkedin_first_comment_too_short');
+  if (linkedinComment && linkedinComment.length > linkedinCommentRange[1]) hardIssues.push('linkedin_first_comment_too_long');
+
+  if (redditMode !== 'skip') {
+    const redditRange =
+      redditMode === 'comment' ? redditProfile.target_length_chars.comment :
+      redditMode === 'post_with_link' ? redditProfile.target_length_chars.post_with_link :
+      redditProfile.target_length_chars.post_text_only;
+    const effectiveMin = Math.max(redditMode === 'comment' ? 60 : minDraftLen, redditRange[0]);
+    if (redditBody.length < effectiveMin) hardIssues.push('reddit_body_too_short');
+    if (redditBody.length > redditRange[1]) hardIssues.push('reddit_body_too_long');
+  }
+
+  return hardIssues;
+}
+
+const evidencePackets = ensureArray(ctx.artifacts.evidence_packets);
+const angleSlate = ensureArray(ctx.artifacts.angle_slate);
+
+if (!evidencePackets.length || !angleSlate.length) {
   ctx.artifacts.topic_gate = {
     decision: 'hold',
-    reason: 'No evidence_packets from research workflow',
+    reason: !evidencePackets.length
+      ? 'No evidence_packets from research workflow'
+      : 'No angle_slate from research workflow',
+    selected_angle_id: 'hold',
     selected_angle: {
-      title: 'Hold - evidence missing',
-      core_thesis: 'No publishable thesis without evidence.',
+      title: !evidencePackets.length ? 'Hold - evidence missing' : 'Hold - angle slate missing',
+      core_thesis: 'No publishable thesis without research-backed angle selection.',
       audience_problem: 'No validated audience problem from research output.',
       why_this_angle_wins: 'No reliable angle available.',
       why_now: 'Research must be completed first.',
       conversion_bridge: 'Collect evidence before drafting.',
       must_use_evidence_refs: [],
-      counterpoint_or_caveat: 'Evidence extraction returned zero packets.',
+      counterpoint_or_caveat: 'Research output is incomplete for drafting.',
     },
     backup_angle: {
       title: 'Research rerun required',
-      core_thesis: 'Collect and validate evidence packets before drafting.',
+      core_thesis: 'Collect and validate angles before drafting.',
     },
     linkedin_fit: 0,
     reddit_fit: 0,
     must_have_in_draft: [],
     must_avoid: [],
-    open_risks: ['missing_evidence_packets'],
+    open_risks: [!evidencePackets.length ? 'missing_evidence_packets' : 'missing_angle_slate'],
   };
-  addStage(5, 'Thema Gate', 'hold', 'run/' + ctx.run_id + '/content/input', 'run/' + ctx.run_id + '/content/topic_gate', 0, 'missing evidence_packets', 1);
+  addStage(5, 'Thema Gate', 'hold', 'run/' + ctx.run_id + '/content/input', 'run/' + ctx.run_id + '/content/topic_gate', 0, !evidencePackets.length ? 'missing evidence_packets' : 'missing angle_slate', 1);
   await addStageSummary.call(this, 5, 'Thema Gate', ctx.artifacts.topic_gate);
-  applyHoldResult('Missing evidence_packets from research workflow', ['collect stronger evidence', 're-run research retrieval']);
+  applyHoldResult(!evidencePackets.length ? 'Missing evidence_packets from research workflow' : 'Missing angle_slate from research workflow', ['collect stronger evidence', 're-run research retrieval']);
   return [{ json: ctx }];
 }
 
+const validEvidenceIds = evidenceIdSet(evidencePackets);
 const topicSeed = String(ctx.topic_hint || '');
 const step5Prompt = buildPrompt(
   String(ctx.prompts.thema_pruefung || ''),
   {
     topic_seed: topicSeed,
+    angle_slate: JSON.stringify(compactAngles(angleSlate, 8)),
     evidence_packets: JSON.stringify(compactEvidence(evidencePackets, 10)),
   }
 );
 
-const step5 = await callOllamaJson.call(
+const step5 = await callOllamaJsonStrict.call(
   this,
   'You are a strict topic gate evaluator. Return valid JSON only.',
   step5Prompt,
@@ -762,15 +1052,52 @@ const step5 = await callOllamaJson.call(
   }
 );
 
-const topicGate = step5.parsed;
-validateSchema(topicGateSchema, topicGate, 'topic_gate');
-ctx.artifacts.topic_gate = topicGate;
+recordDiagnostic('topic_gate', {
+  repair_used: !!step5.repair_used,
+  raw_output_excerpt: compact(step5.raw_text || '', 1800),
+});
 
-addStage(5, 'Thema Gate', 'ok', 'run/' + ctx.run_id + '/content/input', 'run/' + ctx.run_id + '/content/topic_gate', topicGate.decision === 'publish' ? 88 : 62, shortText(topicGate.reason, 180), ensureArray(topicGate.open_risks).length);
+const topicGate = ensureObject(step5.parsed);
+validateSchema(topicGateSchema, topicGate, 'topic_gate');
+
+const selectedAngleResearch = angleSlate.find((row) => String(row && row.angle_id || '') === String(topicGate.selected_angle_id || ''));
+if (!selectedAngleResearch) {
+  throw new Error('topic_gate.selected_angle_id not found in angle_slate: ' + String(topicGate.selected_angle_id || ''));
+}
+
+const selectedAngleEvidenceRefs = sanitizeEvidenceRefs(
+  topicGate.selected_angle && topicGate.selected_angle.must_use_evidence_refs,
+  validEvidenceIds,
+  selectedAngleResearch.evidence_refs
+);
+if (topicGate.decision === 'publish' && !selectedAngleEvidenceRefs.length) {
+  throw new Error('topic_gate.selected_angle.must_use_evidence_refs must reference known evidence packets');
+}
+
+topicGate.selected_angle.must_use_evidence_refs = selectedAngleEvidenceRefs;
+topicGate.linkedin_fit = clamp(topicGate.linkedin_fit, 0, 1, clamp(selectedAngleResearch.channel_fit && selectedAngleResearch.channel_fit.linkedin, 0, 1, 0));
+topicGate.reddit_fit = clamp(topicGate.reddit_fit, 0, 1, clamp(selectedAngleResearch.channel_fit && selectedAngleResearch.channel_fit.reddit, 0, 1, 0));
+topicGate.open_risks = uniqueStrings(topicGate.open_risks, 180);
+topicGate.must_have_in_draft = uniqueStrings(topicGate.must_have_in_draft, 180);
+topicGate.must_avoid = uniqueStrings(topicGate.must_avoid, 180);
+
+ctx.artifacts.topic_gate = topicGate;
+ctx.artifacts.selected_angle_research_candidate = selectedAngleResearch;
+
+addStage(
+  5,
+  'Thema Gate',
+  'ok',
+  'run/' + ctx.run_id + '/content/input',
+  'run/' + ctx.run_id + '/content/topic_gate',
+  topicGate.decision === 'publish' ? 90 : 58,
+  'decision=' + topicGate.decision + '; selected_angle_id=' + String(topicGate.selected_angle_id || ''),
+  topicGate.open_risks.length
+);
 await addStageSummary.call(this, 5, 'Thema Gate', topicGate);
 
 if (topicGate.decision === 'hold') {
-  applyHoldResult('Topic gate decision = hold', ensureArray(topicGate.open_risks));
+  applyHoldResult('Topic gate decision = hold', topicGate.open_risks);
   return [{ json: ctx }];
 }
 
@@ -780,10 +1107,11 @@ const step6Prompt = buildPrompt(
     selected_angle: JSON.stringify(topicGate.selected_angle),
     evidence_packets: JSON.stringify(compactEvidence(evidencePackets, 8)),
     linkedin_context: String(ctx.context.linkedin_context || ''),
+    platform_profile: JSON.stringify(linkedinProfile),
   }
 );
 
-const step6 = await callOllamaJson.call(
+const step6 = await callOllamaJsonStrict.call(
   this,
   'You create LinkedIn strategy briefs. Return valid JSON only.',
   step6Prompt,
@@ -798,10 +1126,15 @@ const step6 = await callOllamaJson.call(
   }
 );
 
-const linkedinBrief = step6.parsed;
+recordDiagnostic('linkedin_brief', {
+  repair_used: !!step6.repair_used,
+  raw_output_excerpt: compact(step6.raw_text || '', 1800),
+});
+
+const linkedinBrief = normalizeLinkedInBrief(step6.parsed, validEvidenceIds);
 validateSchema(linkedinBriefSchema, linkedinBrief, 'linkedin_brief');
 ctx.artifacts.linkedin_brief = linkedinBrief;
-addStage(6, 'LinkedIn Brief', 'ok', 'run/' + ctx.run_id + '/content/topic_gate', 'run/' + ctx.run_id + '/content/linkedin_brief', 86, 'format=' + linkedinBrief.recommended_format, 0);
+addStage(6, 'LinkedIn Brief', 'ok', 'run/' + ctx.run_id + '/content/topic_gate', 'run/' + ctx.run_id + '/content/linkedin_brief', 88, 'format=' + linkedinBrief.recommended_format + '; objective=' + linkedinBrief.post_objective, 0);
 await addStageSummary.call(this, 6, 'LinkedIn Brief', linkedinBrief);
 
 const step7Prompt = buildPrompt(
@@ -810,10 +1143,11 @@ const step7Prompt = buildPrompt(
     selected_angle: JSON.stringify(topicGate.selected_angle),
     evidence_packets: JSON.stringify(compactEvidence(evidencePackets, 8)),
     reddit_context: String(ctx.context.reddit_context || ''),
+    platform_profile: JSON.stringify(redditProfile),
   }
 );
 
-const step7 = await callOllamaJson.call(
+const step7 = await callOllamaJsonStrict.call(
   this,
   'You create Reddit strategy briefs with strict community fit. Return valid JSON only.',
   step7Prompt,
@@ -828,11 +1162,21 @@ const step7 = await callOllamaJson.call(
   }
 );
 
-const redditBrief = step7.parsed;
+recordDiagnostic('reddit_brief', {
+  repair_used: !!step7.repair_used,
+  raw_output_excerpt: compact(step7.raw_text || '', 1800),
+});
+
+const redditBrief = normalizeRedditBrief(step7.parsed);
 validateSchema(redditBriefSchema, redditBrief, 'reddit_brief');
 ctx.artifacts.reddit_brief = redditBrief;
-addStage(7, 'Reddit Router und Brief', 'ok', 'run/' + ctx.run_id + '/content/topic_gate', 'run/' + ctx.run_id + '/content/reddit_brief', normalizeQualityScore(redditBrief.community_fit_score), 'mode=' + redditBrief.mode, ensureArray(redditBrief.risk_flags).length);
+addStage(7, 'Reddit Router und Brief', 'ok', 'run/' + ctx.run_id + '/content/topic_gate', 'run/' + ctx.run_id + '/content/reddit_brief', normalizeQualityScore(redditBrief.community_fit_score), 'mode=' + redditBrief.mode, redditBrief.risk_flags.length);
 await addStageSummary.call(this, 7, 'Reddit Router und Brief', redditBrief);
+
+const lengthConstraints = {
+  linkedin: linkedinProfile.target_length_chars,
+  reddit: redditProfile.target_length_chars,
+};
 
 const step8Prompt = buildPrompt(
   String(ctx.prompts.entwurf_erstellung || ''),
@@ -842,11 +1186,13 @@ const step8Prompt = buildPrompt(
     linkedin_brief: JSON.stringify(linkedinBrief),
     reddit_brief: JSON.stringify(redditBrief),
     revision_notes: JSON.stringify({ must_have: topicGate.must_have_in_draft, must_avoid: topicGate.must_avoid }),
-    length_constraints: JSON.stringify({ linkedin_min_chars: 550, linkedin_max_chars: 2200, reddit_comment_min_chars: 120, reddit_post_min_chars: 300 }),
+    length_constraints: JSON.stringify(lengthConstraints),
+    linkedin_platform_profile: JSON.stringify(linkedinProfile),
+    reddit_platform_profile: JSON.stringify(redditProfile),
   }
 );
 
-const step8 = await callOllamaJson.call(
+const step8 = await callOllamaJsonStrict.call(
   this,
   'You produce final multi-channel drafts. Return valid JSON only.',
   step8Prompt,
@@ -861,16 +1207,26 @@ const step8 = await callOllamaJson.call(
   }
 );
 
-const contentPackage = normalizeContentPackage(step8.parsed, redditBrief.mode || 'skip');
+recordDiagnostic('content_package', {
+  repair_used: !!step8.repair_used,
+  raw_output_excerpt: compact(step8.raw_text || '', 1800),
+});
+
+const contentPackage = normalizeContentPackage(
+  step8.parsed,
+  redditBrief.mode || 'skip',
+  validEvidenceIds,
+  topicGate.selected_angle.must_use_evidence_refs,
+  linkedinBrief,
+  redditBrief
+);
 validateSchema(contentPackageSchema, contentPackage, 'content_package');
-if (redditBrief.mode === 'skip') {
-  contentPackage.reddit.mode = 'skip';
-  contentPackage.reddit.status = 'skip';
-  contentPackage.reddit.title = '';
-  contentPackage.reddit.body_markdown = '';
-}
+
+const activeChannels = activeChannelsFromContentPackage(contentPackage);
+ctx.artifacts.active_channels = activeChannels;
 ctx.artifacts.content_package = contentPackage;
-addStage(8, 'Entwurf Erstellung', 'ok', 'run/' + ctx.run_id + '/content/briefs', 'run/' + ctx.run_id + '/content/content_package', 84, 'linkedin=' + contentPackage.linkedin.status + '; reddit=' + contentPackage.reddit.mode, 0);
+
+addStage(8, 'Entwurf Erstellung', 'ok', 'run/' + ctx.run_id + '/content/briefs', 'run/' + ctx.run_id + '/content/content_package', 86, 'linkedin=' + contentPackage.linkedin.status + '; reddit=' + contentPackage.reddit.mode, 0);
 await addStageSummary.call(this, 8, 'Entwurf Erstellung', contentPackage);
 
 const step9Prompt = buildPrompt(
@@ -881,7 +1237,7 @@ const step9Prompt = buildPrompt(
   }
 );
 
-const step9 = await callOllamaJson.call(
+const step9 = await callOllamaJsonStrict.call(
   this,
   'You are a strict tonal critic. Return valid JSON only.',
   step9Prompt,
@@ -896,10 +1252,16 @@ const step9 = await callOllamaJson.call(
   }
 );
 
-const toneCritique = step9.parsed;
+recordDiagnostic('tone_critique', {
+  repair_used: !!step9.repair_used,
+  raw_output_excerpt: compact(step9.raw_text || '', 1800),
+  active_channels: activeChannels,
+});
+
+const toneCritique = normalizeToneCritiquePayload(step9.parsed, activeChannels);
 validateSchema(toneCritiqueSchema, toneCritique, 'tone_critique');
 ctx.artifacts.tone_critique = toneCritique;
-addStage(9, 'Ton Kritik', 'ok', 'run/' + ctx.run_id + '/content/drafts', 'run/' + ctx.run_id + '/content/tone_critique', toneCritique.overall_score, 'linkedin_pass=' + toneCritique.linkedin.pass + '; reddit_pass=' + toneCritique.reddit.pass, ensureArray(toneCritique.cross_platform).length);
+addStage(9, 'Ton Kritik', 'ok', 'run/' + ctx.run_id + '/content/drafts', 'run/' + ctx.run_id + '/content/tone_critique', toneCritique.overall_score, 'linkedin_pass=' + toneCritique.linkedin.pass + '; reddit_pass=' + toneCritique.reddit.pass, toneCritique.cross_platform.length);
 await addStageSummary.call(this, 9, 'Ton Kritik', toneCritique);
 
 const step10Prompt = buildPrompt(
@@ -913,7 +1275,7 @@ const step10Prompt = buildPrompt(
   }
 );
 
-const step10 = await callOllamaJson.call(
+const step10 = await callOllamaJsonStrict.call(
   this,
   'You are a strict strategy critic. Return valid JSON only.',
   step10Prompt,
@@ -928,10 +1290,16 @@ const step10 = await callOllamaJson.call(
   }
 );
 
-const strategyCritique = step10.parsed;
+recordDiagnostic('strategy_critique', {
+  repair_used: !!step10.repair_used,
+  raw_output_excerpt: compact(step10.raw_text || '', 1800),
+  active_channels: activeChannels,
+});
+
+const strategyCritique = normalizeStrategyCritiquePayload(step10.parsed, activeChannels);
 validateSchema(strategyCritiqueSchema, strategyCritique, 'strategy_critique');
 ctx.artifacts.strategy_critique = strategyCritique;
-addStage(10, 'Strategie Kritik', 'ok', 'run/' + ctx.run_id + '/content/tone_critique', 'run/' + ctx.run_id + '/content/strategy_critique', strategyCritique.overall_score, 'linkedin_pass=' + strategyCritique.linkedin.pass + '; reddit_pass=' + strategyCritique.reddit.pass, ensureArray(strategyCritique.cross_platform).length);
+addStage(10, 'Strategie Kritik', 'ok', 'run/' + ctx.run_id + '/content/tone_critique', 'run/' + ctx.run_id + '/content/strategy_critique', strategyCritique.overall_score, 'linkedin_pass=' + strategyCritique.linkedin.pass + '; reddit_pass=' + strategyCritique.reddit.pass, strategyCritique.cross_platform.length);
 await addStageSummary.call(this, 10, 'Strategie Kritik', strategyCritique);
 
 const step11Prompt = buildPrompt(
@@ -943,10 +1311,11 @@ const step11Prompt = buildPrompt(
     tone_critique: JSON.stringify(toneCritique),
     strategy_critique: JSON.stringify(strategyCritique),
     quality_gates: JSON.stringify(ctx.quality_gate || {}),
+    channel_state: JSON.stringify(activeChannels),
   }
 );
 
-const step11 = await callOllamaJson.call(
+const step11 = await callOllamaJsonStrict.call(
   this,
   'You run the strict final quality gate. Return valid JSON only.',
   step11Prompt,
@@ -961,37 +1330,58 @@ const step11 = await callOllamaJson.call(
   }
 );
 
-const finalGate = step11.parsed;
+recordDiagnostic('final_gate', {
+  repair_used: !!step11.repair_used,
+  raw_output_excerpt: compact(step11.raw_text || '', 1800),
+  active_channels: activeChannels,
+});
+
+const finalGate = normalizeFinalGatePayload(step11.parsed, activeChannels);
 validateSchema(finalGateSchema, finalGate, 'final_gate');
 
 const evidenceRefs = Array.from(new Set(
   ensureArray(contentPackage.linkedin.evidence_refs)
-    .concat(ensureArray(contentPackage.reddit.evidence_refs))
+    .concat(activeChannels.reddit ? ensureArray(contentPackage.reddit.evidence_refs) : [])
     .filter(Boolean)
 ));
 
+const requiredEvidenceRefs = uniqueStrings(topicGate.selected_angle.must_use_evidence_refs, 40);
+const missingRequiredEvidenceRefs = requiredEvidenceRefs.filter((ref) => !evidenceRefs.includes(ref));
+
 const minQuality = Number(ctx.quality_gate && ctx.quality_gate.min_quality_score) || 70;
 const minEvidence = Number(ctx.quality_gate && ctx.quality_gate.min_evidence_refs) || 3;
-const minDraftLen = Number(ctx.quality_gate && ctx.quality_gate.min_draft_body_len) || 180;
 const minPlatformFit = (Number(ctx.quality_gate && ctx.quality_gate.min_platform_fit_score) || 65) / 100;
 
 const hardIssues = [];
+if (!activeChannels.linkedin && !activeChannels.reddit) hardIssues.push('no_active_channels');
 if (evidenceRefs.length < minEvidence) hardIssues.push('evidence_refs<' + minEvidence);
-if (contentPackage.linkedin.status === 'ready' && String(contentPackage.linkedin.post_markdown || '').trim().length < minDraftLen) hardIssues.push('linkedin_body_too_short');
-if (contentPackage.reddit.status === 'ready' && contentPackage.reddit.mode !== 'comment' && contentPackage.reddit.mode !== 'skip' && String(contentPackage.reddit.body_markdown || '').trim().length < minDraftLen) hardIssues.push('reddit_body_too_short');
-if (redditBrief.community_fit_score < minPlatformFit && contentPackage.reddit.status === 'ready') hardIssues.push('reddit_platform_fit_too_low');
-if (topicGate.linkedin_fit < minPlatformFit) hardIssues.push('linkedin_platform_fit_too_low');
+if (missingRequiredEvidenceRefs.length) hardIssues.push('missing_required_evidence_refs:' + missingRequiredEvidenceRefs.join(','));
+hardIssues.push(...lengthIssuesForContent(contentPackage, ctx.quality_gate));
+if (activeChannels.linkedin && topicGate.linkedin_fit < minPlatformFit) hardIssues.push('linkedin_platform_fit_too_low');
+if (activeChannels.reddit && topicGate.reddit_fit < minPlatformFit) hardIssues.push('reddit_angle_fit_too_low');
+if (activeChannels.reddit && redditBrief.community_fit_score < minPlatformFit) hardIssues.push('reddit_platform_fit_too_low');
 
-const highRiskReddit = ensureArray(strategyCritique.reddit.risk_flags).some((flag) => /promo|rule|spam|misleading/i.test(String(flag)));
-if (highRiskReddit && contentPackage.reddit.status === 'ready') hardIssues.push('reddit_rule_risk');
+const highRiskReddit = activeChannels.reddit && ensureArray(strategyCritique.reddit.risk_flags).some((flag) => /promo|rule|spam|misleading/i.test(String(flag)));
+if (highRiskReddit) hardIssues.push('reddit_rule_risk');
 
 let finalStatus = String(finalGate.status || 'revise');
 if (hardIssues.length && finalStatus === 'pass') finalStatus = 'revise';
+if (!activeChannels.linkedin && !activeChannels.reddit) finalStatus = 'hold';
+
+const toneBase = average([
+  activeChannels.linkedin ? normalizeQualityScore(toneCritique.linkedin.score) : null,
+  activeChannels.reddit ? normalizeQualityScore(toneCritique.reddit.score) : null,
+].filter((value) => value !== null), normalizeQualityScore(toneCritique.overall_score));
+
+const strategyBase = average([
+  activeChannels.linkedin ? normalizeQualityScore(strategyCritique.linkedin.score) : null,
+  activeChannels.reddit ? normalizeQualityScore(strategyCritique.reddit.score) : null,
+].filter((value) => value !== null), normalizeQualityScore(strategyCritique.overall_score));
 
 const weightedScore = Math.round(
-  (normalizeQualityScore(toneCritique.overall_score) * 0.35) +
-  (normalizeQualityScore(strategyCritique.overall_score) * 0.45) +
-  ((finalStatus === 'pass' ? 100 : finalStatus === 'revise' ? 70 : 40) * 0.20)
+  (toneBase * 0.35) +
+  (strategyBase * 0.45) +
+  (statusWeight(finalStatus) * 0.20)
 );
 
 if (weightedScore < minQuality && finalStatus === 'pass') {
@@ -1003,24 +1393,26 @@ const humanReviewRequired =
   finalGate.human_review_required ||
   finalStatus !== 'pass' ||
   hardIssues.length > 0 ||
-  !toneCritique.linkedin.pass ||
-  !toneCritique.reddit.pass ||
-  !strategyCritique.linkedin.pass ||
-  !strategyCritique.reddit.pass;
+  (activeChannels.linkedin && (!toneCritique.linkedin.pass || !strategyCritique.linkedin.pass)) ||
+  (activeChannels.reddit && (!toneCritique.reddit.pass || !strategyCritique.reddit.pass));
 
 const mergedFinalGate = {
   status: finalStatus,
   human_review_required: humanReviewRequired,
-  blocking_issues: Array.from(new Set(ensureArray(finalGate.blocking_issues).concat(hardIssues))),
-  release_notes: ensureArray(finalGate.release_notes),
+  blocking_issues: Array.from(new Set(finalGate.blocking_issues.concat(hardIssues))),
+  release_notes: Array.from(new Set(finalGate.release_notes)),
   final_checks: {
-    evidence_ok: hardIssues.every((x) => !/evidence/.test(x)) && !!finalGate.final_checks.evidence_ok,
-    tone_ok: !!finalGate.final_checks.tone_ok && toneCritique.linkedin.pass && toneCritique.reddit.pass,
-    platform_fit_ok: !!finalGate.final_checks.platform_fit_ok && topicGate.linkedin_fit >= minPlatformFit,
+    evidence_ok: !hardIssues.some((value) => value.startsWith('evidence_') || value.startsWith('missing_required_evidence')) && !!finalGate.final_checks.evidence_ok,
+    tone_ok: !!finalGate.final_checks.tone_ok &&
+      (!activeChannels.linkedin || toneCritique.linkedin.pass) &&
+      (!activeChannels.reddit || toneCritique.reddit.pass),
+    platform_fit_ok: !!finalGate.final_checks.platform_fit_ok &&
+      (!activeChannels.linkedin || topicGate.linkedin_fit >= minPlatformFit) &&
+      (!activeChannels.reddit || (topicGate.reddit_fit >= minPlatformFit && redditBrief.community_fit_score >= minPlatformFit)),
     conversion_ok: !!finalGate.final_checks.conversion_ok,
     clarity_ok: !!finalGate.final_checks.clarity_ok,
   },
-  priority_fixes: Array.from(new Set(ensureArray(finalGate.priority_fixes).concat(hardIssues))),
+  priority_fixes: Array.from(new Set(finalGate.priority_fixes.concat(hardIssues))),
 };
 
 ctx.artifacts.final_gate = mergedFinalGate;
@@ -1045,6 +1437,7 @@ ctx.generated = {
     '- status: ' + mergedFinalGate.status,
     '- human_review_required: ' + mergedFinalGate.human_review_required,
     '- weighted_quality_score: ' + weightedScore,
+    '- active_channels: linkedin=' + activeChannels.linkedin + ', reddit=' + activeChannels.reddit,
     '- blocking_issues: ' + (mergedFinalGate.blocking_issues.length ? mergedFinalGate.blocking_issues.join(', ') : 'none'),
   ].join('\n'),
 };
