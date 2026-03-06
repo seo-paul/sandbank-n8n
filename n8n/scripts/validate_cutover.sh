@@ -34,6 +34,7 @@ GLOBAL_CONTEXT_PAIRS=(
   "audience_profile:audience.md"
   "offer_context:offer.md"
   "voice_guide:voice.md"
+  "author_voice:author-voice.md"
   "proof_library:proof-library.md"
   "red_lines:red-lines.md"
   "cta_goals:cta-goals.md"
@@ -42,6 +43,12 @@ GLOBAL_CONTEXT_PAIRS=(
 LOCAL_CONTEXT_PAIRS=(
   "reddit_context:reddit-communities.md"
   "linkedin_context:linkedin-context.md"
+  "performance_memory:performance-memory.md"
+)
+
+CONFIG_PAIRS=(
+  "source_policy:source-policy.json"
+  "platform_profiles:platform-profiles.json"
 )
 
 CONTEXT_PAIRS=(
@@ -245,7 +252,7 @@ else
   echo "  skipped: n8n not reachable"
 fi
 
-echo "[9/10] Validate Obsidian SSOT parity (prompts/context/schemas)"
+echo "[9/10] Validate Obsidian SSOT parity (prompts/context/config/schemas)"
 if [[ -f .env ]]; then
   # shellcheck disable=SC1091
   source .env
@@ -255,6 +262,7 @@ if [[ -n "${OBSIDIAN_REST_URL:-}" && -n "${OBSIDIAN_REST_API_KEY:-}" ]]; then
   WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts}"
   WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext}"
   WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/Kontext}"
+  WORKFLOW_CONFIG_DIR="${OBSIDIAN_WORKFLOW_CONFIG_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config}"
   WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas}"
 
   OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL}}"
@@ -269,10 +277,12 @@ if [[ -n "${OBSIDIAN_REST_URL:-}" && -n "${OBSIDIAN_REST_API_KEY:-}" ]]; then
     "$WORKFLOW_PROMPTS_DIR" \
     "$WORKFLOWS_CONTEXT_DIR" \
     "$WORKFLOW_CONTEXT_DIR" \
+    "$WORKFLOW_CONFIG_DIR" \
     "$WORKFLOW_SCHEMA_DIR" \
     "$(printf '%s\n' "${PROMPT_PAIRS[@]}")" \
     "$(printf '%s\n' "${GLOBAL_CONTEXT_PAIRS[@]}")" \
     "$(printf '%s\n' "${LOCAL_CONTEXT_PAIRS[@]}")" \
+    "$(printf '%s\n' "${CONFIG_PAIRS[@]}")" \
     "$(printf '%s\n' "${SCHEMA_PAIRS[@]}")"
 import hashlib
 import json
@@ -289,10 +299,12 @@ prompts_dir = sys.argv[4]
 global_context_dir = sys.argv[5]
 local_context_dir = sys.argv[6]
 schema_dir = sys.argv[7]
-prompt_pairs = [x for x in sys.argv[8].splitlines() if x.strip()]
-global_context_pairs = [x for x in sys.argv[9].splitlines() if x.strip()]
-local_context_pairs = [x for x in sys.argv[10].splitlines() if x.strip()]
-schema_pairs = [x for x in sys.argv[11].splitlines() if x.strip()]
+config_dir = sys.argv[8]
+prompt_pairs = [x for x in sys.argv[9].splitlines() if x.strip()]
+global_context_pairs = [x for x in sys.argv[10].splitlines() if x.strip()]
+local_context_pairs = [x for x in sys.argv[11].splitlines() if x.strip()]
+config_pairs = [x for x in sys.argv[12].splitlines() if x.strip()]
+schema_pairs = [x for x in sys.argv[13].splitlines() if x.strip()]
 
 ctx = ssl.create_default_context()
 if allow_insecure:
@@ -358,6 +370,24 @@ for pair in local_context_pairs:
         continue
     if text_hash(local_path) != text_hash_raw(remote_text):
         errors.append(f"context_hash_mismatch:{file_name}")
+
+for pair in config_pairs:
+    _, file_name = pair.split(':', 1)
+    local_path = Path('local-files/_managed/config') / file_name
+    remote_path = f"{config_dir}/{file_name}"
+    try:
+        remote_text = fetch_remote_text(remote_path)
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"missing_remote_config:{file_name}:{exc}")
+        continue
+    try:
+        local_hash = schema_hash(local_path)
+        remote_hash = schema_hash_raw(remote_text)
+    except Exception as exc:  # noqa: BLE001
+        errors.append(f"config_parse_error:{file_name}:{exc}")
+        continue
+    if local_hash != remote_hash:
+        errors.append(f"config_hash_mismatch:{file_name}")
 
 for pair in schema_pairs:
     _, file_name = pair.split(':', 1)

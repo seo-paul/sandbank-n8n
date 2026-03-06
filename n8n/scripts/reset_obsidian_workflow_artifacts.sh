@@ -150,8 +150,10 @@ cat > "${WORKFLOW_FS_DIR}/Beitraege-Workflow-Uebersicht.md" <<'EOF'
 |  | 2. Fehlerdaten aufbereiten | Zwischenergebnisse/fehlerlauf-klar-dokumentieren.md | Fehler Kontext | Normalisiert Fehlerdaten inkl. Run-ID, Status und Quelle. |
 |  | 3. Fehlerdetails speichern | Ergebnisse/Fehlerdetails/<run_id>.md | Fehler Persistenz | Schreibt den vollstaendigen Fehlerlauf in die Fehlerdokumentation. |
 |  | 4. Fehler Ergebnis ausgeben | Rueckgabe JSON | Monitoring | Gibt den Fehlerstatus inkl. Pfad zur Fehlerdatei aus. |
-| Performance zurueckfuehren | 1. Input normalisieren | Zwischenergebnisse/performance-zurueckfuehren.md | Metriken vorbereiten | Nimmt LinkedIn/Reddit Metriken und Kommentare als Input. |
-|  | 2. Learnings ableiten | Zwischenergebnisse/performance-zurueckfuehren.md | Datengetriebene Learnings | Erzeugt datenbasierte Muster und konkrete naechste Optimierungsschritte. |
+| Performance zurueckfuehren | 1. Input normalisieren | Zwischenergebnisse/performance-zurueckfuehren.md | Metriken vorbereiten | Fuehrt Parent-Run, Content-Snapshot, Kanalstatus und Metriken in einen analysierbaren Kontext zusammen. |
+|  | 2. Performance Analyse ausfuehren | Zwischenergebnisse/performance-zurueckfuehren.md | Datengetriebene Learnings | Leitet strukturierte Muster, Voice-Signale und naechste Tests aus Metriken und Kommentaren ab. |
+|  | 3. Lernnotiz schreiben | Ergebnisse/Performance/<perf_run_id>.md | Provenienz | Schreibt den vollstaendigen Performance-Eintrag mit Content-, Kommentar- und Metrik-Snapshot. |
+|  | 4. performance_memory aktualisieren | Kontext/performance-memory.md | Rueckkopplung | Aktualisiert den kuratierten Learning-Store fuer kommende Research- und Content-Laeufe. |
 EOF
 
 write_intermediate_base() {

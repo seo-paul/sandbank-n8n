@@ -239,6 +239,11 @@ if [[ -z "$current_workflow_context_dir" || "$current_workflow_context_dir" == "
   set_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext\""
 fi
 
+current_workflow_config_dir="$(get_env_value "OBSIDIAN_WORKFLOW_CONFIG_DIR")"
+if [[ -z "$current_workflow_config_dir" || "$current_workflow_config_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_CONFIG_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config\""
+fi
+
 current_workflow_schema_dir="$(get_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR")"
 if [[ -z "$current_workflow_schema_dir" || "$current_workflow_schema_dir" == "replace_with_"* ]]; then
   set_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas\""

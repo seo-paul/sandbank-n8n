@@ -25,6 +25,7 @@ fi
 WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts}"
 WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext}"
 WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/Kontext}"
+WORKFLOW_CONFIG_DIR="${OBSIDIAN_WORKFLOW_CONFIG_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config}"
 WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas}"
 WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/SSOT/manifest.json}"
 
@@ -78,6 +79,7 @@ GLOBAL_CONTEXT_PAIRS=(
   "audience_profile:audience.md"
   "offer_context:offer.md"
   "voice_guide:voice.md"
+  "author_voice:author-voice.md"
   "proof_library:proof-library.md"
   "red_lines:red-lines.md"
   "cta_goals:cta-goals.md"
@@ -86,6 +88,12 @@ GLOBAL_CONTEXT_PAIRS=(
 LOCAL_CONTEXT_PAIRS=(
   "reddit_context:reddit-communities.md"
   "linkedin_context:linkedin-context.md"
+  "performance_memory:performance-memory.md"
+)
+
+CONFIG_PAIRS=(
+  "source_policy:source-policy.json"
+  "platform_profiles:platform-profiles.json"
 )
 
 SCHEMA_PAIRS=(
@@ -118,6 +126,12 @@ for pair in "${LOCAL_CONTEXT_PAIRS[@]}"; do
   assert_non_empty_file "local-files/_managed/context/workflow/${file}" "context:${key}"
 done
 
+for pair in "${CONFIG_PAIRS[@]}"; do
+  key="${pair%%:*}"
+  file="${pair#*:}"
+  assert_non_empty_file "local-files/_managed/config/${file}" "config:${key}"
+done
+
 for pair in "${SCHEMA_PAIRS[@]}"; do
   key="${pair%%:*}"
   file="${pair#*:}"
@@ -139,6 +153,11 @@ for pair in "${LOCAL_CONTEXT_PAIRS[@]}"; do
   put_file "local-files/_managed/context/workflow/${file}" "${WORKFLOW_CONTEXT_DIR}/${file}"
 done
 
+for pair in "${CONFIG_PAIRS[@]}"; do
+  file="${pair#*:}"
+  put_file "local-files/_managed/config/${file}" "${WORKFLOW_CONFIG_DIR}/${file}" "application/json"
+done
+
 for pair in "${SCHEMA_PAIRS[@]}"; do
   file="${pair#*:}"
   put_file "local-files/_managed/schemas/${file}" "${WORKFLOW_SCHEMA_DIR}/${file}" "application/json"
@@ -147,7 +166,7 @@ done
 MANIFEST_FILE="$(mktemp)"
 trap 'rm -f "$MANIFEST_FILE"' EXIT
 
-python3 - <<'PY' "$MANIFEST_FILE" "$(printf '%s\n' "${PROMPT_PAIRS[@]}")" "$(printf '%s\n' "${GLOBAL_CONTEXT_PAIRS[@]}")" "$(printf '%s\n' "${LOCAL_CONTEXT_PAIRS[@]}")" "$(printf '%s\n' "${SCHEMA_PAIRS[@]}")"
+python3 - <<'PY' "$MANIFEST_FILE" "$(printf '%s\n' "${PROMPT_PAIRS[@]}")" "$(printf '%s\n' "${GLOBAL_CONTEXT_PAIRS[@]}")" "$(printf '%s\n' "${LOCAL_CONTEXT_PAIRS[@]}")" "$(printf '%s\n' "${CONFIG_PAIRS[@]}")" "$(printf '%s\n' "${SCHEMA_PAIRS[@]}")"
 import datetime as dt
 import hashlib
 import json
@@ -158,7 +177,8 @@ manifest_path = pathlib.Path(sys.argv[1])
 prompt_pairs = [line for line in sys.argv[2].splitlines() if line.strip()]
 global_context_pairs = [line for line in sys.argv[3].splitlines() if line.strip()]
 local_context_pairs = [line for line in sys.argv[4].splitlines() if line.strip()]
-schema_pairs = [line for line in sys.argv[5].splitlines() if line.strip()]
+config_pairs = [line for line in sys.argv[5].splitlines() if line.strip()]
+schema_pairs = [line for line in sys.argv[6].splitlines() if line.strip()]
 
 items = {}
 
@@ -185,6 +205,10 @@ for pair in local_context_pairs:
     key, file_name = pair.split(':', 1)
     items[f'context:{key}'] = text_hash(f'local-files/_managed/context/workflow/{file_name}')
 
+for pair in config_pairs:
+    key, file_name = pair.split(':', 1)
+    items[f'config:{key}'] = schema_hash(f'local-files/_managed/config/{file_name}')
+
 for pair in schema_pairs:
     key, file_name = pair.split(':', 1)
     items[f'schema:{key}'] = schema_hash(f'local-files/_managed/schemas/{file_name}')
@@ -193,7 +217,7 @@ bundle_source = "\n".join(f"{k}={items[k]}" for k in sorted(items))
 bundle_hash = hashlib.sha256(bundle_source.encode('utf-8')).hexdigest()
 
 manifest = {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace('+00:00', 'Z'),
     "bundle_hash": bundle_hash,
     "items": items,
