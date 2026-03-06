@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArticlePackage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "article_id",
+    "frontmatter",
+    "body_mdx",
+    "internal_links",
+    "external_sources",
+    "media_brief",
+    "quality_notes"
+  ],
+  "properties": {
+    "article_id": {
+      "type": "string"
+    },
+    "frontmatter": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "title",
+        "description",
+        "seoTitle",
+        "seoDescription",
+        "heroSubtitle",
+        "navTitle",
+        "visibility",
+        "kind",
+        "helpSlug",
+        "categoryId",
+        "articleOrder",
+        "audience",
+        "keyTakeaways",
+        "authorId",
+        "authorRole",
+        "reviewer",
+        "publishedAt",
+        "tileBody",
+        "last_reviewed",
+        "collection",
+        "categoryOrder",
+        "articleNumber"
+      ],
+      "properties": {
+        "keyTakeaways": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "body_mdx": {
+      "type": "string",
+      "minLength": 800
+    },
+    "internal_links": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "label",
+          "reason"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "external_sources": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "url",
+          "why_used"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "why_used": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "media_brief": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "purpose"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "alt": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "quality_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

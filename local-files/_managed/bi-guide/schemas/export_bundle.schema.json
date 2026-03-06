@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExportBundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "target_locale",
+    "target_source_path",
+    "target_category_path",
+    "article_file_name",
+    "mdx",
+    "frontmatter_preview",
+    "manual_followups"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "export_ready",
+        "needs_revision",
+        "blocked"
+      ]
+    },
+    "target_locale": {
+      "type": "string"
+    },
+    "target_source_path": {
+      "type": "string"
+    },
+    "target_category_path": {
+      "type": "string"
+    },
+    "article_file_name": {
+      "type": "string"
+    },
+    "mdx": {
+      "type": "string",
+      "minLength": 800
+    },
+    "frontmatter_preview": {
+      "type": "string",
+      "minLength": 80
+    },
+    "manual_followups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

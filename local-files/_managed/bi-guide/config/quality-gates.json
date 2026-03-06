@@ -1,0 +1,47 @@
+{
+  "minimum_body_words": 1600,
+  "target_body_words_min": 1800,
+  "target_body_words_max": 2600,
+  "minimum_internal_links": 2,
+  "minimum_external_sources": 2,
+  "minimum_key_takeaways": 3,
+  "maximum_callouts": 2,
+  "allowed_visibility": [
+    "public",
+    "internal",
+    "planned"
+  ],
+  "required_frontmatter_fields": [
+    "id",
+    "title",
+    "description",
+    "seoTitle",
+    "seoDescription",
+    "heroSubtitle",
+    "navTitle",
+    "visibility",
+    "kind",
+    "helpSlug",
+    "categoryId",
+    "articleOrder",
+    "audience",
+    "keyTakeaways",
+    "authorId",
+    "authorRole",
+    "reviewer",
+    "publishedAt",
+    "tileBody",
+    "last_reviewed",
+    "collection",
+    "categoryOrder",
+    "articleNumber"
+  ],
+  "allowed_kind": [
+    "pillar",
+    "cluster"
+  ],
+  "link_requirements": {
+    "absolute_slugs_only": true,
+    "existing_targets_only": true
+  }
+}

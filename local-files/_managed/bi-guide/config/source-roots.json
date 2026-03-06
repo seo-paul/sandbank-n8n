@@ -1,0 +1,20 @@
+{
+  "sandbank_root": "/sandbank-readonly",
+  "tracked_roots": [
+    "packages/help-content/sources/de/bi-guide",
+    "packages/help-content/sources/en/bi-guide",
+    "packages/help-content/authors.json",
+    "packages/assets/registry/bi-guide-media.json",
+    "packages/help-content/src/generated-help-metadata.ts",
+    "apps/docs/docs/product/bi-guide",
+    "apps/docs/docs/architecture/marketing"
+  ],
+  "reference_locale": "de",
+  "max_reference_articles": 6,
+  "max_reference_excerpt_chars": 2600,
+  "topic_backlog_doc": "apps/docs/docs/product/bi-guide/article-topics.mdx",
+  "structure_doc": "apps/docs/docs/product/bi-guide/article-structure.mdx",
+  "checklist_doc": "apps/docs/docs/product/bi-guide/article-checklist.mdx",
+  "publication_doc": "apps/docs/docs/architecture/marketing/bi-guide-publication-and-routing.mdx",
+  "media_doc": "apps/docs/docs/architecture/marketing/bi-guide-media-pipeline.mdx"
+}

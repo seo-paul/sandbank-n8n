@@ -1,0 +1,39 @@
+{
+  "default_locale": "de",
+  "default_visibility": "public",
+  "default_kind": "cluster",
+  "default_author_id": "paul-zehm",
+  "default_author_role": "Gruender",
+  "default_reviewer": "Platform-Team",
+  "category_aliases": {
+    "einfuehrung": "fundamentals",
+    "grundlagen": "fundamentals",
+    "daten": "data-kpis",
+    "daten-kpis": "data-kpis",
+    "visualisierung": "dashboards",
+    "dashboards": "dashboards",
+    "strategie": "strategy",
+    "tools": "tools",
+    "anwendungsfaelle": "use-cases",
+    "nach-bereich-branche": "industries",
+    "branchen": "industries"
+  },
+  "category_slug_aliases": {
+    "fundamentals": "grundlagen",
+    "data-kpis": "daten-kpis",
+    "dashboards": "dashboards-visualisierung",
+    "strategy": "strategie",
+    "tools": "tools",
+    "use-cases": "anwendungsfaelle",
+    "industries": "branchen"
+  },
+  "audience_defaults": {
+    "fundamentals": "Einsteiger",
+    "data-kpis": "Fortgeschrittene",
+    "dashboards": "Einsteiger & Fortgeschrittene",
+    "strategy": "Entscheider",
+    "tools": "Entscheider",
+    "use-cases": "Entscheider & Fortgeschrittene",
+    "industries": "Entscheider"
+  }
+}

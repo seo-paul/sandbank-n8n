@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArticlePlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "article_id",
+    "working_title",
+    "target_locale",
+    "category_id",
+    "category_slug",
+    "category_order",
+    "article_order",
+    "article_number",
+    "target_source_path",
+    "target_category_path",
+    "audience",
+    "search_intent",
+    "why_now",
+    "angle",
+    "outline",
+    "internal_link_targets",
+    "source_strategy",
+    "risks"
+  ],
+  "properties": {
+    "article_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "working_title": {
+      "type": "string",
+      "minLength": 10
+    },
+    "target_locale": {
+      "type": "string"
+    },
+    "category_id": {
+      "type": "string"
+    },
+    "category_slug": {
+      "type": "string"
+    },
+    "category_order": {
+      "type": "number"
+    },
+    "article_order": {
+      "type": "number"
+    },
+    "article_number": {
+      "type": "string"
+    },
+    "article_slug": {
+      "type": "string"
+    },
+    "target_source_path": {
+      "type": "string"
+    },
+    "target_category_path": {
+      "type": "string"
+    },
+    "audience": {
+      "type": "string"
+    },
+    "search_intent": {
+      "type": "string"
+    },
+    "why_now": {
+      "type": "string"
+    },
+    "angle": {
+      "type": "string"
+    },
+    "outline": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "heading",
+          "purpose"
+        ],
+        "properties": {
+          "heading": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "bullets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "internal_link_targets": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_strategy": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

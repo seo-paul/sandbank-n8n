@@ -1,0 +1,42 @@
+{
+  "mode": "local_only",
+  "allowed_retrieval_channels": [
+    "searxng"
+  ],
+  "allowed_source_types": [
+    "official",
+    "research",
+    "media",
+    "vendor"
+  ],
+  "minimum_external_signals": 3,
+  "minimum_distinct_domains": 2,
+  "minimum_primary_sources": 1,
+  "official_domain_markers": [
+    "docs.",
+    "developer.",
+    "support.",
+    ".gov",
+    ".edu"
+  ],
+  "research_domain_patterns": [
+    "arxiv.org",
+    "nature.com",
+    "sciencedirect.com",
+    "springer.com",
+    "nber.org",
+    "nih.gov",
+    "ssrn.com"
+  ],
+  "downgraded_domain_patterns": [
+    "medium.com",
+    "substack.com",
+    "blog."
+  ],
+  "blocked_domain_patterns": [
+    "facebook.com",
+    "instagram.com",
+    "pinterest.com",
+    "quora.com"
+  ]
+}
