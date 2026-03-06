@@ -2,43 +2,29 @@
 type: workflow-zwischenergebnisse
 workflow:
 workflow_slug:
-run_id:
-execution_id:
-status:
-model_used:
-created_at:
-completed_at:
-duration_sec:
-quality_final:
-errors_total:
 ---
 
-# Zwischenergebnisse <Workflow>
+# Zwischenergebnisse - <Workflow>
+
+Diese Datei enthaelt die vollstaendigen Schritt-Ergebnisse pro Run.
 
 ## Run <run_id>
+- datum:
+- zeit:
 - status:
 - model_used:
-- started_at:
-- completed_at:
-- duration_sec:
+- ts:
 
-### Schritt 1 - <Name>
+### Schritt 1 - <Stage>
 #### Kontext
-- step:
 - status:
 - ts:
 - quality_score:
 - errors:
-
-#### Input
-```json
-{}
-```
+- input_ref:
+- output_ref:
 
 #### Ergebnis (vollstaendig)
 ```json
 {}
 ```
-
-#### Hinweise
-- n/a

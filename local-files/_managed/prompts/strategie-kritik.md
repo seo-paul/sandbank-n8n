@@ -1,6 +1,6 @@
 ---
 id: strategie-kritik
-version: 1.0.0
+version: 1.1.0
 output: json
 thinking: true
 ---
@@ -31,6 +31,7 @@ Bewerte streng:
 - Wenn der LinkedIn-Entwurf nur informiert, aber keine Perspektive hat, markiere hart.
 - Wenn CTA und Beitragsreife nicht zusammenpassen, markiere hart.
 - Liefere nur Diagnose und Korrekturhinweise.
+- Wenn ein Kanal bewusst `skip` ist, behandle das als legitime Strategie statt als Fehlleistung.
 
 # Ausgabe
 {
@@ -38,6 +39,15 @@ Bewerte streng:
   "linkedin": {
     "score": 0,
     "pass": true,
+    "dimension_scores": {
+      "evidence_strength": 0,
+      "hook_strength": 0,
+      "platform_fit": 0,
+      "commentability": 0,
+      "cta_naturalness": 0,
+      "rule_risk": 0,
+      "clarity": 0
+    },
     "must_fix": [""],
     "should_fix": [""],
     "risk_flags": [""],
@@ -46,6 +56,15 @@ Bewerte streng:
   "reddit": {
     "score": 0,
     "pass": true,
+    "dimension_scores": {
+      "evidence_strength": 0,
+      "hook_strength": 0,
+      "platform_fit": 0,
+      "commentability": 0,
+      "cta_naturalness": 0,
+      "rule_risk": 0,
+      "clarity": 0
+    },
     "must_fix": [""],
     "should_fix": [""],
     "risk_flags": [""],

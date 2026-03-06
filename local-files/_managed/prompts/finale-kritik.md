@@ -1,6 +1,6 @@
 ---
 id: finale-kritik
-version: 1.0.0
+version: 1.1.0
 output: json
 thinking: true
 ---
@@ -25,11 +25,12 @@ Führe die finale Qualitätsprüfung durch. Entscheide kompromisslos zwischen pa
 - LinkedIn-Text liefert keine verwertbare Einsicht
 - zu viele Ideen in einem Text
 - sichtbare KI-Schablone trotz Überarbeitung
+- Ein bewusstes Kanal-`skip` ist kein Hard Fail, wenn die Entscheidung strategisch begründet ist.
 
 # Ausgabe
 {
   "status": "pass|revise|hold",
-  "human_review_required": true,
+  "human_review_required": false,
   "blocking_issues": [""],
   "release_notes": [""],
   "final_checks": {

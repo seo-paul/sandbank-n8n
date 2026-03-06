@@ -4,19 +4,68 @@
   "type": "object",
   "required": [
     "research_verdict",
+    "retrieval_summary",
     "topic_candidates",
     "evidence_packets",
     "missing_evidence",
     "next_queries",
-    "discarded_signals"
+    "discarded_signals",
+    "query_diagnostics"
   ],
   "properties": {
-    "research_verdict": { "type": "string", "enum": ["strong", "usable", "weak"] },
+    "research_verdict": {
+      "type": "string",
+      "enum": ["strong", "usable", "weak"]
+    },
+    "retrieval_summary": {
+      "type": "object",
+      "required": [
+        "external_signal_count",
+        "allowed_signal_count",
+        "blocked_signal_count",
+        "distinct_domains",
+        "primary_source_count",
+        "source_mix",
+        "external_evidence_ready"
+      ],
+      "properties": {
+        "external_signal_count": { "type": "number", "minimum": 0 },
+        "allowed_signal_count": { "type": "number", "minimum": 0 },
+        "blocked_signal_count": { "type": "number", "minimum": 0 },
+        "distinct_domains": { "type": "number", "minimum": 0 },
+        "primary_source_count": { "type": "number", "minimum": 0 },
+        "source_mix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source_type", "count"],
+            "properties": {
+              "source_type": { "type": "string", "enum": ["official", "research", "media", "community", "vendor"] },
+              "count": { "type": "number", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "external_evidence_ready": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
     "topic_candidates": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["angle_id", "angle", "audience_problem", "why_now", "evidence_refs", "novelty_score", "confidence"],
+        "required": [
+          "angle_id",
+          "angle",
+          "audience_problem",
+          "why_now",
+          "evidence_refs",
+          "novelty_score",
+          "confidence",
+          "engagement_hypothesis",
+          "selection_reason",
+          "channel_fit"
+        ],
         "properties": {
           "angle_id": { "type": "string", "minLength": 2 },
           "angle": { "type": "string", "minLength": 5 },
@@ -24,7 +73,18 @@
           "why_now": { "type": "string", "minLength": 5 },
           "evidence_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 2 } },
           "novelty_score": { "type": "number", "minimum": 0, "maximum": 1 },
-          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "engagement_hypothesis": { "type": "string", "minLength": 5 },
+          "selection_reason": { "type": "string", "minLength": 5 },
+          "channel_fit": {
+            "type": "object",
+            "required": ["linkedin", "reddit"],
+            "properties": {
+              "linkedin": { "type": "number", "minimum": 0, "maximum": 1 },
+              "reddit": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "additionalProperties": false
+          }
         },
         "additionalProperties": false
       }
@@ -38,7 +98,11 @@
           "claim",
           "source_title",
           "source_ref",
+          "domain",
+          "retrieval_query",
+          "published_at",
           "source_type",
+          "source_tier",
           "authority",
           "freshness",
           "support_type",
@@ -52,7 +116,11 @@
           "claim": { "type": "string", "minLength": 5 },
           "source_title": { "type": "string", "minLength": 3 },
           "source_ref": { "type": "string", "minLength": 3 },
+          "domain": { "type": "string", "minLength": 3 },
+          "retrieval_query": { "type": "string", "minLength": 3 },
+          "published_at": { "type": "string" },
           "source_type": { "type": "string", "enum": ["official", "research", "media", "community", "vendor"] },
+          "source_tier": { "type": "string", "enum": ["primary", "supporting", "community_signal"] },
           "authority": { "type": "string", "enum": ["high", "medium", "low"] },
           "freshness": { "type": "string", "enum": ["current", "recent", "dated", "timeless"] },
           "support_type": { "type": "string", "enum": ["data", "quote", "example", "trend", "counterpoint"] },
@@ -74,6 +142,20 @@
         "properties": {
           "source_ref": { "type": "string", "minLength": 2 },
           "reason": { "type": "string", "minLength": 3 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "query_diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["query", "status", "result_count", "notes"],
+        "properties": {
+          "query": { "type": "string", "minLength": 3 },
+          "status": { "type": "string", "enum": ["ok", "empty", "blocked", "failed"] },
+          "result_count": { "type": "number", "minimum": 0 },
+          "notes": { "type": "string", "minLength": 2 }
         },
         "additionalProperties": false
       }

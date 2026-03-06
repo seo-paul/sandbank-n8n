@@ -3,17 +3,85 @@
   "title": "PerformanceLearnings",
   "type": "object",
   "required": [
+    "analysis_summary",
     "winning_patterns",
     "weak_patterns",
     "comment_insights",
+    "channel_actions",
+    "topic_actions",
+    "voice_actions",
     "prompt_updates",
     "workflow_updates",
     "next_tests"
   ],
   "properties": {
-    "winning_patterns": { "type": "array", "items": { "type": "string" } },
-    "weak_patterns": { "type": "array", "items": { "type": "string" } },
-    "comment_insights": { "type": "array", "items": { "type": "string" } },
+    "analysis_summary": { "type": "string", "minLength": 8 },
+    "winning_patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pattern", "evidence", "confidence", "channels", "recommended_action"],
+        "properties": {
+          "pattern": { "type": "string", "minLength": 5 },
+          "evidence": { "type": "string", "minLength": 5 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "channels": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "enum": ["linkedin", "reddit", "both"] }
+          },
+          "recommended_action": { "type": "string", "minLength": 5 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "weak_patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pattern", "evidence", "confidence", "channels", "recommended_action"],
+        "properties": {
+          "pattern": { "type": "string", "minLength": 5 },
+          "evidence": { "type": "string", "minLength": 5 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "channels": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "enum": ["linkedin", "reddit", "both"] }
+          },
+          "recommended_action": { "type": "string", "minLength": 5 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "comment_insights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["signal", "implication", "channels"],
+        "properties": {
+          "signal": { "type": "string", "minLength": 5 },
+          "implication": { "type": "string", "minLength": 5 },
+          "channels": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "enum": ["linkedin", "reddit", "both"] }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "channel_actions": {
+      "type": "object",
+      "required": ["linkedin", "reddit"],
+      "properties": {
+        "linkedin": { "type": "array", "items": { "type": "string", "minLength": 3 } },
+        "reddit": { "type": "array", "items": { "type": "string", "minLength": 3 } }
+      },
+      "additionalProperties": false
+    },
+    "topic_actions": { "type": "array", "items": { "type": "string", "minLength": 3 } },
+    "voice_actions": { "type": "array", "items": { "type": "string", "minLength": 3 } },
     "prompt_updates": { "type": "array", "items": { "type": "string" } },
     "workflow_updates": { "type": "array", "items": { "type": "string" } },
     "next_tests": { "type": "array", "items": { "type": "string" } }

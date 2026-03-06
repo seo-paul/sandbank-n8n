@@ -1,18 +1,53 @@
 {
   "mode": "local_only",
-  "allowed_sources": [
+  "allowed_retrieval_channels": [
     "searxng",
-    "rss",
-    "hacker_news",
-    "reddit_rss",
     "searxng_site_reddit"
   ],
-  "disabled_sources": [
-    "x"
+  "allowed_source_types": [
+    "official",
+    "research",
+    "media",
+    "community",
+    "vendor"
+  ],
+  "minimum_external_signals": 4,
+  "minimum_distinct_domains": 3,
+  "minimum_primary_sources": 1,
+  "official_domain_markers": [
+    "docs.",
+    "developer.",
+    "support.",
+    "standards.",
+    ".gov",
+    ".edu"
+  ],
+  "research_domain_patterns": [
+    "arxiv.org",
+    "nature.com",
+    "sciencedirect.com",
+    "springer.com",
+    "nber.org",
+    "nih.gov",
+    "ssrn.com"
+  ],
+  "community_domains": [
+    "reddit.com"
+  ],
+  "downgraded_domain_patterns": [
+    "medium.com",
+    "substack.com",
+    "blog."
+  ],
+  "blocked_domain_patterns": [
+    "facebook.com",
+    "instagram.com",
+    "pinterest.com",
+    "quora.com"
   ],
   "reddit_api": {
     "enabled": false,
     "reason": "credentials_missing",
-    "fallback": ["reddit_rss", "searxng_site_reddit"]
+    "fallback": ["searxng_site_reddit"]
   }
 }

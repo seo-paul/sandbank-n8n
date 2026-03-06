@@ -1,6 +1,6 @@
 ---
 id: kanal-linkedin
-version: 1.0.0
+version: 1.1.0
 output: json
 thinking: true
 ---
@@ -12,6 +12,7 @@ thinking: true
 <selected_angle>{{selected_angle}}</selected_angle>
 <evidence_packets>{{evidence_packets}}</evidence_packets>
 <linkedin_context>{{linkedin_context}}</linkedin_context>
+<platform_profile>{{platform_profile}}</platform_profile>
 
 # Regeln
 - Ziel ist fachliche Glaubwürdigkeit, Gesprächsanlass und eine natürliche Conversion-Brücke.
@@ -21,6 +22,9 @@ thinking: true
 - Bevorzuge kurze, leicht scanbare Abschnitte.
 - Der CTA soll zur Reife des Beitrags passen: Kommentar, Perspektive, Profilbesuch, Link-Klick oder Lead.
 - Wenn ein anderes Format als Text klar besser passt, benenne es.
+- Der Hook muss nach echter Erfahrung oder belastbarer Beobachtung klingen, nicht nach Creator-Schablone.
+- Nutze `performance_memory` nur dort, wo ein wiederkehrendes Muster klar zum aktuellen Winkel passt.
+- Plane nur Formate und CTA-Ziele, die im Plattformprofil erlaubt sind.
 
 # Ausgabe
 {

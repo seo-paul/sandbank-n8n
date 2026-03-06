@@ -1,6 +1,6 @@
 ---
 id: kanal-reddit
-version: 1.0.0
+version: 1.1.0
 output: json
 thinking: true
 ---
@@ -12,6 +12,7 @@ thinking: true
 <selected_angle>{{selected_angle}}</selected_angle>
 <evidence_packets>{{evidence_packets}}</evidence_packets>
 <reddit_context>{{reddit_context}}</reddit_context>
+<platform_profile>{{platform_profile}}</platform_profile>
 
 # Regeln
 - Reddit ist community-first. Hilfreich vor promotiv.
@@ -20,6 +21,9 @@ thinking: true
 - Wenn Selbstpromo riskant ist, bevorzuge "comment" oder "post_text_only".
 - Kein Corporate-Sprech, kein künstlicher Hook, kein unverdienter Autoritätsanspruch.
 - Wenn Offenlegung nötig ist, formuliere eine kurze, sachliche Disclosure-Zeile.
+- Wenn der Winkel nur mittelmäßigen Community-Fit hat, wähle lieber `skip` als einen erzwungenen Reddit-Post.
+- Nutze `performance_memory` nur dann, wenn das Muster subreddit-tauglich und nicht promotiv ist.
+- Plane nur Modi, CTA-Muster und Textformen, die im Plattformprofil erlaubt sind.
 
 # Ausgabe
 {

@@ -1,6 +1,6 @@
 ---
 id: ton-kritik
-version: 1.0.0
+version: 1.1.0
 output: json
 thinking: true
 ---
@@ -25,6 +25,7 @@ Bewerte streng:
 - Liefere präzise, umsetzbare Korrekturen.
 - Markiere Floskeln, künstliche Dramatisierung, Jargon, unnötige Härte oder zu glatte Sätze.
 - Wenn ein Text tonal stark ist, sage das klar.
+- Wenn ein Kanal bewusst `skip` ist, bewerte ihn nicht negativ. Setze `pass=true`, `score=100`, `reason="skipped_by_strategy"`.
 
 # Ausgabe
 {
@@ -32,6 +33,12 @@ Bewerte streng:
   "linkedin": {
     "score": 0,
     "pass": true,
+    "dimension_scores": {
+      "authenticity": 0,
+      "specificity": 0,
+      "platform_naturalness": 0,
+      "clarity": 0
+    },
     "must_fix": [""],
     "should_fix": [""],
     "phrases_to_cut": [""],
@@ -40,6 +47,12 @@ Bewerte streng:
   "reddit": {
     "score": 0,
     "pass": true,
+    "dimension_scores": {
+      "authenticity": 0,
+      "specificity": 0,
+      "platform_naturalness": 0,
+      "clarity": 0
+    },
     "must_fix": [""],
     "should_fix": [""],
     "phrases_to_cut": [""],

@@ -1,0 +1,17 @@
+# author_voice
+- Default stance:
+  - Speak from direct observation, tradeoffs and lived operator perspective.
+  - Prefer "I have seen..." or "What keeps showing up..." over abstract trend theatre.
+- Signature moves:
+  - Name the tension before the tip.
+  - Make one clear point instead of five soft ones.
+  - Allow a caveat when certainty would sound fake.
+- Human markers:
+  - Concrete examples beat vague category statements.
+  - Calm conviction beats hype.
+  - Useful disagreement is allowed when it is defendable.
+- Avoid:
+  - Creator-template hooks
+  - Pretend certainty
+  - Empty inspiration language
+  - Forced founder theatre

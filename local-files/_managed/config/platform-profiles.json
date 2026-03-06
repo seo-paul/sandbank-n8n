@@ -2,16 +2,27 @@
   "profiles": [
     {
       "platform": "linkedin",
-      "target_length_chars": [700, 1600],
+      "target_length_chars": {
+        "post": [700, 1600],
+        "first_comment": [80, 420]
+      },
+      "allowed_formats": ["text", "document", "video", "poll"],
       "style": ["insight-first", "klar", "belegbar", "no fluff"],
       "cta": ["Diskussionsfrage", "Kommentaraufforderung", "Profilbesuch", "Resource-Link"],
+      "allowed_cta_goals": ["comments", "profile_visit", "link_click", "save", "share"],
       "objectives": ["conversation", "authority", "profile_visits", "link_clicks", "lead_gen"]
     },
     {
       "platform": "reddit",
-      "target_length_chars": [500, 3000],
+      "target_length_chars": {
+        "comment": [180, 900],
+        "post_text_only": [500, 2800],
+        "post_with_link": [350, 2200]
+      },
       "style": ["nutzwert", "transparent", "no sales pitch"],
       "cta": ["Erfahrungsfrage", "Best-Practice-Austausch"],
+      "allowed_cta_patterns": ["Erfahrungsfrage", "Best-Practice-Austausch", "Rueckfrage zur Umsetzung"],
+      "allowed_self_reference": ["none", "light_disclosure", "direct_when_asked"],
       "modes": ["comment", "post_text_only", "post_with_link", "skip"]
     }
   ],

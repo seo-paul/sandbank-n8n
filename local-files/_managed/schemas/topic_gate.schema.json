@@ -5,6 +5,7 @@
   "required": [
     "decision",
     "reason",
+    "selected_angle_id",
     "selected_angle",
     "backup_angle",
     "linkedin_fit",
@@ -16,6 +17,7 @@
   "properties": {
     "decision": { "type": "string", "enum": ["publish", "hold"] },
     "reason": { "type": "string", "minLength": 5 },
+    "selected_angle_id": { "type": "string", "minLength": 2 },
     "selected_angle": {
       "type": "object",
       "required": ["title", "core_thesis", "audience_problem", "why_this_angle_wins", "why_now", "conversion_bridge", "must_use_evidence_refs", "counterpoint_or_caveat"],
@@ -26,7 +28,7 @@
         "why_this_angle_wins": { "type": "string", "minLength": 5 },
         "why_now": { "type": "string", "minLength": 5 },
         "conversion_bridge": { "type": "string", "minLength": 5 },
-        "must_use_evidence_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 2 } },
+        "must_use_evidence_refs": { "type": "array", "minItems": 0, "items": { "type": "string", "minLength": 2 } },
         "counterpoint_or_caveat": { "type": "string", "minLength": 3 }
       },
       "additionalProperties": false
@@ -46,5 +48,25 @@
     "must_avoid": { "type": "array", "items": { "type": "string" } },
     "open_risks": { "type": "array", "items": { "type": "string" } }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": { "const": "publish" }
+        }
+      },
+      "then": {
+        "properties": {
+          "selected_angle": {
+            "properties": {
+              "must_use_evidence_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "additionalProperties": false
 }
