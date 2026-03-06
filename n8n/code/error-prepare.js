@@ -26,7 +26,7 @@ const errorStack = firstString(error.stack, payload.stack, '');
 const lastNode = firstString(payload.lastNodeExecuted, error.node && error.node.name, 'unknown_node');
 
 const runId = 'error-' + executionId + '-' + stamp;
-const errorDir = $env.OBSIDIAN_WORKFLOW_ERROR_DIR || 'Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/Fehlerdetails';
+const errorDir = $env.OBSIDIAN_WORKFLOW_ERROR_DIR || 'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/Fehlerdetails';
 const detailPath = errorDir + '/' + runId + '.md';
 
 const markdown = [

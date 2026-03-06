@@ -64,10 +64,8 @@ const sharedCtxInputContract = [
   { name: 'workflow_intermediate_dir', type: 'string' },
   { name: 'workflow_prompts_dir', type: 'string' },
   { name: 'workflow_context_dir', type: 'string' },
+  { name: 'workflow_global_context_dir', type: 'string' },
   { name: 'workflow_schema_dir', type: 'string' },
-  { name: 'workflow_eval_dir', type: 'string' },
-  { name: 'workflow_eval_dataset_file', type: 'string' },
-  { name: 'workflow_prompt_change_log_file', type: 'string' },
   { name: 'workflow_ssot_manifest_file', type: 'string' },
   { name: 'workflow_runs_file', type: 'string' },
   { name: 'workflow_overview_file', type: 'string' },
@@ -332,22 +330,6 @@ const performance = {
   versionId: 'ac6f4be2-29ac-4bd3-a4f4-a60ef4ce5d84',
 };
 
-const evaluation = {
-  name: 'Evaluationslauf ausfuehren',
-  active: false,
-  nodes: [
-    manualNode('manual-1', 'Manuell starten', [-920, 220]),
-    executeTriggerNode('trigger-subflow', 'Vom Ablauf gestartet', [-920, 360], sharedCtxInputContract),
-    codeNode('code-eval', 'Evaluation Runner ausfuehren', [-620, 290], readCode('evaluation-runner.js')),
-  ],
-  connections: {
-    'Manuell starten': { main: [[{ node: 'Evaluation Runner ausfuehren', type: 'main', index: 0 }]] },
-    'Vom Ablauf gestartet': { main: [[{ node: 'Evaluation Runner ausfuehren', type: 'main', index: 0 }]] },
-  },
-  settings: workflowSettings,
-  versionId: '6b1b7f9b-9555-41e4-a274-3ac71f4f9f04',
-};
-
 writeWorkflow('ablauf-automatisch-steuern.json', orchestrator);
 writeWorkflow('thema-und-quellen-sammeln.json', research);
 writeWorkflow('beitrag-aus-quellen-erstellen.json', content);
@@ -356,4 +338,3 @@ writeWorkflow('ergebnisse-in-obsidian-speichern.json', persist);
 writeWorkflow('system-verbindungen-pruefen.json', system);
 writeWorkflow('fehlerlauf-klar-dokumentieren.json', errorWorkflow);
 writeWorkflow('performance-zurueckfuehren.json', performance);
-writeWorkflow('evaluationslauf-ausfuehren.json', evaluation);

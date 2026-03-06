@@ -82,19 +82,11 @@
               "type": "string"
             },
             {
+              "name": "workflow_global_context_dir",
+              "type": "string"
+            },
+            {
               "name": "workflow_schema_dir",
-              "type": "string"
-            },
-            {
-              "name": "workflow_eval_dir",
-              "type": "string"
-            },
-            {
-              "name": "workflow_eval_dataset_file",
-              "type": "string"
-            },
-            {
-              "name": "workflow_prompt_change_log_file",
               "type": "string"
             },
             {

@@ -22,10 +22,11 @@ if [[ "$OBSIDIAN_REST_URL_EFFECTIVE" == *"host.docker.internal"* ]]; then
   OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_EFFECTIVE/host.docker.internal/localhost}"
 fi
 
-WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Prompts}"
-WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Kontext}"
-WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Schemas}"
-WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE:-Marketing/Social-Media/Beitraege/Workflow/SSOT/manifest.json}"
+WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts}"
+WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext}"
+WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/Kontext}"
+WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas}"
+WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/SSOT/manifest.json}"
 
 CURL_INSECURE=()
 if [[ "${OBSIDIAN_ALLOW_INSECURE_TLS:-false}" == "true" ]]; then
@@ -72,7 +73,7 @@ PROMPT_PAIRS=(
   "performance_auswertung:performance-auswertung.md"
 )
 
-CONTEXT_PAIRS=(
+GLOBAL_CONTEXT_PAIRS=(
   "brand_profile:brand.md"
   "audience_profile:audience.md"
   "offer_context:offer.md"
@@ -80,6 +81,9 @@ CONTEXT_PAIRS=(
   "proof_library:proof-library.md"
   "red_lines:red-lines.md"
   "cta_goals:cta-goals.md"
+)
+
+LOCAL_CONTEXT_PAIRS=(
   "reddit_context:reddit-communities.md"
   "linkedin_context:linkedin-context.md"
 )
@@ -102,10 +106,16 @@ for pair in "${PROMPT_PAIRS[@]}"; do
   assert_non_empty_file "local-files/_managed/prompts/${file}" "prompt:${key}"
 done
 
-for pair in "${CONTEXT_PAIRS[@]}"; do
+for pair in "${GLOBAL_CONTEXT_PAIRS[@]}"; do
   key="${pair%%:*}"
   file="${pair#*:}"
-  assert_non_empty_file "local-files/_managed/context/${file}" "context:${key}"
+  assert_non_empty_file "local-files/_managed/context/global/${file}" "context:${key}"
+done
+
+for pair in "${LOCAL_CONTEXT_PAIRS[@]}"; do
+  key="${pair%%:*}"
+  file="${pair#*:}"
+  assert_non_empty_file "local-files/_managed/context/workflow/${file}" "context:${key}"
 done
 
 for pair in "${SCHEMA_PAIRS[@]}"; do
@@ -119,9 +129,14 @@ for pair in "${PROMPT_PAIRS[@]}"; do
   put_file "local-files/_managed/prompts/${file}" "${WORKFLOW_PROMPTS_DIR}/${file}"
 done
 
-for pair in "${CONTEXT_PAIRS[@]}"; do
+for pair in "${GLOBAL_CONTEXT_PAIRS[@]}"; do
   file="${pair#*:}"
-  put_file "local-files/_managed/context/${file}" "${WORKFLOW_CONTEXT_DIR}/${file}"
+  put_file "local-files/_managed/context/global/${file}" "${WORKFLOWS_CONTEXT_DIR}/${file}"
+done
+
+for pair in "${LOCAL_CONTEXT_PAIRS[@]}"; do
+  file="${pair#*:}"
+  put_file "local-files/_managed/context/workflow/${file}" "${WORKFLOW_CONTEXT_DIR}/${file}"
 done
 
 for pair in "${SCHEMA_PAIRS[@]}"; do
@@ -132,7 +147,7 @@ done
 MANIFEST_FILE="$(mktemp)"
 trap 'rm -f "$MANIFEST_FILE"' EXIT
 
-python3 - <<'PY' "$MANIFEST_FILE" "$(printf '%s\n' "${PROMPT_PAIRS[@]}")" "$(printf '%s\n' "${CONTEXT_PAIRS[@]}")" "$(printf '%s\n' "${SCHEMA_PAIRS[@]}")"
+python3 - <<'PY' "$MANIFEST_FILE" "$(printf '%s\n' "${PROMPT_PAIRS[@]}")" "$(printf '%s\n' "${GLOBAL_CONTEXT_PAIRS[@]}")" "$(printf '%s\n' "${LOCAL_CONTEXT_PAIRS[@]}")" "$(printf '%s\n' "${SCHEMA_PAIRS[@]}")"
 import datetime as dt
 import hashlib
 import json
@@ -141,8 +156,9 @@ import sys
 
 manifest_path = pathlib.Path(sys.argv[1])
 prompt_pairs = [line for line in sys.argv[2].splitlines() if line.strip()]
-context_pairs = [line for line in sys.argv[3].splitlines() if line.strip()]
-schema_pairs = [line for line in sys.argv[4].splitlines() if line.strip()]
+global_context_pairs = [line for line in sys.argv[3].splitlines() if line.strip()]
+local_context_pairs = [line for line in sys.argv[4].splitlines() if line.strip()]
+schema_pairs = [line for line in sys.argv[5].splitlines() if line.strip()]
 
 items = {}
 
@@ -161,9 +177,13 @@ for pair in prompt_pairs:
     key, file_name = pair.split(':', 1)
     items[f'prompt:{key}'] = text_hash(f'local-files/_managed/prompts/{file_name}')
 
-for pair in context_pairs:
+for pair in global_context_pairs:
     key, file_name = pair.split(':', 1)
-    items[f'context:{key}'] = text_hash(f'local-files/_managed/context/{file_name}')
+    items[f'context:{key}'] = text_hash(f'local-files/_managed/context/global/{file_name}')
+
+for pair in local_context_pairs:
+    key, file_name = pair.split(':', 1)
+    items[f'context:{key}'] = text_hash(f'local-files/_managed/context/workflow/{file_name}')
 
 for pair in schema_pairs:
     key, file_name = pair.split(':', 1)

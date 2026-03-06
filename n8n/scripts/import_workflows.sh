@@ -22,7 +22,6 @@ if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
     "Ablauf automatisch steuern"
     "Fehlerlauf klar dokumentieren"
     "Performance zurueckfuehren"
-    "Evaluationslauf ausfuehren"
   )
 
   quoted_names=""

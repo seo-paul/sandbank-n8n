@@ -24,7 +24,15 @@ if (requestedModel !== pinnedModel) {
   throw new Error('Ungueltiges Modell: ' + requestedModel + '. Erlaubt ist nur ' + pinnedModel + '.');
 }
 
-const workflowDir = input.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow';
+const workflowDir =
+  input.workflow_dir ||
+  $env.OBSIDIAN_WORKFLOW_DIR ||
+  'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow';
+const workflowsDir = input.workflows_dir || $env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows';
+const globalContextDir =
+  input.workflow_global_context_dir ||
+  $env.OBSIDIAN_WORKFLOWS_CONTEXT_DIR ||
+  (workflowsDir + '/Kontext');
 
 const ctx = {
   run_id: runId,
@@ -55,10 +63,11 @@ const ctx = {
   workflow_intermediate_dir: input.workflow_intermediate_dir || $env.OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR || (workflowDir + '/Zwischenergebnisse'),
   workflow_prompts_dir: input.workflow_prompts_dir || $env.OBSIDIAN_WORKFLOW_PROMPTS_DIR || (workflowDir + '/Prompts'),
   workflow_context_dir: input.workflow_context_dir || $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR || (workflowDir + '/Kontext'),
+  workflow_global_context_dir: globalContextDir,
   workflow_schema_dir: input.workflow_schema_dir || $env.OBSIDIAN_WORKFLOW_SCHEMA_DIR || (workflowDir + '/Schemas'),
 
   workflow_runs_file: input.workflow_runs_file || $env.OBSIDIAN_WORKFLOW_RUNS_FILE || (workflowDir + '/Ergebnisse/00-Runs.md'),
-  workflow_overview_file: input.workflow_overview_file || $env.OBSIDIAN_WORKFLOW_OVERVIEW_FILE || (workflowDir + '/Workflow Übersicht.md'),
+  workflow_overview_file: input.workflow_overview_file || $env.OBSIDIAN_WORKFLOW_OVERVIEW_FILE || (workflowDir + '/Beitraege-Workflow-Uebersicht.md'),
   workflow_ssot_manifest_file: input.workflow_ssot_manifest_file || $env.OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE || (workflowDir + '/SSOT/manifest.json'),
 
   obsidian_rest_url: input.obsidian_rest_url || $env.OBSIDIAN_REST_URL || '',

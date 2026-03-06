@@ -28,7 +28,7 @@ if [[ "$APPLY" == "true" ]]; then
 fi
 
 VAULT_FS_PATH="${OBSIDIAN_VAULT_FS_PATH:-/Users/${USER}/Library/Mobile Documents/iCloud~md~obsidian/Documents/sandbank-obsidian}"
-WORKFLOW_REL="${OBSIDIAN_WORKFLOW_DIR:-Marketing/Social-Media/Beitraege/Workflow}"
+WORKFLOW_REL="${OBSIDIAN_WORKFLOW_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow}"
 WORKFLOW_REL="$(strip_quotes "$WORKFLOW_REL")"
 WORKFLOW_ARCHIVE_REL="${OBSIDIAN_WORKFLOW_ARCHIVE_DIR:-Marketing/Social-Media/Beitraege/_Archiv/Workflow}"
 WORKFLOW_ARCHIVE_REL="$(strip_quotes "$WORKFLOW_ARCHIVE_REL")"

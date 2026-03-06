@@ -19,7 +19,7 @@ strip_quotes() {
   printf '%s' "$value"
 }
 
-WORKFLOW_REL="${OBSIDIAN_WORKFLOW_DIR:-Marketing/Social-Media/Beitraege/Workflow}"
+WORKFLOW_REL="${OBSIDIAN_WORKFLOW_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow}"
 WORKFLOW_REL="$(strip_quotes "$WORKFLOW_REL")"
 
 WORKFLOW_ARCHIVE_REL="${OBSIDIAN_WORKFLOW_ARCHIVE_DIR:-Marketing/Social-Media/Beitraege/_Archiv/Workflow}"
@@ -60,12 +60,11 @@ archive_path_if_exists() {
 }
 
 archive_path_if_exists "_legacy"
-archive_path_if_exists "Workflow Übersicht.md"
+archive_path_if_exists "Beitraege-Workflow-Uebersicht.md"
 archive_path_if_exists "Ergebnisse/00-Runs.md"
 archive_path_if_exists "Ergebnisse/Laufdetails"
 archive_path_if_exists "Ergebnisse/Fehlerdetails"
 archive_path_if_exists "Ergebnisse/Performance"
-archive_path_if_exists "Evaluations"
 
 for file in "${WORKFLOW_FS_DIR}"/Zwischenergebnisse/*.md; do
   [[ -f "$file" ]] || continue
@@ -79,7 +78,7 @@ KNOWN_TOP_LEVEL=(
   "Schemas"
   "SSOT"
   "Zwischenergebnisse"
-  "Workflow Übersicht.md"
+  "Beitraege-Workflow-Uebersicht.md"
 )
 
 for entry in "${WORKFLOW_FS_DIR}"/*; do
@@ -117,7 +116,7 @@ cat > "${WORKFLOW_FS_DIR}/Ergebnisse/00-Runs.md" <<'EOF'
 |---|---|---|---|---|---|---|---|---|---:|---:|---|---|
 EOF
 
-cat > "${WORKFLOW_FS_DIR}/Workflow Übersicht.md" <<'EOF'
+cat > "${WORKFLOW_FS_DIR}/Beitraege-Workflow-Uebersicht.md" <<'EOF'
 # Workflow Uebersicht
 
 | Workflow | Schritt | Zwischenergebnis | Zweck | Beschreibung |

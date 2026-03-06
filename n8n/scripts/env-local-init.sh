@@ -191,7 +191,17 @@ fi
 
 current_workflow_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DIR")"
 if [[ -z "$current_workflow_dir" || "$current_workflow_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Marketing/Social-Media/Beitraege/Workflow\""
+  set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow\""
+fi
+
+current_workflows_dir="$(get_env_value "OBSIDIAN_WORKFLOWS_DIR")"
+if [[ -z "$current_workflows_dir" || "$current_workflows_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOWS_DIR" "\"Workflows\""
+fi
+
+current_workflows_context_dir="$(get_env_value "OBSIDIAN_WORKFLOWS_CONTEXT_DIR")"
+if [[ -z "$current_workflows_context_dir" || "$current_workflows_context_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOWS_CONTEXT_DIR" "\"Workflows/Kontext\""
 fi
 
 current_workflow_archive_dir="$(get_env_value "OBSIDIAN_WORKFLOW_ARCHIVE_DIR")"
@@ -201,52 +211,52 @@ fi
 
 current_workflow_results_dir="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR")"
 if [[ -z "$current_workflow_results_dir" || "$current_workflow_results_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse\""
+  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse\""
 fi
 
 current_workflow_detail_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR")"
 if [[ -z "$current_workflow_detail_dir" || "$current_workflow_detail_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/Laufdetails\""
+  set_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/Laufdetails\""
 fi
 
 current_workflow_error_dir="$(get_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR")"
 if [[ -z "$current_workflow_error_dir" || "$current_workflow_error_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/Fehlerdetails\""
+  set_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/Fehlerdetails\""
 fi
 
 current_workflow_intermediate_dir="$(get_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR")"
 if [[ -z "$current_workflow_intermediate_dir" || "$current_workflow_intermediate_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Zwischenergebnisse\""
+  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Zwischenergebnisse\""
 fi
 
 current_workflow_prompts_dir="$(get_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR")"
 if [[ -z "$current_workflow_prompts_dir" || "$current_workflow_prompts_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Prompts\""
+  set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts\""
 fi
 
 current_workflow_context_dir="$(get_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR")"
 if [[ -z "$current_workflow_context_dir" || "$current_workflow_context_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Kontext\""
+  set_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext\""
 fi
 
 current_workflow_schema_dir="$(get_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR")"
 if [[ -z "$current_workflow_schema_dir" || "$current_workflow_schema_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Schemas\""
+  set_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas\""
 fi
 
 current_workflow_ssot_manifest_file="$(get_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE")"
 if [[ -z "$current_workflow_ssot_manifest_file" || "$current_workflow_ssot_manifest_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/SSOT/manifest.json\""
+  set_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/SSOT/manifest.json\""
 fi
 
 current_workflow_runs_file="$(get_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE")"
 if [[ -z "$current_workflow_runs_file" || "$current_workflow_runs_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Ergebnisse/00-Runs.md\""
+  set_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/00-Runs.md\""
 fi
 
 current_workflow_overview_file="$(get_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE")"
 if [[ -z "$current_workflow_overview_file" || "$current_workflow_overview_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Workflow Übersicht.md\""
+  set_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Beitraege-Workflow-Uebersicht.md\""
 fi
 
 # Ensure local model defaults are set

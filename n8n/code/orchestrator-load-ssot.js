@@ -229,16 +229,29 @@ const promptPaths = {
   performance_auswertung: ctx.workflow_prompts_dir + '/performance-auswertung.md',
 };
 
+const globalContextDir =
+  String(
+    ctx.workflow_global_context_dir ||
+    $env.OBSIDIAN_WORKFLOWS_CONTEXT_DIR ||
+    (($env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows') + '/Kontext')
+  );
+const workflowLocalContextDir =
+  String(
+    ctx.workflow_context_dir ||
+    $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR ||
+    ((ctx.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow') + '/Kontext')
+  );
+
 const contextPaths = {
-  brand_profile: ctx.workflow_context_dir + '/brand.md',
-  audience_profile: ctx.workflow_context_dir + '/audience.md',
-  offer_context: ctx.workflow_context_dir + '/offer.md',
-  voice_guide: ctx.workflow_context_dir + '/voice.md',
-  proof_library: ctx.workflow_context_dir + '/proof-library.md',
-  red_lines: ctx.workflow_context_dir + '/red-lines.md',
-  cta_goals: ctx.workflow_context_dir + '/cta-goals.md',
-  reddit_context: ctx.workflow_context_dir + '/reddit-communities.md',
-  linkedin_context: ctx.workflow_context_dir + '/linkedin-context.md',
+  brand_profile: globalContextDir + '/brand.md',
+  audience_profile: globalContextDir + '/audience.md',
+  offer_context: globalContextDir + '/offer.md',
+  voice_guide: globalContextDir + '/voice.md',
+  proof_library: globalContextDir + '/proof-library.md',
+  red_lines: globalContextDir + '/red-lines.md',
+  cta_goals: globalContextDir + '/cta-goals.md',
+  reddit_context: workflowLocalContextDir + '/reddit-communities.md',
+  linkedin_context: workflowLocalContextDir + '/linkedin-context.md',
 };
 
 const schemaPaths = {

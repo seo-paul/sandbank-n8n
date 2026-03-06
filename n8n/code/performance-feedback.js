@@ -18,10 +18,24 @@ if (model !== 'qwen3.5:27b') {
 const runIdBase = String(input.run_id || 'perf-' + (($execution && $execution.id) ? String($execution.id) : 'manual'));
 const runId = runIdBase + '-' + nowIso().replace(/[-:.TZ]/g, '').slice(0, 14);
 
-const workflowDir = String(input.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow');
+const workflowDir = String(
+  input.workflow_dir ||
+  $env.OBSIDIAN_WORKFLOW_DIR ||
+  'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow'
+);
+const workflowsDir = String(input.workflows_dir || $env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows');
+const globalContextDir = String(
+  input.workflow_global_context_dir ||
+  $env.OBSIDIAN_WORKFLOWS_CONTEXT_DIR ||
+  (workflowsDir + '/Kontext')
+);
+const workflowLocalContextDir = String(
+  input.workflow_context_dir ||
+  $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR ||
+  (workflowDir + '/Kontext')
+);
 const resultsDir = String(input.workflow_results_dir || $env.OBSIDIAN_WORKFLOW_RESULTS_DIR || (workflowDir + '/Ergebnisse'));
 const promptsDir = String(input.workflow_prompts_dir || $env.OBSIDIAN_WORKFLOW_PROMPTS_DIR || (workflowDir + '/Prompts'));
-const contextDir = String(input.workflow_context_dir || $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR || (workflowDir + '/Kontext'));
 const schemaDir = String(input.workflow_schema_dir || $env.OBSIDIAN_WORKFLOW_SCHEMA_DIR || (workflowDir + '/Schemas'));
 
 const obsidianRestUrl = String(input.obsidian_rest_url || $env.OBSIDIAN_REST_URL || '');
@@ -261,15 +275,15 @@ const prompts = {
 };
 
 const context = {
-  brand_profile: input.context && input.context.brand_profile ? String(input.context.brand_profile) : await readRequired.call(this, contextDir + '/brand.md', 'brand_profile'),
-  audience_profile: input.context && input.context.audience_profile ? String(input.context.audience_profile) : await readRequired.call(this, contextDir + '/audience.md', 'audience_profile'),
-  offer_context: input.context && input.context.offer_context ? String(input.context.offer_context) : await readRequired.call(this, contextDir + '/offer.md', 'offer_context'),
-  voice_guide: input.context && input.context.voice_guide ? String(input.context.voice_guide) : await readRequired.call(this, contextDir + '/voice.md', 'voice_guide'),
-  proof_library: input.context && input.context.proof_library ? String(input.context.proof_library) : await readRequired.call(this, contextDir + '/proof-library.md', 'proof_library'),
-  red_lines: input.context && input.context.red_lines ? String(input.context.red_lines) : await readRequired.call(this, contextDir + '/red-lines.md', 'red_lines'),
-  cta_goals: input.context && input.context.cta_goals ? String(input.context.cta_goals) : await readRequired.call(this, contextDir + '/cta-goals.md', 'cta_goals'),
-  linkedin_context: input.context && input.context.linkedin_context ? String(input.context.linkedin_context) : await readRequired.call(this, contextDir + '/linkedin-context.md', 'linkedin_context'),
-  reddit_context: input.context && input.context.reddit_context ? String(input.context.reddit_context) : await readRequired.call(this, contextDir + '/reddit-communities.md', 'reddit_context'),
+  brand_profile: input.context && input.context.brand_profile ? String(input.context.brand_profile) : await readRequired.call(this, globalContextDir + '/brand.md', 'brand_profile'),
+  audience_profile: input.context && input.context.audience_profile ? String(input.context.audience_profile) : await readRequired.call(this, globalContextDir + '/audience.md', 'audience_profile'),
+  offer_context: input.context && input.context.offer_context ? String(input.context.offer_context) : await readRequired.call(this, globalContextDir + '/offer.md', 'offer_context'),
+  voice_guide: input.context && input.context.voice_guide ? String(input.context.voice_guide) : await readRequired.call(this, globalContextDir + '/voice.md', 'voice_guide'),
+  proof_library: input.context && input.context.proof_library ? String(input.context.proof_library) : await readRequired.call(this, globalContextDir + '/proof-library.md', 'proof_library'),
+  red_lines: input.context && input.context.red_lines ? String(input.context.red_lines) : await readRequired.call(this, globalContextDir + '/red-lines.md', 'red_lines'),
+  cta_goals: input.context && input.context.cta_goals ? String(input.context.cta_goals) : await readRequired.call(this, globalContextDir + '/cta-goals.md', 'cta_goals'),
+  linkedin_context: input.context && input.context.linkedin_context ? String(input.context.linkedin_context) : await readRequired.call(this, workflowLocalContextDir + '/linkedin-context.md', 'linkedin_context'),
+  reddit_context: input.context && input.context.reddit_context ? String(input.context.reddit_context) : await readRequired.call(this, workflowLocalContextDir + '/reddit-communities.md', 'reddit_context'),
   campaign_goal: String(input.campaign_goal || 'performance_learning'),
   output_language: String(input.output_language || 'de'),
 };

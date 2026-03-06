@@ -11,7 +11,6 @@ Diese JSON-Dateien sind fuer den lokalen n8n-Import vorbereitet.
 - `ablauf-automatisch-steuern.json` -> `Ablauf automatisch steuern`
 - `fehlerlauf-klar-dokumentieren.json` -> `Fehlerlauf klar dokumentieren`
 - `performance-zurueckfuehren.json` -> `Performance zurueckfuehren`
-- `evaluationslauf-ausfuehren.json` -> `Evaluationslauf ausfuehren`
 
 Code-Node Quellen:
 - `n8n/code/*.js`
@@ -39,8 +38,9 @@ node n8n/scripts/build_workflows_from_code.mjs
 ## Hinweise
 - Keine X/Twitter-API enthalten.
 - Reddit wird lokal ueber SearXNG/`site:reddit.com` abgedeckt.
-- Prompt-SSOT liegt in Obsidian unter `Marketing/Social-Media/Beitraege/Workflow/Prompts`.
-- Kontext-SSOT liegt in Obsidian unter `Marketing/Social-Media/Beitraege/Workflow/Kontext`.
+- Prompt-SSOT liegt in Obsidian unter `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts`.
+- Globaler Kontext-SSOT liegt in Obsidian unter `Workflows/Kontext`.
+- Workflowlokaler Kontext liegt unter `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext`.
 - Ergebnisstruktur in Obsidian:
   - `Ergebnisse/00-Runs.md`
   - `Ergebnisse/Laufdetails/<run_id>.md`
