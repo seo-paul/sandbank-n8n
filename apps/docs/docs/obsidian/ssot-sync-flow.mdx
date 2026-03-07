@@ -1,0 +1,35 @@
+---
+id: ssot-sync-flow
+title: SSOT Sync Flow
+slug: /ssot-sync-flow
+---
+
+# SSOT Sync Flow
+
+## Ziel
+Bidirektionale Synchronisation zwischen Repo-Mirror und Obsidian mit klaren Guards.
+
+## Pull (Obsidian -> Repo)
+- Kommando: `make pull-ssot`
+- Script: `n8n/scripts/pull_obsidian_ssot.sh`
+- Wirkung: aktualisiert `local-files/_managed/{prompts,context,config,schemas}` aus Obsidian.
+
+## Sync (Repo -> Obsidian)
+- Kommando: `make sync-ssot`
+- Script: `n8n/scripts/sync_obsidian_ssot.sh`
+- Wirkung: schreibt Repo-Mirror nach Obsidian zurueck.
+
+## Manifest Refresh (Obsidian -> Manifest)
+- Kommando: `make refresh-obsidian-manifest`
+- Script: `n8n/scripts/refresh_obsidian_ssot_manifest.sh`
+- Wirkung: erzeugt/aktualisiert den Hash-Vertrag in `Workflows/social-content/_system/manifest.json`.
+
+## BI Guide Varianten
+- `make pull-bi-guide-ssot`
+- `make sync-bi-guide-ssot`
+- `make refresh-bi-guide-manifest`
+
+## Guards
+- Fehlende/leere SSOT-Dateien brechen den Sync hart ab.
+- JSON-Dateien werden kanonisiert gehasht, Textdateien normalisiert gehasht.
+- Laufzeit-Workflow soll nur auf manifest-validierten Inputs laufen.

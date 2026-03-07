@@ -1,0 +1,31 @@
+---
+id: sync-and-manifest-scripts
+title: Sync and Manifest Scripts
+slug: /scripts/sync-and-manifest-scripts
+---
+
+# Sync and Manifest Scripts
+
+## Purpose
+Diese Skripte halten Obsidian-SSOT und Repo-Mirror konsistent.
+
+## Script Matrix
+| Aufgabe | Social | BI Guide |
+|---|---|---|
+| Pull Obsidian -> Repo | `pull_obsidian_ssot.sh` | `pull_obsidian_bi_guide_ssot.sh` |
+| Sync Repo -> Obsidian | `sync_obsidian_ssot.sh` | `sync_obsidian_bi_guide_ssot.sh` |
+| Manifest Refresh | `refresh_obsidian_ssot_manifest.sh` | `refresh_obsidian_bi_guide_manifest.sh` |
+
+## Adapter
+- `n8n/scripts/obsidian_rest_fs_adapter.py`
+- `n8n/scripts/start_obsidian_rest_fs_adapter.sh`
+- `n8n/scripts/stop_obsidian_rest_fs_adapter.sh`
+
+## Entscheidung FS vs REST
+- Primär: direkter Dateisystempfad (`OBSIDIAN_VAULT_FS_PATH`)
+- Fallback: REST (`OBSIDIAN_REST_URL` + `OBSIDIAN_REST_API_KEY`)
+
+## Beziehung
+Technischer Unterbau fuer:
+- [/obsidian/ssot-sync-flow](/obsidian/ssot-sync-flow)
+- [/obsidian/ssot-manifest-contract](/obsidian/ssot-manifest-contract)

@@ -1,0 +1,44 @@
+---
+id: obsidian-rest-adapter
+title: Obsidian REST Adapter
+slug: /obsidian-rest-adapter
+---
+
+# Obsidian Adapter
+
+## Zweck
+Der Adapter schreibt und liest SSOT-Dateien sowie Laufartefakte in Obsidian.
+
+## Komponenten
+- Adapter-Server: `n8n/scripts/obsidian_rest_fs_adapter.py`
+- Start/Stop Wrapper:
+  - `n8n/scripts/start_obsidian_rest_fs_adapter.sh`
+  - `n8n/scripts/stop_obsidian_rest_fs_adapter.sh`
+
+## API-Verhalten
+- `GET /vault/<path>`: Datei lesen
+- `PUT /vault/<path>`: Datei schreiben
+- `POST /healthz`: Health-Check
+
+Pfadnormalisierung verhindert Directory-Traversal ausserhalb des Vault-Roots.
+
+## Verwendet von
+- SSOT Pull/Sync/Manifest-Skripte
+- Persistenz- und Fehler-Workflows
+- Human-Review-nahe Obsidian-Schreibpfade
+
+## Pflichtparameter
+- `OBSIDIAN_REST_URL`
+- `OBSIDIAN_REST_API_KEY`
+- `OBSIDIAN_ALLOW_INSECURE_TLS`
+- `OBSIDIAN_VAULT_FS_PATH`
+
+## Betriebsregel
+- Schreib-/Lesezugriffe mit Retry auf transiente Fehler.
+- SSOT-Dateien muessen vorhanden und nicht leer sein.
+- Maintenance-Skripte bevorzugen `OBSIDIAN_VAULT_FS_PATH`; REST ist Fallback.
+
+## Security Notes
+- API-Key-basierte Autorisierung (`Bearer`)
+- Optionales Insecure-TLS nur fuer lokale/dev-nahe Szenarien
+- Keine Freigabe ausserhalb des konfigurierten Vault-Roots

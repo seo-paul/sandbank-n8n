@@ -1,0 +1,34 @@
+---
+id: code-node-map
+title: Code Node Map
+slug: /workflows/code-node-map
+---
+
+# Code Node Map
+
+## Source of Truth
+- Workflow Blueprints: `n8n/workflows/*.json`
+- Code Nodes: `n8n/code/*.js`
+- Generator: `n8n/scripts/build_workflows_from_code.mjs`
+
+## Mapping
+| Workflow JSON | Workflow Name | Code Sources |
+|---|---|---|
+| `ablauf-automatisch-steuern.json` | Ablauf automatisch steuern | `orchestrator-init.js`, `orchestrator-load-ssot.js`, `orchestrator-return.js` |
+| `thema-und-quellen-sammeln.json` | Thema und Quellen sammeln | `research-pipeline.js` |
+| `beitrag-aus-quellen-erstellen.json` | Beitrag aus Quellen erstellen | `content-pipeline.js` |
+| `human-review-pruefen.json` | Human Review pruefen | `human-review-gate.js` |
+| `ergebnisse-in-obsidian-speichern.json` | Ergebnisse in Obsidian speichern | `persist-results.js` |
+| `system-verbindungen-pruefen.json` | System Verbindungen pruefen | HTTP/Trigger-Knoten, kein Code-Node |
+| `fehlerlauf-klar-dokumentieren.json` | Fehlerlauf klar dokumentieren | `error-prepare.js` |
+| `performance-zurueckfuehren.json` | Performance zurueckfuehren | `performance-feedback.js` |
+| `bi-guide-ablauf-automatisch-steuern.json` | BI-Guide Ablauf automatisch steuern | `bi-guide-orchestrator-init.js`, `bi-guide-orchestrator-load-ssot.js`, `bi-guide-orchestrator-return.js` |
+| `bi-guide-chancen-aktualisieren.json` | BI-Guide Chancen aktualisieren | `bi-guide-orchestrator-init.js`, `bi-guide-orchestrator-load-ssot.js`, `bi-guide-orchestrator-return.js` |
+| `bi-guide-quellen-und-planung.json` | BI-Guide Quellen und Planung | `bi-guide-source-pipeline.js` |
+| `bi-guide-artikelpaket-erstellen.json` | BI-Guide Artikelpaket erstellen | `bi-guide-content-pipeline.js` |
+| `bi-guide-human-review-pruefen.json` | BI-Guide Human Review pruefen | `human-review-gate.js` |
+| `bi-guide-ergebnisse-in-obsidian-speichern.json` | BI-Guide Ergebnisse in Obsidian speichern | `bi-guide-persist-results.js` |
+| `bi-guide-fehlerlauf-klar-dokumentieren.json` | BI-Guide Fehlerlauf klar dokumentieren | `bi-guide-error-prepare.js` |
+
+## Change Rule
+Aenderungen an Code-Node-Logik erfolgen in `n8n/code/*.js`; danach wird der JSON-Export deterministisch neu gebaut.

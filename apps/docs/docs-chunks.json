@@ -1,0 +1,1805 @@
+{
+  "generated_at": "2026-03-07T09:39:56.294Z",
+  "chunks": [
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#0",
+      "heading": "Glossary",
+      "text": "Glossary"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#1",
+      "heading": "SSOT",
+      "text": "SSOT"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#2",
+      "heading": "Obsidian Mirror",
+      "text": "Obsidian Mirror"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#3",
+      "heading": "Stage Contract",
+      "text": "Stage Contract"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#4",
+      "heading": "Manifest Parity",
+      "text": "Manifest Parity"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#5",
+      "heading": "Runbook",
+      "text": "Runbook"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#6",
+      "heading": "Workflow Blueprint",
+      "text": "Workflow Blueprint"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#7",
+      "heading": "Social Core",
+      "text": "Social Core"
+    },
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "chunk_id": "docs/00-overview/glossary.mdx#8",
+      "heading": "BI Guide",
+      "text": "BI Guide"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#0",
+      "heading": "Platform Overview",
+      "text": "Platform Overview"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#1",
+      "heading": "Betriebsmodell",
+      "text": "Betriebsmodell"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#2",
+      "heading": "Zielbild",
+      "text": "Zielbild"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#3",
+      "heading": "Umsetzungsphasen",
+      "text": "Umsetzungsphasen"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#4",
+      "heading": "Implementation Plan",
+      "text": "Implementation Plan"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#5",
+      "heading": "Phase 1 Contracts + SSOT",
+      "text": "Phase 1 Contracts + SSOT"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#6",
+      "heading": "Phase 2 Research + Content Architecture",
+      "text": "Phase 2 Research + Content Architecture"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#7",
+      "heading": "Phase 3 Operational Gates",
+      "text": "Phase 3 Operational Gates"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#8",
+      "heading": "Phase 4 Structure Cleanup",
+      "text": "Phase 4 Structure Cleanup"
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "chunk_id": "docs/00-overview/platform-overview.mdx#9",
+      "heading": "Phase 5 Hardening + Cutover",
+      "text": "Phase 5 Hardening + Cutover"
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "chunk_id": "docs/00-overview/quickstart.mdx#0",
+      "heading": "Cutover Checklist",
+      "text": "Cutover Checklist"
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "chunk_id": "docs/00-overview/quickstart.mdx#1",
+      "heading": "Vorher",
+      "text": "Vorher"
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "chunk_id": "docs/00-overview/quickstart.mdx#2",
+      "heading": "Build + Import",
+      "text": "Build + Import"
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "chunk_id": "docs/00-overview/quickstart.mdx#3",
+      "heading": "Workflow-Set",
+      "text": "Workflow-Set"
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "chunk_id": "docs/00-overview/quickstart.mdx#4",
+      "heading": "SSOT",
+      "text": "SSOT"
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "chunk_id": "docs/00-overview/quickstart.mdx#5",
+      "heading": "Obsidian Struktur",
+      "text": "Obsidian Struktur"
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "chunk_id": "docs/00-overview/quickstart.mdx#6",
+      "heading": "Runtime",
+      "text": "Runtime"
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "chunk_id": "docs/adr/ADR-0001-contract-ssot.mdx#0",
+      "heading": "ADR-0001: Stage-Contract SSOT",
+      "text": "ADR-0001: Stage-Contract SSOT"
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "chunk_id": "docs/adr/ADR-0001-contract-ssot.mdx#1",
+      "heading": "Status",
+      "text": "Status"
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "chunk_id": "docs/adr/ADR-0001-contract-ssot.mdx#2",
+      "heading": "Context",
+      "text": "Context"
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "chunk_id": "docs/adr/ADR-0001-contract-ssot.mdx#3",
+      "heading": "Decision",
+      "text": "Decision"
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "chunk_id": "docs/adr/ADR-0001-contract-ssot.mdx#4",
+      "heading": "Consequences",
+      "text": "Consequences"
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "chunk_id": "docs/adr/ADR-0001-contract-ssot.mdx#5",
+      "heading": "Alternatives Considered",
+      "text": "Alternatives Considered"
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "chunk_id": "docs/adr/ADR-0001-contract-ssot.mdx#6",
+      "heading": "Validation/Monitoring",
+      "text": "Validation/Monitoring"
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "chunk_id": "docs/adr/ADR-0002-ssot-feedback-loop.mdx#0",
+      "heading": "ADR-0002 SSOT and Feedback Loop",
+      "text": "ADR-0002 SSOT and Feedback Loop"
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "chunk_id": "docs/adr/ADR-0002-ssot-feedback-loop.mdx#1",
+      "heading": "Status",
+      "text": "Status"
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "chunk_id": "docs/adr/ADR-0002-ssot-feedback-loop.mdx#2",
+      "heading": "Context",
+      "text": "Context"
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "chunk_id": "docs/adr/ADR-0002-ssot-feedback-loop.mdx#3",
+      "heading": "Decision",
+      "text": "Decision"
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "chunk_id": "docs/adr/ADR-0002-ssot-feedback-loop.mdx#4",
+      "heading": "Consequences",
+      "text": "Consequences"
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "chunk_id": "docs/adr/ADR-0002-ssot-feedback-loop.mdx#5",
+      "heading": "Alternatives Considered",
+      "text": "Alternatives Considered"
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "chunk_id": "docs/adr/ADR-0002-ssot-feedback-loop.mdx#6",
+      "heading": "Validation",
+      "text": "Validation"
+    },
+    {
+      "file": "docs/adr/adr-overview.mdx",
+      "chunk_id": "docs/adr/adr-overview.mdx#0",
+      "heading": "ADR Overview",
+      "text": "ADR Overview"
+    },
+    {
+      "file": "docs/adr/adr-overview.mdx",
+      "chunk_id": "docs/adr/adr-overview.mdx#1",
+      "heading": "Zweck",
+      "text": "Zweck"
+    },
+    {
+      "file": "docs/adr/adr-overview.mdx",
+      "chunk_id": "docs/adr/adr-overview.mdx#2",
+      "heading": "Enthaltene ADRs",
+      "text": "Enthaltene ADRs"
+    },
+    {
+      "file": "docs/adr/adr-overview.mdx",
+      "chunk_id": "docs/adr/adr-overview.mdx#3",
+      "heading": "Index",
+      "text": "Index"
+    },
+    {
+      "file": "docs/adr/adr-overview.mdx",
+      "chunk_id": "docs/adr/adr-overview.mdx#4",
+      "heading": "Pflege-Regel",
+      "text": "Pflege-Regel"
+    },
+    {
+      "file": "docs/adr/adr-overview.mdx",
+      "chunk_id": "docs/adr/adr-overview.mdx#5",
+      "heading": "Verknuepfungen",
+      "text": "Verknuepfungen"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#0",
+      "heading": "Architektur",
+      "text": "Architektur"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#1",
+      "heading": "Scope",
+      "text": "Scope"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#2",
+      "heading": "Komponenten",
+      "text": "Komponenten"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#3",
+      "heading": "Architekturentscheidungen",
+      "text": "Architekturentscheidungen"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#4",
+      "heading": "Workflows",
+      "text": "Workflows"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#5",
+      "heading": "Layered Architektur",
+      "text": "Layered Architektur"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#6",
+      "heading": "Datengrenzen",
+      "text": "Datengrenzen"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#7",
+      "heading": "Pfadgrenzen Obsidian",
+      "text": "Pfadgrenzen Obsidian"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#8",
+      "heading": "Modellstrategie",
+      "text": "Modellstrategie"
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "chunk_id": "docs/architecture/architecture-overview.mdx#9",
+      "heading": "Run-Fluss",
+      "text": "Run-Fluss"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#0",
+      "heading": "BI Guide Opportunity Architecture",
+      "text": "BI Guide Opportunity Architecture"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#1",
+      "heading": "Ziel",
+      "text": "Ziel"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#2",
+      "heading": "Scope",
+      "text": "Scope"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#3",
+      "heading": "Nicht-Ziele",
+      "text": "Nicht-Ziele"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#4",
+      "heading": "Collector",
+      "text": "Collector"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#5",
+      "heading": "Score-Logik",
+      "text": "Score-Logik"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#6",
+      "heading": "Outputs",
+      "text": "Outputs"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#7",
+      "heading": "Obsidian Views",
+      "text": "Obsidian Views"
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-opportunity-architecture.mdx#8",
+      "heading": "Security",
+      "text": "Security"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#0",
+      "heading": "BI Guide Workflow Target Architecture",
+      "text": "BI Guide Workflow Target Architecture"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#1",
+      "heading": "Ziel",
+      "text": "Ziel"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#2",
+      "heading": "Nicht-Ziele",
+      "text": "Nicht-Ziele"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#3",
+      "heading": "Read-only Boundary zu sandbank",
+      "text": "Read-only Boundary zu sandbank"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#4",
+      "heading": "Komponenten",
+      "text": "Komponenten"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#5",
+      "heading": "Datenfluss",
+      "text": "Datenfluss"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#6",
+      "heading": "Contracts",
+      "text": "Contracts"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#7",
+      "heading": "Obsidian-Ablage",
+      "text": "Obsidian-Ablage"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#8",
+      "heading": "Export-Modell",
+      "text": "Export-Modell"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#9",
+      "heading": "Quality Gates",
+      "text": "Quality Gates"
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "chunk_id": "docs/architecture/bi-guide-workflow-target-architecture.mdx#10",
+      "heading": "Security",
+      "text": "Security"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#0",
+      "heading": "Resource Governance Target Architecture",
+      "text": "Resource Governance Target Architecture"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#1",
+      "heading": "Ziel",
+      "text": "Ziel"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#2",
+      "heading": "Begriffe",
+      "text": "Begriffe"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#3",
+      "heading": "Ressourcenklassen",
+      "text": "Ressourcenklassen"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#4",
+      "heading": "Policy-Ebenen",
+      "text": "Policy-Ebenen"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#5",
+      "heading": "Bewertungslogik",
+      "text": "Bewertungslogik"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#6",
+      "heading": "Sicherheitsregeln",
+      "text": "Sicherheitsregeln"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#7",
+      "heading": "Workflow-spezifische Regeln",
+      "text": "Workflow-spezifische Regeln"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#8",
+      "heading": "Obsidian-Ablage",
+      "text": "Obsidian-Ablage"
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "chunk_id": "docs/architecture/resource-governance-target-architecture.mdx#9",
+      "heading": "Feedback-Loop",
+      "text": "Feedback-Loop"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#0",
+      "heading": "Target Architecture",
+      "text": "Target Architecture"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#1",
+      "heading": "Principles",
+      "text": "Principles"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#2",
+      "heading": "Layer 1: Platform Logic",
+      "text": "Layer 1: Platform Logic"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#3",
+      "heading": "Layer 2: Workflow Architecture",
+      "text": "Layer 2: Workflow Architecture"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#4",
+      "heading": "Layer 3: Prompt Design",
+      "text": "Layer 3: Prompt Design"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#5",
+      "heading": "Contracts (Schemas)",
+      "text": "Contracts (Schemas)"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#6",
+      "heading": "Context Boundary",
+      "text": "Context Boundary"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#7",
+      "heading": "Quality Gates",
+      "text": "Quality Gates"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#8",
+      "heading": "Security Model",
+      "text": "Security Model"
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "chunk_id": "docs/architecture/target-architecture.mdx#9",
+      "heading": "Cutover Strategy (Clean Cutover)",
+      "text": "Cutover Strategy (Clean Cutover)"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#0",
+      "heading": "BI Guide Article Package Contract",
+      "text": "BI Guide Article Package Contract"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#2",
+      "heading": "Producer",
+      "text": "Producer"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#3",
+      "heading": "Consumers",
+      "text": "Consumers"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#4",
+      "heading": "Required Fields",
+      "text": "Required Fields"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#5",
+      "heading": "Frontmatter Pflichtfelder",
+      "text": "Frontmatter Pflichtfelder"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#6",
+      "heading": "Regeln",
+      "text": "Regeln"
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-article-package-contract.mdx#7",
+      "heading": "Example Payload",
+      "text": "Example Payload"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#0",
+      "heading": "BI Guide Opportunity Contract",
+      "text": "BI Guide Opportunity Contract"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#2",
+      "heading": "Producer",
+      "text": "Producer"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#3",
+      "heading": "Consumers",
+      "text": "Consumers"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#4",
+      "heading": "Required Fields",
+      "text": "Required Fields"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#5",
+      "heading": "Score Components",
+      "text": "Score Components"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#6",
+      "heading": "Freshness Rules",
+      "text": "Freshness Rules"
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-opportunity-contract.mdx#7",
+      "heading": "Example Payload",
+      "text": "Example Payload"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#0",
+      "heading": "BI Guide Refresh Contract",
+      "text": "BI Guide Refresh Contract"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#2",
+      "heading": "Producer",
+      "text": "Producer"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#3",
+      "heading": "Consumers",
+      "text": "Consumers"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#4",
+      "heading": "Triggers",
+      "text": "Triggers"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#5",
+      "heading": "Required Metrics",
+      "text": "Required Metrics"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#6",
+      "heading": "Recommendation Types",
+      "text": "Recommendation Types"
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-refresh-contract.mdx#7",
+      "heading": "Example Payload",
+      "text": "Example Payload"
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-source-snapshot-contract.mdx#0",
+      "heading": "BI Guide Source Snapshot Contract",
+      "text": "BI Guide Source Snapshot Contract"
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-source-snapshot-contract.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-source-snapshot-contract.mdx#2",
+      "heading": "Tracked Roots",
+      "text": "Tracked Roots"
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-source-snapshot-contract.mdx#3",
+      "heading": "Hash Policy",
+      "text": "Hash Policy"
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-source-snapshot-contract.mdx#4",
+      "heading": "Required Sections",
+      "text": "Required Sections"
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-source-snapshot-contract.mdx#5",
+      "heading": "Freshness Rules",
+      "text": "Freshness Rules"
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "chunk_id": "docs/contracts/bi-guide-source-snapshot-contract.mdx#6",
+      "heading": "Example Manifest",
+      "text": "Example Manifest"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#0",
+      "heading": "Content Intelligence Contract",
+      "text": "Content Intelligence Contract"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#2",
+      "heading": "Producer",
+      "text": "Producer"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#3",
+      "heading": "Consumers",
+      "text": "Consumers"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#4",
+      "heading": "Required Runtime Inputs",
+      "text": "Required Runtime Inputs"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#5",
+      "heading": "Required Semantics",
+      "text": "Required Semantics"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#6",
+      "heading": "Breaking Changes",
+      "text": "Breaking Changes"
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "chunk_id": "docs/contracts/content-intelligence-contract.mdx#7",
+      "heading": "Example Payload Fragments",
+      "text": "Example Payload Fragments"
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "chunk_id": "docs/contracts/contracts-overview.mdx#0",
+      "heading": "Contracts Overview",
+      "text": "Contracts Overview"
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "chunk_id": "docs/contracts/contracts-overview.mdx#1",
+      "heading": "Scope",
+      "text": "Scope"
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "chunk_id": "docs/contracts/contracts-overview.mdx#2",
+      "heading": "Contract Family",
+      "text": "Contract Family"
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "chunk_id": "docs/contracts/contracts-overview.mdx#3",
+      "heading": "Zentrale Seiten",
+      "text": "Zentrale Seiten"
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "chunk_id": "docs/contracts/contracts-overview.mdx#4",
+      "heading": "Breaking-Change Policy",
+      "text": "Breaking-Change Policy"
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "chunk_id": "docs/contracts/contracts-overview.mdx#5",
+      "heading": "SSOT Zuordnung",
+      "text": "SSOT Zuordnung"
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "chunk_id": "docs/contracts/contracts-overview.mdx#6",
+      "heading": "Validierung",
+      "text": "Validierung"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#0",
+      "heading": "Resource Registry Contract",
+      "text": "Resource Registry Contract"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#2",
+      "heading": "Required Fields",
+      "text": "Required Fields"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#3",
+      "heading": "Default Resource Profiles",
+      "text": "Default Resource Profiles"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#4",
+      "heading": "Publisher Entries",
+      "text": "Publisher Entries"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#5",
+      "heading": "Resource Classes",
+      "text": "Resource Classes"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#6",
+      "heading": "Allowed Usage Modes",
+      "text": "Allowed Usage Modes"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#7",
+      "heading": "Freshness Rules",
+      "text": "Freshness Rules"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#8",
+      "heading": "Review Flags",
+      "text": "Review Flags"
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "chunk_id": "docs/contracts/resource-registry-contract.mdx#9",
+      "heading": "Example Entry",
+      "text": "Example Entry"
+    },
+    {
+      "file": "docs/contracts/stage-contracts.mdx",
+      "chunk_id": "docs/contracts/stage-contracts.mdx#0",
+      "heading": "Stage Contracts",
+      "text": "Stage Contracts"
+    },
+    {
+      "file": "docs/contracts/stage-contracts.mdx",
+      "chunk_id": "docs/contracts/stage-contracts.mdx#1",
+      "heading": "Governance",
+      "text": "Governance"
+    },
+    {
+      "file": "docs/obsidian/obsidian-overview.mdx",
+      "chunk_id": "docs/obsidian/obsidian-overview.mdx#0",
+      "heading": "Obsidian Overview",
+      "text": "Obsidian Overview"
+    },
+    {
+      "file": "docs/obsidian/obsidian-overview.mdx",
+      "chunk_id": "docs/obsidian/obsidian-overview.mdx#1",
+      "heading": "Zweck",
+      "text": "Zweck"
+    },
+    {
+      "file": "docs/obsidian/obsidian-overview.mdx",
+      "chunk_id": "docs/obsidian/obsidian-overview.mdx#2",
+      "heading": "Kernpfade",
+      "text": "Kernpfade"
+    },
+    {
+      "file": "docs/obsidian/obsidian-overview.mdx",
+      "chunk_id": "docs/obsidian/obsidian-overview.mdx#3",
+      "heading": "Vertraege",
+      "text": "Vertraege"
+    },
+    {
+      "file": "docs/obsidian/obsidian-overview.mdx",
+      "chunk_id": "docs/obsidian/obsidian-overview.mdx#4",
+      "heading": "Betriebsprinzip",
+      "text": "Betriebsprinzip"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#0",
+      "heading": "Obsidian Adapter",
+      "text": "Obsidian Adapter"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#1",
+      "heading": "Zweck",
+      "text": "Zweck"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#2",
+      "heading": "Komponenten",
+      "text": "Komponenten"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#3",
+      "heading": "API-Verhalten",
+      "text": "API-Verhalten"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#4",
+      "heading": "Verwendet von",
+      "text": "Verwendet von"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#5",
+      "heading": "Pflichtparameter",
+      "text": "Pflichtparameter"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#6",
+      "heading": "Betriebsregel",
+      "text": "Betriebsregel"
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "chunk_id": "docs/obsidian/obsidian-rest-adapter.mdx#7",
+      "heading": "Security Notes",
+      "text": "Security Notes"
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "chunk_id": "docs/obsidian/obsidian-setup.mdx#0",
+      "heading": "Obsidian Workflow Setup",
+      "text": "Obsidian Workflow Setup"
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "chunk_id": "docs/obsidian/obsidian-setup.mdx#1",
+      "heading": "Minimale Struktur",
+      "text": "Minimale Struktur"
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "chunk_id": "docs/obsidian/obsidian-setup.mdx#2",
+      "heading": "Relevante `.env`-Variablen",
+      "text": "Relevante `.env`-Variablen"
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "chunk_id": "docs/obsidian/obsidian-setup.mdx#3",
+      "heading": "Wichtig zum Sync",
+      "text": "Wichtig zum Sync"
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "chunk_id": "docs/obsidian/obsidian-setup.mdx#4",
+      "heading": "Was pro Run geschrieben wird",
+      "text": "Was pro Run geschrieben wird"
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "chunk_id": "docs/obsidian/obsidian-setup.mdx#5",
+      "heading": "Fehlerlaeufe",
+      "text": "Fehlerlaeufe"
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "chunk_id": "docs/obsidian/obsidian-setup.mdx#6",
+      "heading": "Performance",
+      "text": "Performance"
+    },
+    {
+      "file": "docs/obsidian/ssot-manifest-contract.mdx",
+      "chunk_id": "docs/obsidian/ssot-manifest-contract.mdx#0",
+      "heading": "SSOT Manifest Contract",
+      "text": "SSOT Manifest Contract"
+    },
+    {
+      "file": "docs/obsidian/ssot-manifest-contract.mdx",
+      "chunk_id": "docs/obsidian/ssot-manifest-contract.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/obsidian/ssot-manifest-contract.mdx",
+      "chunk_id": "docs/obsidian/ssot-manifest-contract.mdx#2",
+      "heading": "Datei",
+      "text": "Datei"
+    },
+    {
+      "file": "docs/obsidian/ssot-manifest-contract.mdx",
+      "chunk_id": "docs/obsidian/ssot-manifest-contract.mdx#3",
+      "heading": "Struktur",
+      "text": "Struktur"
+    },
+    {
+      "file": "docs/obsidian/ssot-manifest-contract.mdx",
+      "chunk_id": "docs/obsidian/ssot-manifest-contract.mdx#4",
+      "heading": "Hash-Regeln",
+      "text": "Hash-Regeln"
+    },
+    {
+      "file": "docs/obsidian/ssot-manifest-contract.mdx",
+      "chunk_id": "docs/obsidian/ssot-manifest-contract.mdx#5",
+      "heading": "Contract-Regeln",
+      "text": "Contract-Regeln"
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "chunk_id": "docs/obsidian/ssot-sync-flow.mdx#0",
+      "heading": "SSOT Sync Flow",
+      "text": "SSOT Sync Flow"
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "chunk_id": "docs/obsidian/ssot-sync-flow.mdx#1",
+      "heading": "Ziel",
+      "text": "Ziel"
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "chunk_id": "docs/obsidian/ssot-sync-flow.mdx#2",
+      "heading": "Pull (Obsidian -> Repo)",
+      "text": "Pull (Obsidian -> Repo)"
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "chunk_id": "docs/obsidian/ssot-sync-flow.mdx#3",
+      "heading": "Sync (Repo -> Obsidian)",
+      "text": "Sync (Repo -> Obsidian)"
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "chunk_id": "docs/obsidian/ssot-sync-flow.mdx#4",
+      "heading": "Manifest Refresh (Obsidian -> Manifest)",
+      "text": "Manifest Refresh (Obsidian -> Manifest)"
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "chunk_id": "docs/obsidian/ssot-sync-flow.mdx#5",
+      "heading": "BI Guide Varianten",
+      "text": "BI Guide Varianten"
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "chunk_id": "docs/obsidian/ssot-sync-flow.mdx#6",
+      "heading": "Guards",
+      "text": "Guards"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#0",
+      "heading": "Workflow Path Contract",
+      "text": "Workflow Path Contract"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#1",
+      "heading": "Global",
+      "text": "Global"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#2",
+      "heading": "Social Core",
+      "text": "Social Core"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#3",
+      "heading": "BI Guide Core",
+      "text": "BI Guide Core"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#4",
+      "heading": "Marketing Views",
+      "text": "Marketing Views"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#5",
+      "heading": "Social Marketing Views",
+      "text": "Social Marketing Views"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#6",
+      "heading": "BI Guide Marketing Views",
+      "text": "BI Guide Marketing Views"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#7",
+      "heading": "Verbotene Legacy-Pfade",
+      "text": "Verbotene Legacy-Pfade"
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "chunk_id": "docs/obsidian/workflow-path-contract.mdx#8",
+      "heading": "Naming",
+      "text": "Naming"
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-content-runbook.mdx#0",
+      "heading": "BI Guide Content Runbook",
+      "text": "BI Guide Content Runbook"
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-content-runbook.mdx#1",
+      "heading": "Trigger",
+      "text": "Trigger"
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-content-runbook.mdx#2",
+      "heading": "Inputs",
+      "text": "Inputs"
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-content-runbook.mdx#3",
+      "heading": "Review Gates",
+      "text": "Review Gates"
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-content-runbook.mdx#4",
+      "heading": "Export Decision",
+      "text": "Export Decision"
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-content-runbook.mdx#5",
+      "heading": "Failure Modes",
+      "text": "Failure Modes"
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-content-runbook.mdx#6",
+      "heading": "No-write Rules",
+      "text": "No-write Rules"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#0",
+      "heading": "BI Guide Opportunity Runbook",
+      "text": "BI Guide Opportunity Runbook"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#1",
+      "heading": "Trigger",
+      "text": "Trigger"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#2",
+      "heading": "Credentials",
+      "text": "Credentials"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#3",
+      "heading": "Search Console Collection Rules",
+      "text": "Search Console Collection Rules"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#4",
+      "heading": "Manual Signal Intake",
+      "text": "Manual Signal Intake"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#5",
+      "heading": "Failure Modes",
+      "text": "Failure Modes"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#6",
+      "heading": "Review Steps",
+      "text": "Review Steps"
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "chunk_id": "docs/operations/bi-guide-opportunity-runbook.mdx#7",
+      "heading": "No-write Rules",
+      "text": "No-write Rules"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#0",
+      "heading": "Content Feedback Runbook",
+      "text": "Content Feedback Runbook"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#1",
+      "heading": "Trigger",
+      "text": "Trigger"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#2",
+      "heading": "Required Inputs",
+      "text": "Required Inputs"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#3",
+      "heading": "Ablauf",
+      "text": "Ablauf"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#4",
+      "heading": "Decision Taxonomy",
+      "text": "Decision Taxonomy"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#5",
+      "heading": "SLA",
+      "text": "SLA"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#6",
+      "heading": "Audit Fields",
+      "text": "Audit Fields"
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "chunk_id": "docs/operations/content-feedback-runbook.mdx#7",
+      "heading": "Escalation",
+      "text": "Escalation"
+    },
+    {
+      "file": "docs/operations/human-review-runbook.mdx",
+      "chunk_id": "docs/operations/human-review-runbook.mdx#0",
+      "heading": "Human Review Runbook",
+      "text": "Human Review Runbook"
+    },
+    {
+      "file": "docs/operations/human-review-runbook.mdx",
+      "chunk_id": "docs/operations/human-review-runbook.mdx#1",
+      "heading": "Triggerbedingungen",
+      "text": "Triggerbedingungen"
+    },
+    {
+      "file": "docs/operations/human-review-runbook.mdx",
+      "chunk_id": "docs/operations/human-review-runbook.mdx#2",
+      "heading": "Freigabewege",
+      "text": "Freigabewege"
+    },
+    {
+      "file": "docs/operations/human-review-runbook.mdx",
+      "chunk_id": "docs/operations/human-review-runbook.mdx#3",
+      "heading": "Timeout/Retry",
+      "text": "Timeout/Retry"
+    },
+    {
+      "file": "docs/operations/human-review-runbook.mdx",
+      "chunk_id": "docs/operations/human-review-runbook.mdx#4",
+      "heading": "Eskalation",
+      "text": "Eskalation"
+    },
+    {
+      "file": "docs/operations/human-review-runbook.mdx",
+      "chunk_id": "docs/operations/human-review-runbook.mdx#5",
+      "heading": "Audit-Felder",
+      "text": "Audit-Felder"
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "chunk_id": "docs/operations/operations-overview.mdx#0",
+      "heading": "Operations Overview",
+      "text": "Operations Overview"
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "chunk_id": "docs/operations/operations-overview.mdx#1",
+      "heading": "Scope",
+      "text": "Scope"
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "chunk_id": "docs/operations/operations-overview.mdx#2",
+      "heading": "Betriebsziele",
+      "text": "Betriebsziele"
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "chunk_id": "docs/operations/operations-overview.mdx#3",
+      "heading": "Runbooks",
+      "text": "Runbooks"
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "chunk_id": "docs/operations/operations-overview.mdx#4",
+      "heading": "Betriebsnahe Skripte",
+      "text": "Betriebsnahe Skripte"
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "chunk_id": "docs/operations/operations-overview.mdx#5",
+      "heading": "Empfohlene Daily Sequence",
+      "text": "Empfohlene Daily Sequence"
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "chunk_id": "docs/operations/operations-overview.mdx#6",
+      "heading": "Failure Signals",
+      "text": "Failure Signals"
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "chunk_id": "docs/operations/resource-curation-runbook.mdx#0",
+      "heading": "Resource Curation Runbook",
+      "text": "Resource Curation Runbook"
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "chunk_id": "docs/operations/resource-curation-runbook.mdx#1",
+      "heading": "New Source Intake",
+      "text": "New Source Intake"
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "chunk_id": "docs/operations/resource-curation-runbook.mdx#2",
+      "heading": "Review Checklist",
+      "text": "Review Checklist"
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "chunk_id": "docs/operations/resource-curation-runbook.mdx#3",
+      "heading": "Reject Reasons",
+      "text": "Reject Reasons"
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "chunk_id": "docs/operations/resource-curation-runbook.mdx#4",
+      "heading": "Update Cycle",
+      "text": "Update Cycle"
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "chunk_id": "docs/operations/resource-curation-runbook.mdx#5",
+      "heading": "Escalation",
+      "text": "Escalation"
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "chunk_id": "docs/operations/resource-curation-runbook.mdx#6",
+      "heading": "Audit Trail",
+      "text": "Audit Trail"
+    },
+    {
+      "file": "docs/reference/scripts/runtime-ops-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/runtime-ops-scripts.mdx#0",
+      "heading": "Runtime Ops Scripts",
+      "text": "Runtime Ops Scripts"
+    },
+    {
+      "file": "docs/reference/scripts/runtime-ops-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/runtime-ops-scripts.mdx#1",
+      "heading": "Lifecycle",
+      "text": "Lifecycle"
+    },
+    {
+      "file": "docs/reference/scripts/runtime-ops-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/runtime-ops-scripts.mdx#2",
+      "heading": "Workflow Transport",
+      "text": "Workflow Transport"
+    },
+    {
+      "file": "docs/reference/scripts/runtime-ops-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/runtime-ops-scripts.mdx#3",
+      "heading": "Health and Validation",
+      "text": "Health and Validation"
+    },
+    {
+      "file": "docs/reference/scripts/runtime-ops-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/runtime-ops-scripts.mdx#4",
+      "heading": "Maintenance",
+      "text": "Maintenance"
+    },
+    {
+      "file": "docs/reference/scripts/runtime-ops-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/runtime-ops-scripts.mdx#5",
+      "heading": "Quick Use Cases",
+      "text": "Quick Use Cases"
+    },
+    {
+      "file": "docs/reference/scripts/sync-and-manifest-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/sync-and-manifest-scripts.mdx#0",
+      "heading": "Sync and Manifest Scripts",
+      "text": "Sync and Manifest Scripts"
+    },
+    {
+      "file": "docs/reference/scripts/sync-and-manifest-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/sync-and-manifest-scripts.mdx#1",
+      "heading": "Purpose",
+      "text": "Purpose"
+    },
+    {
+      "file": "docs/reference/scripts/sync-and-manifest-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/sync-and-manifest-scripts.mdx#2",
+      "heading": "Script Matrix",
+      "text": "Script Matrix"
+    },
+    {
+      "file": "docs/reference/scripts/sync-and-manifest-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/sync-and-manifest-scripts.mdx#3",
+      "heading": "Adapter",
+      "text": "Adapter"
+    },
+    {
+      "file": "docs/reference/scripts/sync-and-manifest-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/sync-and-manifest-scripts.mdx#4",
+      "heading": "Entscheidung FS vs REST",
+      "text": "Entscheidung FS vs REST"
+    },
+    {
+      "file": "docs/reference/scripts/sync-and-manifest-scripts.mdx",
+      "chunk_id": "docs/reference/scripts/sync-and-manifest-scripts.mdx#5",
+      "heading": "Beziehung",
+      "text": "Beziehung"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#0",
+      "heading": "SSOT Auto Generated Index",
+      "text": "SSOT Auto Generated Index"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#1",
+      "heading": "Social Prompts",
+      "text": "Social Prompts"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#2",
+      "heading": "Global Context",
+      "text": "Global Context"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#3",
+      "heading": "Social Workflow Context",
+      "text": "Social Workflow Context"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#4",
+      "heading": "Social Schemas",
+      "text": "Social Schemas"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#5",
+      "heading": "Social Config",
+      "text": "Social Config"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#6",
+      "heading": "Social Templates",
+      "text": "Social Templates"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#7",
+      "heading": "BI Guide Prompts",
+      "text": "BI Guide Prompts"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#8",
+      "heading": "BI Guide Context",
+      "text": "BI Guide Context"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#9",
+      "heading": "BI Guide Schemas",
+      "text": "BI Guide Schemas"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#10",
+      "heading": "BI Guide Config",
+      "text": "BI Guide Config"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#11",
+      "heading": "BI Guide Templates",
+      "text": "BI Guide Templates"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#12",
+      "heading": "Workflow Blueprints",
+      "text": "Workflow Blueprints"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#13",
+      "heading": "Code Nodes",
+      "text": "Code Nodes"
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "chunk_id": "docs/reference/ssot/auto-generated-index.mdx#14",
+      "heading": "Runtime Scripts",
+      "text": "Runtime Scripts"
+    },
+    {
+      "file": "docs/reference/ssot/config-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/config-catalog.mdx#0",
+      "heading": "Config Catalog",
+      "text": "Config Catalog"
+    },
+    {
+      "file": "docs/reference/ssot/config-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/config-catalog.mdx#1",
+      "heading": "Social Core Config (`local-files/_managed/config`)",
+      "text": "Social Core Config (`local-files/_managed/config`)"
+    },
+    {
+      "file": "docs/reference/ssot/config-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/config-catalog.mdx#2",
+      "heading": "Zweck",
+      "text": "Zweck"
+    },
+    {
+      "file": "docs/reference/ssot/config-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/config-catalog.mdx#3",
+      "heading": "BI Guide Config (`local-files/_managed/bi-guide/config`)",
+      "text": "BI Guide Config (`local-files/_managed/bi-guide/config`)"
+    },
+    {
+      "file": "docs/reference/ssot/config-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/config-catalog.mdx#4",
+      "heading": "Zweck",
+      "text": "Zweck"
+    },
+    {
+      "file": "docs/reference/ssot/config-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/config-catalog.mdx#5",
+      "heading": "Governance",
+      "text": "Governance"
+    },
+    {
+      "file": "docs/reference/ssot/context-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/context-catalog.mdx#0",
+      "heading": "Context Catalog",
+      "text": "Context Catalog"
+    },
+    {
+      "file": "docs/reference/ssot/context-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/context-catalog.mdx#1",
+      "heading": "Shared Global Context (`local-files/_managed/context/global`)",
+      "text": "Shared Global Context (`local-files/_managed/context/global`)"
+    },
+    {
+      "file": "docs/reference/ssot/context-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/context-catalog.mdx#2",
+      "heading": "Social Workflow Context (`local-files/_managed/context/workflow`)",
+      "text": "Social Workflow Context (`local-files/_managed/context/workflow`)"
+    },
+    {
+      "file": "docs/reference/ssot/context-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/context-catalog.mdx#3",
+      "heading": "BI Guide Workflow Context (`local-files/_managed/bi-guide/context/workflow`)",
+      "text": "BI Guide Workflow Context (`local-files/_managed/bi-guide/context/workflow`)"
+    },
+    {
+      "file": "docs/reference/ssot/context-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/context-catalog.mdx#4",
+      "heading": "Hinweis",
+      "text": "Hinweis"
+    },
+    {
+      "file": "docs/reference/ssot/prompts-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/prompts-catalog.mdx#0",
+      "heading": "Prompts Catalog",
+      "text": "Prompts Catalog"
+    },
+    {
+      "file": "docs/reference/ssot/prompts-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/prompts-catalog.mdx#1",
+      "heading": "Social Core (`local-files/_managed/prompts`)",
+      "text": "Social Core (`local-files/_managed/prompts`)"
+    },
+    {
+      "file": "docs/reference/ssot/prompts-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/prompts-catalog.mdx#2",
+      "heading": "BI Guide (`local-files/_managed/bi-guide/prompts`)",
+      "text": "BI Guide (`local-files/_managed/bi-guide/prompts`)"
+    },
+    {
+      "file": "docs/reference/ssot/prompts-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/prompts-catalog.mdx#3",
+      "heading": "Betriebsregel",
+      "text": "Betriebsregel"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#0",
+      "heading": "Schema Catalog",
+      "text": "Schema Catalog"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#1",
+      "heading": "SSOT",
+      "text": "SSOT"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#2",
+      "heading": "Stage -> Output Schema",
+      "text": "Stage -> Output Schema"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#3",
+      "heading": "BI Guide Stage -> Output Schema",
+      "text": "BI Guide Stage -> Output Schema"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#4",
+      "heading": "Required Field Policy",
+      "text": "Required Field Policy"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#5",
+      "heading": "Validation Rules",
+      "text": "Validation Rules"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#6",
+      "heading": "Hard Fail Conditions",
+      "text": "Hard Fail Conditions"
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/schemas-catalog.mdx#7",
+      "heading": "Legacy Policy",
+      "text": "Legacy Policy"
+    },
+    {
+      "file": "docs/reference/ssot/templates-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/templates-catalog.mdx#0",
+      "heading": "Templates Catalog",
+      "text": "Templates Catalog"
+    },
+    {
+      "file": "docs/reference/ssot/templates-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/templates-catalog.mdx#1",
+      "heading": "Social Templates (`local-files/_managed/templates`)",
+      "text": "Social Templates (`local-files/_managed/templates`)"
+    },
+    {
+      "file": "docs/reference/ssot/templates-catalog.mdx",
+      "chunk_id": "docs/reference/ssot/templates-catalog.mdx#2",
+      "heading": "BI Guide Templates (`local-files/_managed/bi-guide/templates`)",
+      "text": "BI Guide Templates (`local-files/_managed/bi-guide/templates`)"
+    },
+    {
+      "file": "docs/reference/workflows/code-node-map.mdx",
+      "chunk_id": "docs/reference/workflows/code-node-map.mdx#0",
+      "heading": "Code Node Map",
+      "text": "Code Node Map"
+    },
+    {
+      "file": "docs/reference/workflows/code-node-map.mdx",
+      "chunk_id": "docs/reference/workflows/code-node-map.mdx#1",
+      "heading": "Source of Truth",
+      "text": "Source of Truth"
+    },
+    {
+      "file": "docs/reference/workflows/code-node-map.mdx",
+      "chunk_id": "docs/reference/workflows/code-node-map.mdx#2",
+      "heading": "Mapping",
+      "text": "Mapping"
+    },
+    {
+      "file": "docs/reference/workflows/code-node-map.mdx",
+      "chunk_id": "docs/reference/workflows/code-node-map.mdx#3",
+      "heading": "Change Rule",
+      "text": "Change Rule"
+    },
+    {
+      "file": "docs/reference/workflows/workflow-blueprints.mdx",
+      "chunk_id": "docs/reference/workflows/workflow-blueprints.mdx#0",
+      "heading": "Workflow Blueprints",
+      "text": "Workflow Blueprints"
+    },
+    {
+      "file": "docs/reference/workflows/workflow-blueprints.mdx",
+      "chunk_id": "docs/reference/workflows/workflow-blueprints.mdx#1",
+      "heading": "Workflow-Set (JSON Blueprints)",
+      "text": "Workflow-Set (JSON Blueprints)"
+    },
+    {
+      "file": "docs/reference/workflows/workflow-blueprints.mdx",
+      "chunk_id": "docs/reference/workflows/workflow-blueprints.mdx#2",
+      "heading": "Reddit Prep Modus",
+      "text": "Reddit Prep Modus"
+    },
+    {
+      "file": "docs/reference/workflows/workflow-blueprints.mdx",
+      "chunk_id": "docs/reference/workflows/workflow-blueprints.mdx#3",
+      "heading": "Run-Artefakte",
+      "text": "Run-Artefakte"
+    }
+  ]
+}

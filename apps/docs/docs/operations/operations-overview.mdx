@@ -1,0 +1,40 @@
+---
+id: operations-overview
+title: Operations Overview
+slug: /operations-overview
+---
+
+# Operations Overview
+
+## Scope
+Runbooks und Betriebsregeln fuer Human Review, Content Feedback, Ressourcenpflege und BI-Guide-Betrieb.
+
+## Betriebsziele
+- Deterministische Laufausgaben in Obsidian
+- Klare Eskalationspfade bei `hold`, `deny`, `pending`
+- Nachvollziehbare Audit-Felder und Registerpflege
+- Keine stillen Fallbacks bei fehlenden SSOT-Bausteinen
+
+## Runbooks
+- [/operations/human-review-runbook](/operations/human-review-runbook)
+- [/operations/content-feedback-runbook](/operations/content-feedback-runbook)
+- [/operations/resource-curation-runbook](/operations/resource-curation-runbook)
+- [/operations/bi-guide-content-runbook](/operations/bi-guide-content-runbook)
+- [/operations/bi-guide-opportunity-runbook](/operations/bi-guide-opportunity-runbook)
+
+## Betriebsnahe Skripte
+- Health/Start/Stop: [/reference/scripts/runtime-ops-scripts](/reference/scripts/runtime-ops-scripts)
+- SSOT-Sync: [/reference/scripts/sync-and-manifest-scripts](/reference/scripts/sync-and-manifest-scripts)
+
+## Empfohlene Daily Sequence
+1. `make health`
+2. bei Bedarf `make pull-ssot` und/oder `make sync-ssot`
+3. `make workflow-build`
+4. `make validate-cutover`
+5. Workflow-Run und Runbook-gemaesse Nachbereitung
+
+## Failure Signals
+- Manifest-Mismatch
+- Fehlende Pflichtdateien in Prompts/Context/Schema/Config
+- Human Review blockiert > 24h
+- Wiederholte `deny`-Entscheidungen ohne Prompt-/Workflow-Aenderung

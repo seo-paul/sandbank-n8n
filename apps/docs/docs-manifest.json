@@ -1,0 +1,633 @@
+{
+  "generated_at": "2026-03-07T09:39:56.293Z",
+  "pages": [
+    {
+      "file": "docs/00-overview/glossary.mdx",
+      "id": "glossary",
+      "title": "Glossary",
+      "slug": "/glossary",
+      "headings": [
+        "Glossary",
+        "SSOT",
+        "Obsidian Mirror",
+        "Stage Contract",
+        "Manifest Parity",
+        "Runbook",
+        "Workflow Blueprint",
+        "Social Core",
+        "BI Guide"
+      ]
+    },
+    {
+      "file": "docs/00-overview/platform-overview.mdx",
+      "id": "platform-overview",
+      "title": "Platform Overview",
+      "slug": "/platform-overview",
+      "headings": [
+        "Platform Overview",
+        "Betriebsmodell",
+        "Zielbild",
+        "Umsetzungsphasen",
+        "Implementation Plan",
+        "Phase 1 Contracts + SSOT",
+        "Phase 2 Research + Content Architecture",
+        "Phase 3 Operational Gates",
+        "Phase 4 Structure Cleanup",
+        "Phase 5 Hardening + Cutover"
+      ]
+    },
+    {
+      "file": "docs/00-overview/quickstart.mdx",
+      "id": "quickstart",
+      "title": "Quickstart",
+      "slug": "/quickstart",
+      "headings": [
+        "Cutover Checklist",
+        "Vorher",
+        "Build + Import",
+        "Workflow-Set",
+        "SSOT",
+        "Obsidian Struktur",
+        "Runtime"
+      ]
+    },
+    {
+      "file": "docs/adr/ADR-0001-contract-ssot.mdx",
+      "id": "adr-0001-contract-ssot",
+      "title": "ADR-0001 Contract SSOT",
+      "slug": "/adr-0001-contract-ssot",
+      "headings": [
+        "ADR-0001: Stage-Contract SSOT",
+        "Status",
+        "Context",
+        "Decision",
+        "Consequences",
+        "Alternatives Considered",
+        "Validation/Monitoring"
+      ]
+    },
+    {
+      "file": "docs/adr/ADR-0002-ssot-feedback-loop.mdx",
+      "id": "adr-0002-ssot-feedback-loop",
+      "title": "ADR-0002 SSOT Feedback Loop",
+      "slug": "/adr-0002-ssot-feedback-loop",
+      "headings": [
+        "ADR-0002 SSOT and Feedback Loop",
+        "Status",
+        "Context",
+        "Decision",
+        "Consequences",
+        "Alternatives Considered",
+        "Validation"
+      ]
+    },
+    {
+      "file": "docs/adr/adr-overview.mdx",
+      "id": "adr-overview",
+      "title": "ADR Overview",
+      "slug": "/adr-overview",
+      "headings": [
+        "ADR Overview",
+        "Zweck",
+        "Enthaltene ADRs",
+        "Index",
+        "Pflege-Regel",
+        "Verknuepfungen"
+      ]
+    },
+    {
+      "file": "docs/architecture/architecture-overview.mdx",
+      "id": "architecture-overview",
+      "title": "Architecture Overview",
+      "slug": "/architecture-overview",
+      "headings": [
+        "Architektur",
+        "Scope",
+        "Komponenten",
+        "Architekturentscheidungen",
+        "Workflows",
+        "Layered Architektur",
+        "Datengrenzen",
+        "Pfadgrenzen Obsidian",
+        "Modellstrategie",
+        "Run-Fluss"
+      ]
+    },
+    {
+      "file": "docs/architecture/bi-guide-opportunity-architecture.mdx",
+      "id": "bi-guide-opportunity-architecture",
+      "title": "BI Guide Opportunity Architecture",
+      "slug": "/bi-guide-opportunity-architecture",
+      "headings": [
+        "BI Guide Opportunity Architecture",
+        "Ziel",
+        "Scope",
+        "Nicht-Ziele",
+        "Collector",
+        "Score-Logik",
+        "Outputs",
+        "Obsidian Views",
+        "Security"
+      ]
+    },
+    {
+      "file": "docs/architecture/bi-guide-workflow-target-architecture.mdx",
+      "id": "bi-guide-workflow-target-architecture",
+      "title": "BI Guide Workflow Target Architecture",
+      "slug": "/bi-guide-workflow-target-architecture",
+      "headings": [
+        "BI Guide Workflow Target Architecture",
+        "Ziel",
+        "Nicht-Ziele",
+        "Read-only Boundary zu sandbank",
+        "Komponenten",
+        "Datenfluss",
+        "Contracts",
+        "Obsidian-Ablage",
+        "Export-Modell",
+        "Quality Gates",
+        "Security"
+      ]
+    },
+    {
+      "file": "docs/architecture/resource-governance-target-architecture.mdx",
+      "id": "resource-governance-target-architecture",
+      "title": "Resource Governance Target Architecture",
+      "slug": "/resource-governance-target-architecture",
+      "headings": [
+        "Resource Governance Target Architecture",
+        "Ziel",
+        "Begriffe",
+        "Ressourcenklassen",
+        "Policy-Ebenen",
+        "Bewertungslogik",
+        "Sicherheitsregeln",
+        "Workflow-spezifische Regeln",
+        "Obsidian-Ablage",
+        "Feedback-Loop"
+      ]
+    },
+    {
+      "file": "docs/architecture/target-architecture.mdx",
+      "id": "target-architecture",
+      "title": "Target Architecture",
+      "slug": "/target-architecture",
+      "headings": [
+        "Target Architecture",
+        "Principles",
+        "Layer 1: Platform Logic",
+        "Layer 2: Workflow Architecture",
+        "Layer 3: Prompt Design",
+        "Contracts (Schemas)",
+        "Context Boundary",
+        "Quality Gates",
+        "Security Model",
+        "Cutover Strategy (Clean Cutover)"
+      ]
+    },
+    {
+      "file": "docs/contracts/bi-guide-article-package-contract.mdx",
+      "id": "bi-guide-article-package-contract",
+      "title": "BI Guide Article Package Contract",
+      "slug": "/bi-guide-article-package-contract",
+      "headings": [
+        "BI Guide Article Package Contract",
+        "Purpose",
+        "Producer",
+        "Consumers",
+        "Required Fields",
+        "Frontmatter Pflichtfelder",
+        "Regeln",
+        "Example Payload"
+      ]
+    },
+    {
+      "file": "docs/contracts/bi-guide-opportunity-contract.mdx",
+      "id": "bi-guide-opportunity-contract",
+      "title": "BI Guide Opportunity Contract",
+      "slug": "/bi-guide-opportunity-contract",
+      "headings": [
+        "BI Guide Opportunity Contract",
+        "Purpose",
+        "Producer",
+        "Consumers",
+        "Required Fields",
+        "Score Components",
+        "Freshness Rules",
+        "Example Payload"
+      ]
+    },
+    {
+      "file": "docs/contracts/bi-guide-refresh-contract.mdx",
+      "id": "bi-guide-refresh-contract",
+      "title": "BI Guide Refresh Contract",
+      "slug": "/bi-guide-refresh-contract",
+      "headings": [
+        "BI Guide Refresh Contract",
+        "Purpose",
+        "Producer",
+        "Consumers",
+        "Triggers",
+        "Required Metrics",
+        "Recommendation Types",
+        "Example Payload"
+      ]
+    },
+    {
+      "file": "docs/contracts/bi-guide-source-snapshot-contract.mdx",
+      "id": "bi-guide-source-snapshot-contract",
+      "title": "BI Guide Source Snapshot Contract",
+      "slug": "/bi-guide-source-snapshot-contract",
+      "headings": [
+        "BI Guide Source Snapshot Contract",
+        "Purpose",
+        "Tracked Roots",
+        "Hash Policy",
+        "Required Sections",
+        "Freshness Rules",
+        "Example Manifest"
+      ]
+    },
+    {
+      "file": "docs/contracts/content-intelligence-contract.mdx",
+      "id": "content-intelligence-contract",
+      "title": "Content Intelligence Contract",
+      "slug": "/content-intelligence-contract",
+      "headings": [
+        "Content Intelligence Contract",
+        "Purpose",
+        "Producer",
+        "Consumers",
+        "Required Runtime Inputs",
+        "Required Semantics",
+        "Breaking Changes",
+        "Example Payload Fragments"
+      ]
+    },
+    {
+      "file": "docs/contracts/contracts-overview.mdx",
+      "id": "contracts-overview",
+      "title": "Contracts Overview",
+      "slug": "/contracts-overview",
+      "headings": [
+        "Contracts Overview",
+        "Scope",
+        "Contract Family",
+        "Zentrale Seiten",
+        "Breaking-Change Policy",
+        "SSOT Zuordnung",
+        "Validierung"
+      ]
+    },
+    {
+      "file": "docs/contracts/resource-registry-contract.mdx",
+      "id": "resource-registry-contract",
+      "title": "Resource Registry Contract",
+      "slug": "/resource-registry-contract",
+      "headings": [
+        "Resource Registry Contract",
+        "Purpose",
+        "Required Fields",
+        "Default Resource Profiles",
+        "Publisher Entries",
+        "Resource Classes",
+        "Allowed Usage Modes",
+        "Freshness Rules",
+        "Review Flags",
+        "Example Entry"
+      ]
+    },
+    {
+      "file": "docs/contracts/stage-contracts.mdx",
+      "id": "stage-contracts",
+      "title": "Stage Contracts",
+      "slug": "/stage-contracts",
+      "headings": [
+        "Stage Contracts",
+        "Governance"
+      ]
+    },
+    {
+      "file": "docs/obsidian/obsidian-overview.mdx",
+      "id": "obsidian-overview",
+      "title": "Obsidian Overview",
+      "slug": "/obsidian-overview",
+      "headings": [
+        "Obsidian Overview",
+        "Zweck",
+        "Kernpfade",
+        "Vertraege",
+        "Betriebsprinzip"
+      ]
+    },
+    {
+      "file": "docs/obsidian/obsidian-rest-adapter.mdx",
+      "id": "obsidian-rest-adapter",
+      "title": "Obsidian REST Adapter",
+      "slug": "/obsidian-rest-adapter",
+      "headings": [
+        "Obsidian Adapter",
+        "Zweck",
+        "Komponenten",
+        "API-Verhalten",
+        "Verwendet von",
+        "Pflichtparameter",
+        "Betriebsregel",
+        "Security Notes"
+      ]
+    },
+    {
+      "file": "docs/obsidian/obsidian-setup.mdx",
+      "id": "obsidian-setup",
+      "title": "Obsidian Setup",
+      "slug": "/obsidian-setup",
+      "headings": [
+        "Obsidian Workflow Setup",
+        "Minimale Struktur",
+        "Relevante `.env`-Variablen",
+        "Wichtig zum Sync",
+        "Was pro Run geschrieben wird",
+        "Fehlerlaeufe",
+        "Performance"
+      ]
+    },
+    {
+      "file": "docs/obsidian/ssot-manifest-contract.mdx",
+      "id": "ssot-manifest-contract",
+      "title": "SSOT Manifest Contract",
+      "slug": "/ssot-manifest-contract",
+      "headings": [
+        "SSOT Manifest Contract",
+        "Purpose",
+        "Datei",
+        "Struktur",
+        "Hash-Regeln",
+        "Contract-Regeln"
+      ]
+    },
+    {
+      "file": "docs/obsidian/ssot-sync-flow.mdx",
+      "id": "ssot-sync-flow",
+      "title": "SSOT Sync Flow",
+      "slug": "/ssot-sync-flow",
+      "headings": [
+        "SSOT Sync Flow",
+        "Ziel",
+        "Pull (Obsidian -> Repo)",
+        "Sync (Repo -> Obsidian)",
+        "Manifest Refresh (Obsidian -> Manifest)",
+        "BI Guide Varianten",
+        "Guards"
+      ]
+    },
+    {
+      "file": "docs/obsidian/workflow-path-contract.mdx",
+      "id": "workflow-path-contract",
+      "title": "Workflow Path Contract",
+      "slug": "/workflow-path-contract",
+      "headings": [
+        "Workflow Path Contract",
+        "Global",
+        "Social Core",
+        "BI Guide Core",
+        "Marketing Views",
+        "Social Marketing Views",
+        "BI Guide Marketing Views",
+        "Verbotene Legacy-Pfade",
+        "Naming"
+      ]
+    },
+    {
+      "file": "docs/operations/bi-guide-content-runbook.mdx",
+      "id": "bi-guide-content-runbook",
+      "title": "BI Guide Content Runbook",
+      "slug": "/bi-guide-content-runbook",
+      "headings": [
+        "BI Guide Content Runbook",
+        "Trigger",
+        "Inputs",
+        "Review Gates",
+        "Export Decision",
+        "Failure Modes",
+        "No-write Rules"
+      ]
+    },
+    {
+      "file": "docs/operations/bi-guide-opportunity-runbook.mdx",
+      "id": "bi-guide-opportunity-runbook",
+      "title": "BI Guide Opportunity Runbook",
+      "slug": "/bi-guide-opportunity-runbook",
+      "headings": [
+        "BI Guide Opportunity Runbook",
+        "Trigger",
+        "Credentials",
+        "Search Console Collection Rules",
+        "Manual Signal Intake",
+        "Failure Modes",
+        "Review Steps",
+        "No-write Rules"
+      ]
+    },
+    {
+      "file": "docs/operations/content-feedback-runbook.mdx",
+      "id": "content-feedback-runbook",
+      "title": "Content Feedback Runbook",
+      "slug": "/content-feedback-runbook",
+      "headings": [
+        "Content Feedback Runbook",
+        "Trigger",
+        "Required Inputs",
+        "Ablauf",
+        "Decision Taxonomy",
+        "SLA",
+        "Audit Fields",
+        "Escalation"
+      ]
+    },
+    {
+      "file": "docs/operations/human-review-runbook.mdx",
+      "id": "human-review-runbook",
+      "title": "Human Review Runbook",
+      "slug": "/human-review-runbook",
+      "headings": [
+        "Human Review Runbook",
+        "Triggerbedingungen",
+        "Freigabewege",
+        "Timeout/Retry",
+        "Eskalation",
+        "Audit-Felder"
+      ]
+    },
+    {
+      "file": "docs/operations/operations-overview.mdx",
+      "id": "operations-overview",
+      "title": "Operations Overview",
+      "slug": "/operations-overview",
+      "headings": [
+        "Operations Overview",
+        "Scope",
+        "Betriebsziele",
+        "Runbooks",
+        "Betriebsnahe Skripte",
+        "Empfohlene Daily Sequence",
+        "Failure Signals"
+      ]
+    },
+    {
+      "file": "docs/operations/resource-curation-runbook.mdx",
+      "id": "resource-curation-runbook",
+      "title": "Resource Curation Runbook",
+      "slug": "/resource-curation-runbook",
+      "headings": [
+        "Resource Curation Runbook",
+        "New Source Intake",
+        "Review Checklist",
+        "Reject Reasons",
+        "Update Cycle",
+        "Escalation",
+        "Audit Trail"
+      ]
+    },
+    {
+      "file": "docs/reference/scripts/runtime-ops-scripts.mdx",
+      "id": "runtime-ops-scripts",
+      "title": "Runtime Ops Scripts",
+      "slug": "/scripts/runtime-ops-scripts",
+      "headings": [
+        "Runtime Ops Scripts",
+        "Lifecycle",
+        "Workflow Transport",
+        "Health and Validation",
+        "Maintenance",
+        "Quick Use Cases"
+      ]
+    },
+    {
+      "file": "docs/reference/scripts/sync-and-manifest-scripts.mdx",
+      "id": "sync-and-manifest-scripts",
+      "title": "Sync and Manifest Scripts",
+      "slug": "/scripts/sync-and-manifest-scripts",
+      "headings": [
+        "Sync and Manifest Scripts",
+        "Purpose",
+        "Script Matrix",
+        "Adapter",
+        "Entscheidung FS vs REST",
+        "Beziehung"
+      ]
+    },
+    {
+      "file": "docs/reference/ssot/auto-generated-index.mdx",
+      "id": "ssot-auto-generated-index",
+      "title": "SSOT Auto Generated Index",
+      "slug": "/ssot/auto-generated-index",
+      "headings": [
+        "SSOT Auto Generated Index",
+        "Social Prompts",
+        "Global Context",
+        "Social Workflow Context",
+        "Social Schemas",
+        "Social Config",
+        "Social Templates",
+        "BI Guide Prompts",
+        "BI Guide Context",
+        "BI Guide Schemas",
+        "BI Guide Config",
+        "BI Guide Templates",
+        "Workflow Blueprints",
+        "Code Nodes",
+        "Runtime Scripts"
+      ]
+    },
+    {
+      "file": "docs/reference/ssot/config-catalog.mdx",
+      "id": "config-catalog",
+      "title": "Config Catalog",
+      "slug": "/ssot/config-catalog",
+      "headings": [
+        "Config Catalog",
+        "Social Core Config (`local-files/_managed/config`)",
+        "Zweck",
+        "BI Guide Config (`local-files/_managed/bi-guide/config`)",
+        "Zweck",
+        "Governance"
+      ]
+    },
+    {
+      "file": "docs/reference/ssot/context-catalog.mdx",
+      "id": "context-catalog",
+      "title": "Context Catalog",
+      "slug": "/ssot/context-catalog",
+      "headings": [
+        "Context Catalog",
+        "Shared Global Context (`local-files/_managed/context/global`)",
+        "Social Workflow Context (`local-files/_managed/context/workflow`)",
+        "BI Guide Workflow Context (`local-files/_managed/bi-guide/context/workflow`)",
+        "Hinweis"
+      ]
+    },
+    {
+      "file": "docs/reference/ssot/prompts-catalog.mdx",
+      "id": "prompts-catalog",
+      "title": "Prompts Catalog",
+      "slug": "/ssot/prompts-catalog",
+      "headings": [
+        "Prompts Catalog",
+        "Social Core (`local-files/_managed/prompts`)",
+        "BI Guide (`local-files/_managed/bi-guide/prompts`)",
+        "Betriebsregel"
+      ]
+    },
+    {
+      "file": "docs/reference/ssot/schemas-catalog.mdx",
+      "id": "schemas-catalog",
+      "title": "Schemas Catalog",
+      "slug": "/ssot/schemas-catalog",
+      "headings": [
+        "Schema Catalog",
+        "SSOT",
+        "Stage -> Output Schema",
+        "BI Guide Stage -> Output Schema",
+        "Required Field Policy",
+        "Validation Rules",
+        "Hard Fail Conditions",
+        "Legacy Policy"
+      ]
+    },
+    {
+      "file": "docs/reference/ssot/templates-catalog.mdx",
+      "id": "templates-catalog",
+      "title": "Templates Catalog",
+      "slug": "/ssot/templates-catalog",
+      "headings": [
+        "Templates Catalog",
+        "Social Templates (`local-files/_managed/templates`)",
+        "BI Guide Templates (`local-files/_managed/bi-guide/templates`)"
+      ]
+    },
+    {
+      "file": "docs/reference/workflows/code-node-map.mdx",
+      "id": "code-node-map",
+      "title": "Code Node Map",
+      "slug": "/workflows/code-node-map",
+      "headings": [
+        "Code Node Map",
+        "Source of Truth",
+        "Mapping",
+        "Change Rule"
+      ]
+    },
+    {
+      "file": "docs/reference/workflows/workflow-blueprints.mdx",
+      "id": "workflow-blueprints",
+      "title": "Workflow Blueprints",
+      "slug": "/workflows/workflow-blueprints",
+      "headings": [
+        "Workflow Blueprints",
+        "Workflow-Set (JSON Blueprints)",
+        "Reddit Prep Modus",
+        "Run-Artefakte"
+      ]
+    }
+  ]
+}

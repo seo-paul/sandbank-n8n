@@ -1,0 +1,40 @@
+---
+id: workflow-blueprints
+title: Workflow Blueprints
+slug: /workflows/workflow-blueprints
+---
+
+# Workflow Blueprints
+
+## Workflow-Set (JSON Blueprints)
+- `system-verbindungen-pruefen.json`
+- `ablauf-automatisch-steuern.json`
+- `thema-und-quellen-sammeln.json`
+- `beitrag-aus-quellen-erstellen.json`
+- `human-review-pruefen.json`
+- `ergebnisse-in-obsidian-speichern.json`
+- `fehlerlauf-klar-dokumentieren.json`
+- `performance-zurueckfuehren.json`
+- `bi-guide-ablauf-automatisch-steuern.json`
+- `bi-guide-chancen-aktualisieren.json`
+- `bi-guide-quellen-und-planung.json`
+- `bi-guide-artikelpaket-erstellen.json`
+- `bi-guide-human-review-pruefen.json`
+- `bi-guide-ergebnisse-in-obsidian-speichern.json`
+- `bi-guide-fehlerlauf-klar-dokumentieren.json`
+
+Quelle: `n8n/workflows/*.json` (deterministisch gebaut aus `n8n/code/*.js`).
+
+## Reddit Prep Modus
+- Keine Reddit API Credentials
+- Recherche ueber SearXNG mit `site:reddit.com`
+- Reddit-Router entscheidet pro Lauf zwischen:
+  `comment`, `post_text_only`, `post_with_link`, `skip`
+
+## Run-Artefakte
+Reddit-Aufbereitung und Reddit-Entwurf liegen im Laufdetail:
+- `Ergebnisse/Laufdetails/<run_id>.md`
+- Router- und Risiko-Details liegen in:
+  `Zwischenergebnisse/beitrag-aus-quellen-erstellen.md`
+
+Kein separates Draft-Verzeichnis.

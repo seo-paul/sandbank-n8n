@@ -1,0 +1,46 @@
+---
+id: contracts-overview
+title: Contracts Overview
+slug: /contracts-overview
+---
+
+# Contracts Overview
+
+## Scope
+Die Vertragsflaeche definiert Daten-, Qualitäts- und Governance-Regeln zwischen Workflow-Stages, Persistenz und Obsidian-Ausgabe.
+
+## Contract Family
+- Stage Contracts (Social + BI Guide): schema-basierte Übergaben zwischen Research-, Content-, Review- und Persistenzstufen.
+- Registry/Policy Contracts: Ressourcenklassifizierung, Freshness-Regeln und Usage-Modes.
+- BI Guide Spezialvertraege: Opportunity, Source Snapshot, Article Package, Refresh.
+
+## Zentrale Seiten
+- [/contracts/stage-contracts](/contracts/stage-contracts)
+- [/contracts/content-intelligence-contract](/contracts/content-intelligence-contract)
+- [/contracts/resource-registry-contract](/contracts/resource-registry-contract)
+- [/contracts/bi-guide-opportunity-contract](/contracts/bi-guide-opportunity-contract)
+- [/contracts/bi-guide-source-snapshot-contract](/contracts/bi-guide-source-snapshot-contract)
+- [/contracts/bi-guide-article-package-contract](/contracts/bi-guide-article-package-contract)
+- [/contracts/bi-guide-refresh-contract](/contracts/bi-guide-refresh-contract)
+
+## Breaking-Change Policy
+Als breaking gelten mindestens:
+- Feldentfernung in `required`
+- Enum-Verschärfung ohne Migrationspfad
+- Semantikwechsel bei stabilen Schluesselfeldern
+
+Empfohlener Ablauf:
+1. Schema-Aenderung in Obsidian/SSOT vorbereiten.
+2. Mirror via Pull/Sync angleichen.
+3. Build/Validation laufen lassen.
+4. Erst dann Workflow-Rollout.
+
+## SSOT Zuordnung
+- Authoring: Obsidian `Workflows/*/Schemas`
+- Repo Mirror: `local-files/_managed/schemas` und `local-files/_managed/bi-guide/schemas`
+- Governance/Policy: [/obsidian/ssot-manifest-contract](/obsidian/ssot-manifest-contract)
+
+## Validierung
+- Contract-Inventar: [/reference/ssot/schemas-catalog](/reference/ssot/schemas-catalog)
+- Cutover-Gate: `make validate-cutover`
+- Docs-Validierung: `make docs-validate`

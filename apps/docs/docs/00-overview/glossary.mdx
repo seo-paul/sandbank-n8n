@@ -1,0 +1,31 @@
+---
+id: glossary
+title: Glossary
+slug: /glossary
+---
+
+# Glossary
+
+## SSOT
+Single Source of Truth. In diesem Setup ist Obsidian die Authoring-Quelle; das Repo ist der versionierte Mirror.
+
+## Obsidian Mirror
+Dateien unter `local-files/_managed/**` spiegeln die in Obsidian gepflegten Inhalte fuer Review und Build.
+
+## Stage Contract
+Schema-basierter Vertrag zwischen Workflow-Stages, umgesetzt als JSON-Schema unter `local-files/_managed/schemas/**`.
+
+## Manifest Parity
+Hash-basierte Pruefung (`_system/manifest.json`), dass Prompt/Context/Config/Schema zwischen Repo und Obsidian konsistent sind.
+
+## Runbook
+Operative Handlungsanleitung fuer wiederkehrende Prozesse und Fehlerfaelle.
+
+## Workflow Blueprint
+Exportierbare n8n-Workflow-JSON unter `n8n/workflows/**`, deterministisch aus `n8n/code/**` gebaut.
+
+## Social Core
+Workflow-Familie unter `Workflows/social-content` fuer Social-Content-Erstellung.
+
+## BI Guide
+Workflow-Familie unter `Workflows/bi-guide-content` fuer Opportunity- und Artikelpipeline.

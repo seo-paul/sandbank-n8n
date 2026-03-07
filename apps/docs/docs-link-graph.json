@@ -1,0 +1,113 @@
+{
+  "generated_at": "2026-03-07T09:39:56.294Z",
+  "edges": [
+    {
+      "source": "/adr-overview",
+      "target": "/adr/adr-0001-contract-ssot"
+    },
+    {
+      "source": "/adr-overview",
+      "target": "/adr/adr-0002-ssot-feedback-loop"
+    },
+    {
+      "source": "/adr-overview",
+      "target": "/contracts/contracts-overview"
+    },
+    {
+      "source": "/adr-overview",
+      "target": "/obsidian/ssot-manifest-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/contracts/stage-contracts"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/contracts/content-intelligence-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/contracts/resource-registry-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/contracts/bi-guide-opportunity-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/contracts/bi-guide-source-snapshot-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/contracts/bi-guide-article-package-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/contracts/bi-guide-refresh-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/obsidian/ssot-manifest-contract"
+    },
+    {
+      "source": "/contracts-overview",
+      "target": "/reference/ssot/schemas-catalog"
+    },
+    {
+      "source": "/obsidian-overview",
+      "target": "/obsidian/workflow-path-contract"
+    },
+    {
+      "source": "/obsidian-overview",
+      "target": "/obsidian/obsidian-setup"
+    },
+    {
+      "source": "/obsidian-overview",
+      "target": "/obsidian/obsidian-rest-adapter"
+    },
+    {
+      "source": "/obsidian-overview",
+      "target": "/obsidian/ssot-manifest-contract"
+    },
+    {
+      "source": "/obsidian-overview",
+      "target": "/obsidian/ssot-sync-flow"
+    },
+    {
+      "source": "/operations-overview",
+      "target": "/operations/human-review-runbook"
+    },
+    {
+      "source": "/operations-overview",
+      "target": "/operations/content-feedback-runbook"
+    },
+    {
+      "source": "/operations-overview",
+      "target": "/operations/resource-curation-runbook"
+    },
+    {
+      "source": "/operations-overview",
+      "target": "/operations/bi-guide-content-runbook"
+    },
+    {
+      "source": "/operations-overview",
+      "target": "/operations/bi-guide-opportunity-runbook"
+    },
+    {
+      "source": "/operations-overview",
+      "target": "/reference/scripts/runtime-ops-scripts"
+    },
+    {
+      "source": "/operations-overview",
+      "target": "/reference/scripts/sync-and-manifest-scripts"
+    },
+    {
+      "source": "/scripts/sync-and-manifest-scripts",
+      "target": "/obsidian/ssot-sync-flow"
+    },
+    {
+      "source": "/scripts/sync-and-manifest-scripts",
+      "target": "/obsidian/ssot-manifest-contract"
+    }
+  ]
+}

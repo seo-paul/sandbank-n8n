@@ -1,0 +1,38 @@
+---
+id: runtime-ops-scripts
+title: Runtime Ops Scripts
+slug: /scripts/runtime-ops-scripts
+---
+
+# Runtime Ops Scripts
+
+## Lifecycle
+- `n8n/scripts/up.sh`
+- `n8n/scripts/down.sh`
+- `n8n/scripts/logs.sh`
+- `n8n/scripts/dev-orchestrator.sh`
+
+## Workflow Transport
+- `n8n/scripts/import_workflows.sh`
+- `n8n/scripts/export_workflows.sh`
+- `n8n/scripts/build_workflows_from_code.mjs`
+
+## Health and Validation
+- `n8n/scripts/healthcheck.sh`
+- `n8n/scripts/security_check.sh`
+- `n8n/scripts/validate_cutover.sh`
+
+## Maintenance
+- `n8n/scripts/cleanup_stale_runs.sh`
+- `n8n/scripts/legacy_cleanup.sh`
+- `n8n/scripts/reset_obsidian_workflow_artifacts.sh`
+- `n8n/scripts/backup_postgres.sh`
+- `n8n/scripts/pull-model.sh`
+- `n8n/scripts/prepare_ollama_runtime.sh`
+
+## Quick Use Cases
+- Frisches Setup: `bootstrap -> up -> health -> import`
+- Nur Workflows aktualisieren: `workflow-build -> import`
+- Drift pruefen: `validate-cutover`
+- Alte Artefakte bereinigen: `reset_obsidian_workflow_artifacts.sh` oder `legacy_cleanup.sh`
+- Strict-Cutover Import: `import_workflows.sh` nutzt standardmaessig eine allowlist und entfernt unbekannte Live-Workflows.

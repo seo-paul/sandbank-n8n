@@ -1,0 +1,36 @@
+---
+id: config-catalog
+title: Config Catalog
+slug: /ssot/config-catalog
+---
+
+# Config Catalog
+
+## Social Core Config (`local-files/_managed/config`)
+- `source-policy.json`
+- `resource-registry.json`
+- `platform-profiles.json`
+
+### Zweck
+- `source-policy.json`: erlaubt/verboten, Freshness, Prioritaeten fuer Quellen.
+- `resource-registry.json`: kuratierter Bestand inkl. Review-Status.
+- `platform-profiles.json`: kanalbezogene Ausgabeprofile und Constraints.
+
+## BI Guide Config (`local-files/_managed/bi-guide/config`)
+- `source-policy.json`
+- `resource-registry.json`
+- `quality-gates.json`
+- `planning-rules.json`
+- `source-roots.json`
+- `opportunity-settings.json`
+
+### Zweck
+- `quality-gates.json`: Mindestkriterien je Stufe.
+- `planning-rules.json`: Planungslogik fuer Artikel/Cluster.
+- `source-roots.json`: erwartete Quellwurzelpfade.
+- `opportunity-settings.json`: Steuerung fuer Opportunity-Refresh.
+
+## Governance
+- Authoring-SSOT in Obsidian
+- Spiegelung ins Repo via Pull/Sync
+- Hash-Absicherung via Manifest-Refresh

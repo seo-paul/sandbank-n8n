@@ -1,0 +1,59 @@
+---
+id: bi-guide-opportunity-architecture
+title: BI Guide Opportunity Architecture
+slug: /bi-guide-opportunity-architecture
+---
+
+# BI Guide Opportunity Architecture
+
+## Ziel
+- Nachfrage-, Luecken- und Refresh-Signale vor der Artikelerstellung strukturiert sammeln.
+- Themenpriorisierung fuer den BI-Guide deterministisch und nachvollziehbar machen.
+- Obsidian als Review-Oberflaeche, PostgreSQL als Laufzeitspeicher fuer Signale.
+
+## Scope
+- Search Console Query- und Page-Signale
+- manuelle Signale aus Obsidian
+- Opportunity Register
+- Refresh Register
+- kandidatengestuetzte Artikelplanung
+
+## Nicht-Ziele
+- kein Direktschreiben in das Sandbank-Repo
+- kein eigener Analytics-Data-Warehouse-Stack
+- kein produktiver Vector Store in Phase 1
+
+## Collector
+- taeglicher Top-Level-Workflow: `BI-Guide Chancen aktualisieren`
+- sammelt Search-Console-Daten mit kurzer Lag-Strategie
+- liest `Manuelle-Signale.md`
+- persistiert Rohsignale in PostgreSQL
+
+## Score-Logik
+- deterministische Faktoren:
+  - demand_signal
+  - business_fit
+  - evidence_ready
+  - freshness_score
+- Klassifikation:
+  - intent
+  - persona
+  - use_case
+  - asset_type
+  - proof_required
+
+## Outputs
+- `OpportunitySnapshot`
+- `OpportunityRegister`
+- `RefreshRegister`
+- angereichertes `ArticleRegister`
+
+## Obsidian Views
+- `Marketing/Content/BI-Guide/BI-Guide-Workflow/Ergebnisse-Uebersicht.md`
+- `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Chancenregister.md`
+- `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Refreshregister.md`
+
+## Security
+- Search-Console-Credentials nur per Env
+- kein Schreiben nach Sandbank
+- externe Recherche bleibt von Opportunity-Rohsignalen getrennt

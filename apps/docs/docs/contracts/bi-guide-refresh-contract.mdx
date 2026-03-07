@@ -1,0 +1,62 @@
+---
+id: bi-guide-refresh-contract
+title: BI Guide Refresh Contract
+slug: /bi-guide-refresh-contract
+---
+
+# BI Guide Refresh Contract
+
+## Purpose
+- Beschreibt Refresh-Kandidaten fuer bereits vorhandene BI-Guide-Artikel.
+
+## Producer
+- `BI-Guide Quellen und Planung`
+
+## Consumers
+- `BI-Guide Chancen aktualisieren`
+- `BI-Guide Ablauf automatisch steuern`
+- Obsidian Refresh-Register
+
+## Triggers
+- hohe Impressionen bei niedriger CTR
+- schwache Position bei sichtbarer Nachfrage
+- veraltete Artikel gemaess Lookback-Regeln
+
+## Required Metrics
+- `article_id`
+- `page`
+- `impressions`
+- `clicks`
+- `ctr`
+- `avg_position`
+- `trigger`
+- `priority`
+- `recommendation`
+- `last_seen`
+
+## Recommendation Types
+- `refresh_article_with_ctr_gap`
+- `refresh_article_with_position_gap`
+- `refresh_article_with_stale_signal`
+
+## Example Payload
+```json
+{
+  "generated_at": "2026-03-06T10:00:00Z",
+  "entries": [
+    {
+      "article_id": "bi-dashboard-kpis",
+      "locale": "de",
+      "page": "/de/business-intelligence-guide/dashboards/bi-dashboard-kpis",
+      "impressions": 420,
+      "clicks": 19,
+      "ctr": 4.52,
+      "avg_position": 12.1,
+      "trigger": "ctr_gap",
+      "priority": 74,
+      "recommendation": "refresh_article_with_ctr_gap",
+      "last_seen": "2026-03-05"
+    }
+  ]
+}
+```

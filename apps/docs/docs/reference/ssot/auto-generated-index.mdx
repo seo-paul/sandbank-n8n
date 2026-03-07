@@ -1,0 +1,205 @@
+---
+id: ssot-auto-generated-index
+title: SSOT Auto Generated Index
+slug: /ssot/auto-generated-index
+---
+
+# SSOT Auto Generated Index
+
+## Social Prompts
+Quelle: `local-files/_managed/prompts`
+
+- `00-global-system.md`
+- `entwurf-erstellung.md`
+- `finale-kritik.md`
+- `kanal-linkedin.md`
+- `kanal-reddit.md`
+- `performance-auswertung.md`
+- `recherche-signale.md`
+- `schritt-zusammenfassung.md`
+- `strategie-kritik.md`
+- `thema-pruefung.md`
+- `ton-kritik.md`
+
+## Global Context
+Quelle: `local-files/_managed/context/global`
+
+- `audience.md`
+- `author-voice.md`
+- `brand.md`
+- `cta-goals.md`
+- `offer.md`
+- `proof-library.md`
+- `red-lines.md`
+- `voice.md`
+
+## Social Workflow Context
+Quelle: `local-files/_managed/context/workflow`
+
+- `linkedin-context.md`
+- `performance-memory.md`
+- `reddit-communities.md`
+
+## Social Schemas
+Quelle: `local-files/_managed/schemas`
+
+- `content_package.schema.json`
+- `final_gate.schema.json`
+- `linkedin_brief.schema.json`
+- `performance_learnings.schema.json`
+- `reddit_brief.schema.json`
+- `research_output.schema.json`
+- `strategy_critique.schema.json`
+- `tone_critique.schema.json`
+- `topic_gate.schema.json`
+
+## Social Config
+Quelle: `local-files/_managed/config`
+
+- `platform-profiles.json`
+- `resource-registry.json`
+- `source-policy.json`
+
+## Social Templates
+Quelle: `local-files/_managed/templates`
+
+- `laufdetail-template.md`
+- `resource-card-template.md`
+- `resource-readme-template.md`
+- `resource-register-template.md`
+- `runs-register-template.md`
+- `workflow-uebersicht-template.md`
+- `zwischenergebnis-workflow-template.md`
+
+## BI Guide Prompts
+Quelle: `local-files/_managed/bi-guide/prompts`
+
+- `00-global-system.md`
+- `article-draft.md`
+- `export-bundle.md`
+- `publication-fit.md`
+- `schritt-zusammenfassung.md`
+- `source-analysis.md`
+
+## BI Guide Context
+Quelle: `local-files/_managed/bi-guide/context/workflow`
+
+- `backlog-steering.md`
+- `bi-guide-editorial-pattern.md`
+- `publication-contract.md`
+- `reference-articles.md`
+- `source-roots.md`
+
+## BI Guide Schemas
+Quelle: `local-files/_managed/bi-guide/schemas`
+
+- `article_package.schema.json`
+- `article_plan.schema.json`
+- `export_bundle.schema.json`
+- `opportunity_register.schema.json`
+- `opportunity_snapshot.schema.json`
+- `publication_fit_report.schema.json`
+- `refresh_register.schema.json`
+- `source_snapshot.schema.json`
+
+## BI Guide Config
+Quelle: `local-files/_managed/bi-guide/config`
+
+- `opportunity-settings.json`
+- `planning-rules.json`
+- `quality-gates.json`
+- `resource-registry.json`
+- `source-policy.json`
+- `source-roots.json`
+
+## BI Guide Templates
+Quelle: `local-files/_managed/bi-guide/templates`
+
+- `bi-guide-article-register-template.md`
+- `bi-guide-article-template.md`
+- `bi-guide-frontmatter-template.md`
+- `bi-guide-intermediate-overview-template.md`
+- `bi-guide-manual-signals-template.md`
+- `bi-guide-opportunity-register-template.md`
+- `bi-guide-readme-template.md`
+- `bi-guide-refresh-register-template.md`
+- `bi-guide-results-overview-template.md`
+- `bi-guide-runs-register-template.md`
+- `bi-guide-workflow-overview-template.md`
+- `bi-guide-zwischenergebnis-workflow-template.md`
+
+## Workflow Blueprints
+Quelle: `n8n/workflows`
+
+- `README.md`
+- `ablauf-automatisch-steuern.json`
+- `beitrag-aus-quellen-erstellen.json`
+- `bi-guide-ablauf-automatisch-steuern.json`
+- `bi-guide-artikelpaket-erstellen.json`
+- `bi-guide-chancen-aktualisieren.json`
+- `bi-guide-ergebnisse-in-obsidian-speichern.json`
+- `bi-guide-fehlerlauf-klar-dokumentieren.json`
+- `bi-guide-human-review-pruefen.json`
+- `bi-guide-quellen-und-planung.json`
+- `ergebnisse-in-obsidian-speichern.json`
+- `fehlerlauf-klar-dokumentieren.json`
+- `human-review-pruefen.json`
+- `performance-zurueckfuehren.json`
+- `system-verbindungen-pruefen.json`
+- `thema-und-quellen-sammeln.json`
+
+## Code Nodes
+Quelle: `n8n/code`
+
+- `bi-guide-content-pipeline.js`
+- `bi-guide-error-prepare.js`
+- `bi-guide-orchestrator-init.js`
+- `bi-guide-orchestrator-load-ssot.js`
+- `bi-guide-orchestrator-return.js`
+- `bi-guide-persist-results.js`
+- `bi-guide-source-pipeline.js`
+- `content-pipeline.js`
+- `error-prepare.js`
+- `human-review-gate.js`
+- `orchestrator-init.js`
+- `orchestrator-load-ssot.js`
+- `orchestrator-return.js`
+- `performance-feedback.js`
+- `persist-results.js`
+- `research-pipeline.js`
+
+## Runtime Scripts
+Quelle: `n8n/scripts`
+
+- `backup_postgres.sh`
+- `build_workflows_from_code.mjs`
+- `cleanup_stale_runs.sh`
+- `dev-orchestrator.sh`
+- `down.sh`
+- `env-local-init.sh`
+- `export_workflows.sh`
+- `extract_brand_pdf.py`
+- `healthcheck.sh`
+- `import_workflows.sh`
+- `legacy_cleanup.sh`
+- `logs.sh`
+- `obsidian_rest_fs_adapter.py`
+- `prepare_ollama_runtime.sh`
+- `pull-model.sh`
+- `pull_obsidian_bi_guide_ssot.sh`
+- `pull_obsidian_ssot.sh`
+- `refresh_obsidian_bi_guide_manifest.sh`
+- `refresh_obsidian_ssot_manifest.sh`
+- `reset_obsidian_workflow_artifacts.sh`
+- `security_check.sh`
+- `start_obsidian_rest_fs_adapter.sh`
+- `stop_active_run.sh`
+- `stop_obsidian_rest_fs_adapter.sh`
+- `sync_obsidian_bi_guide_ssot.sh`
+- `sync_obsidian_ssot.sh`
+- `sync_resource_governance_to_obsidian.sh`
+- `tail_active_run.sh`
+- `up.sh`
+- `validate_cutover.sh`
+- `watch_active_run.sh`
+

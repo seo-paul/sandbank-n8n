@@ -1,0 +1,44 @@
+---
+id: resource-curation-runbook
+title: Resource Curation Runbook
+slug: /resource-curation-runbook
+---
+
+# Resource Curation Runbook
+
+## New Source Intake
+1. Publisher, Domainmuster und primaeren Nutzwert erfassen.
+2. Ressourcenklasse zuordnen.
+3. Erlaubte Workflows und Usage-Modi festlegen.
+4. Bias-Flags und Review-Pflicht bestimmen.
+5. Erst dann in `resource-registry.json` aufnehmen.
+
+## Review Checklist
+- Hat die Quelle direkten Themenfit?
+- Ist sie primaer, original oder nur second-hand?
+- Ist sie fuer unseren BI-/B2B-Kontext uebertragbar?
+- Ist der Bias klar genug markiert?
+- Braucht sie manuelle Review-Pflicht?
+
+## Reject Reasons
+- Kein direkter Themenfit
+- Nur aggregiert oder unsauber zitiert
+- Reine SEO-, Affiliate- oder Listicle-Struktur
+- Zu hohe kommerzielle Verzerrung ohne Gegenquelle
+- Quelle ist fuer unseren Use-Case nur dekorativ, nicht hilfreich
+
+## Update Cycle
+- Registry bei neuen relevanten Publishern erweitern.
+- Review-Pflicht und Bias-Flags nach realen Runs nachschaerfen.
+- Veraltete oder schwache Quellenfamilien entfernen.
+
+## Escalation
+- Unsichere, breite oder prestigetraechtige Domains ohne klaren Themenfit nicht automatisch freigeben.
+- Im Zweifel `manual_review_required` setzen.
+
+## Audit Trail
+- Jede Aufnahme oder Aenderung braucht:
+  - Grund
+  - betroffene Workflow(s)
+  - beabsichtigte Usage
+  - Risiko- und Bias-Notiz

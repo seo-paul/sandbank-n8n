@@ -1,0 +1,29 @@
+---
+id: ssot-manifest-contract
+title: SSOT Manifest Contract
+slug: /ssot-manifest-contract
+---
+
+# SSOT Manifest Contract
+
+## Purpose
+Das Manifest sichert, dass Prompt-, Kontext-, Konfigurations- und Schema-Dateien in Obsidian konsistent und erwartbar sind.
+
+## Datei
+- Ziel: `Workflows/social-content/_system/manifest.json`
+- Erzeugung: `n8n/scripts/refresh_obsidian_ssot_manifest.sh`
+
+## Struktur
+- `version`
+- `generated_at`
+- `bundle_hash`
+- `items` (Hash je logischem Objekt, z. B. `prompt:recherche_signale`, `schema:topic_gate`)
+
+## Hash-Regeln
+- Markdown/Text: `sha256(trimmed_text)`
+- JSON: parse -> canonical sort -> `sha256(canonical_json)`
+
+## Contract-Regeln
+- Manifest muss alle Pflichtobjekte enthalten (Prompts, global/local Kontext, Config, Schemas).
+- Bundle-Hash muss deterministisch aus den Item-Hashes berechnet sein.
+- Laufstart ohne gueltige Manifest-Paritaet ist nicht zulaessig.

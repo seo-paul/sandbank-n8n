@@ -1,0 +1,51 @@
+---
+id: platform-overview
+title: Platform Overview
+slug: /platform-overview
+---
+
+# Platform Overview
+
+Die Seite konsolidiert Zielbild, Betriebsmodell und Umsetzungsphasen fuer das n8n/Obsidian Dokusystem.
+
+## Betriebsmodell
+- Obsidian ist Authoring-SSOT fuer Prompts, Kontext, Schemas, Konfiguration und Ergebnisdokumentation.
+- Dieses Repo ist der versionierte Mirror fuer Review, Workflow-Build und statische Validierung.
+- Sync-Flows (`pull-ssot`, `sync-ssot`, Manifest-Refresh) sichern die SSOT-Paritaet.
+
+## Zielbild
+- Ein Lauf schreibt strukturierte Laufdetails, Fehlerdetails und Register in die definierten Obsidian-Pfade.
+- Social-Core und BI-Guide bleiben getrennte Workflows mit eigenen Artefakten.
+- Vertrage sind schema-first und werden fail-closed validiert.
+
+## Umsetzungsphasen
+# Implementation Plan
+
+## Phase 1 Contracts + SSOT
+- Schema-Contracts zentralisiert (`Schemas/`)
+- SSOT-Manifest eingefuehrt und Lauf-Hashcheck aktiviert
+- Global/Local Kontextgrenze umgesetzt
+
+## Phase 2 Research + Content Architecture
+- Research-Pipeline: Query -> Retrieval -> Dedupe/Scoring -> Evidence/Angle
+- Content-Pipeline: Topic-Gate -> Kanal-Briefs -> Drafts -> Kritiken -> Final-Gate
+- Reddit-Router mit `comment|post_text_only|post_with_link|skip`
+
+## Phase 3 Operational Gates
+- Human-Review als eigener Subworkflow
+- Typed Subworkflow-Input-Vertraege (ExecuteWorkflowTrigger Inputs + Runtime-Checks)
+- Stage-spezifische Thinking-Steuerung
+
+## Phase 4 Structure Cleanup
+- Global shared folder: `Workflows`
+- Shared fachlicher Root: `Workflows/_shared`
+- Workflow cores: `Workflows/social-content` und `Workflows/bi-guide-content`
+- Marketing views: `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`
+- ASCII naming for workflow files
+- Evaluations und Prompt-Change-Log komplett entfernt
+
+## Phase 5 Hardening + Cutover
+- Retry-Logik fuer kritische Obsidian-IO
+- URL-Allowlist-Hardening in Retrieval
+- Legacy-Bereinigung ohne Rueckwaertskompatibilitaets-Layer
+- Cutover-Validierung auf neue Pfadstruktur erweitert

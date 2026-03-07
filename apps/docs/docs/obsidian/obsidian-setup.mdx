@@ -1,0 +1,103 @@
+---
+id: obsidian-setup
+title: Obsidian Setup
+slug: /obsidian-setup
+---
+
+# Obsidian Workflow Setup
+
+Globale Shared-Artefakte liegen unter:
+`Workflows`
+
+Aktive Laufdaten liegen unter:
+`Workflows/social-content`
+
+## Minimale Struktur
+- `Artefakte/Ergebnisse/00-Runs.md`
+- `Artefakte/Ergebnisse/Laufdetails/`
+- `Artefakte/Ergebnisse/Fehlerdetails/`
+- `Artefakte/Ergebnisse/Performance/`
+- `Artefakte/Zwischenergebnisse/`
+- `Prompts/`
+- `Kontext/` (workflowlokal)
+- `Config/`
+- `Schemas/`
+- `_system/manifest.json`
+
+Weitere Workflow-Familie:
+- `Workflows/bi-guide-content`
+- `.../Artefakte/Ergebnisse/Laufdetails/`
+- `.../Artefakte/Ergebnisse/Quellensnapshots/`
+- `.../Artefakte/Ergebnisse/Artikelpakete/`
+- `.../Artefakte/Ergebnisse/Exporte/`
+- `.../Artefakte/Zwischenergebnisse/`
+- `.../Templates/`
+- `.../Artefakte/00-Artikelregister.md`
+
+Marketing-Views:
+- `Marketing/Social-Media/Beitraege/Beitraege-Workflow`
+- `Marketing/Content/BI-Guide/BI-Guide-Workflow`
+
+Benennung:
+- `Workflows/social-content` ist der technische Core fuer den Beitraege-Workflow.
+- Die redaktionelle Navigation bleibt unter `Marketing/Social-Media/Beitraege/Beitraege-Workflow`.
+
+## Relevante `.env`-Variablen
+- `OBSIDIAN_VAULT_FS_PATH`
+- `OBSIDIAN_WORKFLOWS_DIR`
+- `OBSIDIAN_WORKFLOWS_SHARED_DIR`
+- `OBSIDIAN_WORKFLOWS_CONTEXT_DIR`
+- `OBSIDIAN_WORKFLOW_DIR`
+- `OBSIDIAN_WORKFLOW_MARKETING_DIR`
+- `OBSIDIAN_WORKFLOW_ARCHIVE_DIR`
+- `OBSIDIAN_WORKFLOW_RESULTS_DIR`
+- `OBSIDIAN_WORKFLOW_DETAIL_DIR`
+- `OBSIDIAN_WORKFLOW_ERROR_DIR`
+- `OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR`
+- `OBSIDIAN_WORKFLOW_PROMPTS_DIR`
+- `OBSIDIAN_WORKFLOW_CONTEXT_DIR`
+- `OBSIDIAN_WORKFLOW_SCHEMA_DIR`
+- `OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE`
+- `OBSIDIAN_WORKFLOW_RUNS_FILE`
+- `OBSIDIAN_WORKFLOW_OVERVIEW_FILE`
+- `OBSIDIAN_WORKFLOW_RESULTS_OVERVIEW_FILE`
+- `OBSIDIAN_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE`
+- `OBSIDIAN_BI_GUIDE_WORKFLOW_DIR`
+- `OBSIDIAN_BI_GUIDE_MARKETING_DIR`
+
+Defaults setzt:
+```bash
+./n8n/scripts/env-local-init.sh
+./n8n/scripts/sync_obsidian_ssot.sh
+./n8n/scripts/sync_obsidian_bi_guide_ssot.sh
+```
+
+BI-Guide Marketing-Cutover:
+- `sync_obsidian_bi_guide_ssot.sh` entfernt veraltete Marketing-Uebersichten (`Artikelregister/Chancen/Refresh`) und deprecated Overview-Templates im BI-Guide-Template-Ordner.
+
+Lokaler Standard:
+- Wenn `OBSIDIAN_VAULT_FS_PATH` auf den Vault zeigt, nutzen Sync-, Pull- und Manifest-Skripte direkt das Dateisystem.
+- Nur wenn dieser Pfad nicht verfuegbar ist, fallen die Skripte auf die Obsidian Local REST API zurueck.
+
+Clean reset + Archivierung:
+```bash
+./n8n/scripts/reset_obsidian_workflow_artifacts.sh
+./n8n/scripts/legacy_cleanup.sh --apply
+```
+
+## Wichtig zum Sync
+- `sync_obsidian_ssot.sh` synchronisiert Prompts, Kontext, Schemas und Manifest.
+- `sync_obsidian_ssot.sh` bricht ab, wenn SSOT-Quelldateien fehlen oder leer sind.
+- `refresh_obsidian_ssot_manifest.sh` und `refresh_obsidian_bi_guide_manifest.sh` schreiben `_system/manifest.json` direkt in den Vault-Core.
+
+## Was pro Run geschrieben wird
+- Laufdetail: `Artefakte/Ergebnisse/Laufdetails/<run_id>.md`
+- Run-Zeile: `Artefakte/Ergebnisse/00-Runs.md`
+- Vollstaendige Workflow-Zwischenergebnisse: `Artefakte/Zwischenergebnisse/<workflow-slug>.md`
+
+## Fehlerlaeufe
+`Fehlerlauf klar dokumentieren` schreibt in:
+`Artefakte/Ergebnisse/Fehlerdetails/<run_id>.md`
+
+## Performance
+- `Performance zurueckfuehren` schreibt in: `Artefakte/Ergebnisse/Performance/<run_id>.md`

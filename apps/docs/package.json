@@ -1,0 +1,30 @@
+{
+  "name": "@sandbank-n8n/docs",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "docusaurus start --config docusaurus.config.ts --host 0.0.0.0 --port 3007",
+    "build": "docusaurus build --config docusaurus.config.ts",
+    "serve": "docusaurus serve --config docusaurus.config.ts",
+    "clear": "docusaurus clear --config docusaurus.config.ts",
+    "swizzle": "docusaurus swizzle --config docusaurus.config.ts",
+    "validate:frontmatter": "node ./scripts/validate-frontmatter.mjs",
+    "build:artifacts": "node ./scripts/build-doc-artifacts.mjs",
+    "generate:ssot-reference": "node ./scripts/generate-ssot-reference.mjs"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.9.2",
+    "@docusaurus/preset-classic": "3.9.2",
+    "clsx": "2.1.1",
+    "prism-react-renderer": "2.4.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.2",
+    "@types/node": "22.18.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
