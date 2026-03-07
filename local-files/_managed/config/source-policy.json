@@ -11,9 +11,32 @@
     "community",
     "vendor"
   ],
+  "allowed_resource_classes": [
+    "official_product_or_platform_docs",
+    "official_standards_or_regulation",
+    "first_party_original_data",
+    "industry_benchmark_or_survey",
+    "operator_case_study",
+    "topic_specific_research",
+    "community_signal",
+    "general_media",
+    "vendor_content"
+  ],
   "minimum_external_signals": 4,
   "minimum_distinct_domains": 3,
   "minimum_primary_sources": 1,
+  "minimum_resource_score": 0.48,
+  "minimum_topic_fit_score": 0.28,
+  "minimum_evidence_strength_score": 0.38,
+  "minimum_citation_readiness_score": 0.28,
+  "resource_score_weights": {
+    "topic_fit": 0.34,
+    "evidence_strength": 0.22,
+    "citation_readiness": 0.18,
+    "freshness": 0.12,
+    "transferability": 0.14,
+    "commercial_bias_penalty": 0.18
+  },
   "official_domain_markers": [
     "docs.",
     "developer.",
@@ -24,9 +47,6 @@
   ],
   "research_domain_patterns": [
     "arxiv.org",
-    "nature.com",
-    "sciencedirect.com",
-    "springer.com",
     "nber.org",
     "nih.gov",
     "ssrn.com"
@@ -37,13 +57,25 @@
   "downgraded_domain_patterns": [
     "medium.com",
     "substack.com",
-    "blog."
+    "blog.",
+    "wikipedia.org"
   ],
   "blocked_domain_patterns": [
     "facebook.com",
     "instagram.com",
     "pinterest.com",
     "quora.com"
+  ],
+  "blocked_title_patterns": [
+    "best tools",
+    "top 10",
+    "ultimate list",
+    "affiliate"
+  ],
+  "blocked_snippet_patterns": [
+    "sponsored",
+    "affiliate disclosure",
+    "our picks"
   ],
   "reddit_api": {
     "enabled": false,

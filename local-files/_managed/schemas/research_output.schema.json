@@ -26,6 +26,8 @@
         "distinct_domains",
         "primary_source_count",
         "source_mix",
+        "resource_class_mix",
+        "review_required_signal_count",
         "external_evidence_ready"
       ],
       "properties": {
@@ -46,6 +48,33 @@
             "additionalProperties": false
           }
         },
+        "resource_class_mix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["resource_class", "count"],
+            "properties": {
+              "resource_class": {
+                "type": "string",
+                "enum": [
+                  "official_product_or_platform_docs",
+                  "official_standards_or_regulation",
+                  "first_party_original_data",
+                  "industry_benchmark_or_survey",
+                  "operator_case_study",
+                  "topic_specific_research",
+                  "community_signal",
+                  "general_media",
+                  "vendor_content",
+                  "low_value_aggregator"
+                ]
+              },
+              "count": { "type": "number", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "review_required_signal_count": { "type": "number", "minimum": 0 },
         "external_evidence_ready": { "type": "boolean" }
       },
       "additionalProperties": false
@@ -102,9 +131,17 @@
           "retrieval_query",
           "published_at",
           "source_type",
+          "resource_class",
           "source_tier",
           "authority",
           "freshness",
+          "allowed_usage",
+          "topic_fit_score",
+          "evidence_strength_score",
+          "citation_readiness_score",
+          "transferability_score",
+          "commercial_bias_score",
+          "review_required",
           "support_type",
           "why_it_matters",
           "risk_or_bias",
@@ -120,9 +157,35 @@
           "retrieval_query": { "type": "string", "minLength": 3 },
           "published_at": { "type": "string" },
           "source_type": { "type": "string", "enum": ["official", "research", "media", "community", "vendor"] },
+          "resource_class": {
+            "type": "string",
+            "enum": [
+              "official_product_or_platform_docs",
+              "official_standards_or_regulation",
+              "first_party_original_data",
+              "industry_benchmark_or_survey",
+              "operator_case_study",
+              "topic_specific_research",
+              "community_signal",
+              "general_media",
+              "vendor_content",
+              "low_value_aggregator"
+            ]
+          },
           "source_tier": { "type": "string", "enum": ["primary", "supporting", "community_signal"] },
           "authority": { "type": "string", "enum": ["high", "medium", "low"] },
           "freshness": { "type": "string", "enum": ["current", "recent", "dated", "timeless"] },
+          "allowed_usage": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "enum": ["background", "fact", "quote", "comparison", "counterpoint", "example"] }
+          },
+          "topic_fit_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "evidence_strength_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "citation_readiness_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "transferability_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "commercial_bias_score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "review_required": { "type": "boolean" },
           "support_type": { "type": "string", "enum": ["data", "quote", "example", "trend", "counterpoint"] },
           "why_it_matters": { "type": "string", "minLength": 5 },
           "risk_or_bias": { "type": "string", "minLength": 3 },

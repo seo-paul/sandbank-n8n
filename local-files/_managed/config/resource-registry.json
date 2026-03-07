@@ -1,0 +1,198 @@
+{
+  "version": "1.0.0",
+  "registry_name": "social-resource-registry",
+  "default_resource_profiles": {
+    "official_product_or_platform_docs": {
+      "source_type": "official",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.86,
+      "citation_readiness_score": 0.78,
+      "commercial_bias_score": 0.16,
+      "default_usage": ["fact", "comparison", "background"]
+    },
+    "official_standards_or_regulation": {
+      "source_type": "official",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.91,
+      "citation_readiness_score": 0.82,
+      "commercial_bias_score": 0.04,
+      "default_usage": ["fact", "background", "counterpoint"]
+    },
+    "first_party_original_data": {
+      "source_type": "research",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.82,
+      "citation_readiness_score": 0.74,
+      "commercial_bias_score": 0.12,
+      "default_usage": ["fact", "comparison", "background"]
+    },
+    "industry_benchmark_or_survey": {
+      "source_type": "research",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.76,
+      "citation_readiness_score": 0.72,
+      "commercial_bias_score": 0.2,
+      "default_usage": ["fact", "comparison", "background"]
+    },
+    "operator_case_study": {
+      "source_type": "vendor",
+      "source_tier": "supporting",
+      "authority": "medium",
+      "evidence_strength_score": 0.63,
+      "citation_readiness_score": 0.58,
+      "commercial_bias_score": 0.26,
+      "default_usage": ["example", "counterpoint", "background"]
+    },
+    "topic_specific_research": {
+      "source_type": "research",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.78,
+      "citation_readiness_score": 0.76,
+      "commercial_bias_score": 0.08,
+      "default_usage": ["fact", "counterpoint", "background"]
+    },
+    "community_signal": {
+      "source_type": "community",
+      "source_tier": "community_signal",
+      "authority": "medium",
+      "evidence_strength_score": 0.42,
+      "citation_readiness_score": 0.24,
+      "commercial_bias_score": 0.18,
+      "default_usage": ["background", "counterpoint"]
+    },
+    "general_media": {
+      "source_type": "media",
+      "source_tier": "supporting",
+      "authority": "medium",
+      "evidence_strength_score": 0.48,
+      "citation_readiness_score": 0.44,
+      "commercial_bias_score": 0.14,
+      "default_usage": ["background", "counterpoint"]
+    },
+    "vendor_content": {
+      "source_type": "vendor",
+      "source_tier": "supporting",
+      "authority": "medium",
+      "evidence_strength_score": 0.36,
+      "citation_readiness_score": 0.34,
+      "commercial_bias_score": 0.34,
+      "default_usage": ["background", "example"]
+    },
+    "low_value_aggregator": {
+      "source_type": "vendor",
+      "source_tier": "supporting",
+      "authority": "low",
+      "evidence_strength_score": 0.12,
+      "citation_readiness_score": 0.08,
+      "commercial_bias_score": 0.42,
+      "default_usage": ["background"]
+    }
+  },
+  "publishers": [
+    {
+      "resource_id": "official-docs-generic",
+      "publisher": "Official Product and Platform Docs",
+      "domain_patterns": ["docs.", "developer.", "support.", "help.", "learn.microsoft.com", "developers.google.com", "cloud.google.com"],
+      "resource_class": "official_product_or_platform_docs",
+      "allowed_workflows": ["social", "bi-guide"],
+      "allowed_usage": ["fact", "comparison", "background"],
+      "manual_review_required": false,
+      "bias_flags": [],
+      "notes": "Default fuer Produkt-, API- und Plattformdokumentation."
+    },
+    {
+      "resource_id": "public-standards-and-regulation",
+      "publisher": "Public Standards and Regulation",
+      "domain_patterns": [".gov", ".edu", "nist.gov", "europa.eu", "data.europa.eu"],
+      "resource_class": "official_standards_or_regulation",
+      "allowed_workflows": ["social", "bi-guide"],
+      "allowed_usage": ["fact", "background", "counterpoint"],
+      "manual_review_required": false,
+      "bias_flags": [],
+      "notes": "Bevorzugt fuer Compliance, Governance und Standards."
+    },
+    {
+      "resource_id": "industry-benchmarks",
+      "publisher": "Industry Benchmarks and Surveys",
+      "domain_patterns": ["gartner.com", "forrester.com", "barc.com", "dresneradvisory.com", "mckinsey.com", "deloitte.com", "pwc.com", "kpmg.com"],
+      "resource_class": "industry_benchmark_or_survey",
+      "allowed_workflows": ["social", "bi-guide"],
+      "allowed_usage": ["fact", "comparison", "background"],
+      "manual_review_required": true,
+      "bias_flags": ["methodology_check_recommended"],
+      "notes": "Nur mit sauberer Einordnung von Methode, Scope und Bias nutzen."
+    },
+    {
+      "resource_id": "topic-research-direct",
+      "publisher": "Direct Topic Research",
+      "domain_patterns": ["arxiv.org", "nber.org", "nih.gov", "ssrn.com"],
+      "resource_class": "topic_specific_research",
+      "allowed_workflows": ["social", "bi-guide"],
+      "allowed_usage": ["fact", "counterpoint", "background"],
+      "manual_review_required": false,
+      "bias_flags": [],
+      "notes": "Nur bei direktem Themenfit verwenden."
+    },
+    {
+      "resource_id": "operator-case-studies",
+      "publisher": "Operator Case Studies",
+      "domain_patterns": ["netflixtechblog.com", "shopify.engineering", "blog.cloudflare.com", "stripe.com", "engineering."],
+      "resource_class": "operator_case_study",
+      "allowed_workflows": ["social", "bi-guide"],
+      "allowed_usage": ["example", "background", "counterpoint"],
+      "manual_review_required": true,
+      "bias_flags": ["single_company_view"],
+      "notes": "Gut fuer reale Umsetzung, aber nicht als alleiniger Beleg."
+    },
+    {
+      "resource_id": "reddit-community",
+      "publisher": "Reddit",
+      "domain_patterns": ["reddit.com"],
+      "resource_class": "community_signal",
+      "allowed_workflows": ["social"],
+      "allowed_usage": ["background", "counterpoint"],
+      "manual_review_required": false,
+      "bias_flags": ["anecdotal"],
+      "notes": "Nur als Community-Signal, nie als Kernbeleg."
+    },
+    {
+      "resource_id": "general-tech-media",
+      "publisher": "General Technology Media",
+      "domain_patterns": ["techcrunch.com", "theverge.com", "wired.com", "venturebeat.com", "heise.de"],
+      "resource_class": "general_media",
+      "allowed_workflows": ["social", "bi-guide"],
+      "allowed_usage": ["background", "counterpoint"],
+      "manual_review_required": true,
+      "bias_flags": ["second_hand_reporting"],
+      "notes": "Nur fuer Marktbewegung oder Kontext, nicht fuer harte Kernclaims."
+    },
+    {
+      "resource_id": "broad-science-review-only",
+      "publisher": "Broad Science Publishers",
+      "domain_patterns": ["nature.com", "sciencedirect.com", "springer.com"],
+      "resource_class": "topic_specific_research",
+      "allowed_workflows": ["social", "bi-guide"],
+      "allowed_usage": ["background", "counterpoint"],
+      "manual_review_required": true,
+      "topic_keywords_any": ["analytics", "business intelligence", "dashboard", "reporting", "data warehouse", "data governance", "decision support"],
+      "bias_flags": ["generic_science_domain_not_default_bi_source"],
+      "notes": "Nur bei direktem BI-/Analytics-Fit und mit manueller Einordnung nutzen."
+    },
+    {
+      "resource_id": "low-value-aggregators",
+      "publisher": "Low Value Aggregators",
+      "domain_patterns": ["medium.com", "substack.com", "wikipedia.org"],
+      "resource_class": "low_value_aggregator",
+      "allowed_workflows": [],
+      "allowed_usage": ["background"],
+      "manual_review_required": true,
+      "bias_flags": ["aggregated_or_unsourced"],
+      "notes": "Default nicht als Evidenz zulassen."
+    }
+  ]
+}
