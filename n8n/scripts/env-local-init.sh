@@ -191,7 +191,7 @@ fi
 
 current_workflow_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DIR")"
 if [[ -z "$current_workflow_dir" || "$current_workflow_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow\""
+  set_env_value "OBSIDIAN_WORKFLOW_DIR" "\"Workflows/social-content\""
 fi
 
 current_workflows_dir="$(get_env_value "OBSIDIAN_WORKFLOWS_DIR")"
@@ -199,9 +199,14 @@ if [[ -z "$current_workflows_dir" || "$current_workflows_dir" == "replace_with_"
   set_env_value "OBSIDIAN_WORKFLOWS_DIR" "\"Workflows\""
 fi
 
+current_workflows_shared_dir="$(get_env_value "OBSIDIAN_WORKFLOWS_SHARED_DIR")"
+if [[ -z "$current_workflows_shared_dir" || "$current_workflows_shared_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOWS_SHARED_DIR" "\"Workflows/_shared\""
+fi
+
 current_workflows_context_dir="$(get_env_value "OBSIDIAN_WORKFLOWS_CONTEXT_DIR")"
 if [[ -z "$current_workflows_context_dir" || "$current_workflows_context_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOWS_CONTEXT_DIR" "\"Workflows/Kontext\""
+  set_env_value "OBSIDIAN_WORKFLOWS_CONTEXT_DIR" "\"Workflows/_shared/Kontext\""
 fi
 
 current_workflow_archive_dir="$(get_env_value "OBSIDIAN_WORKFLOW_ARCHIVE_DIR")"
@@ -209,59 +214,219 @@ if [[ -z "$current_workflow_archive_dir" || "$current_workflow_archive_dir" == "
   set_env_value "OBSIDIAN_WORKFLOW_ARCHIVE_DIR" "\"Marketing/Social-Media/Beitraege/_Archiv/Workflow\""
 fi
 
+current_workflow_marketing_dir="$(get_env_value "OBSIDIAN_WORKFLOW_MARKETING_DIR")"
+if [[ -z "$current_workflow_marketing_dir" || "$current_workflow_marketing_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_MARKETING_DIR" "\"Marketing/Social-Media/Beitraege/Beitraege-Workflow\""
+fi
+
 current_workflow_results_dir="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR")"
 if [[ -z "$current_workflow_results_dir" || "$current_workflow_results_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse\""
+  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_DIR" "\"Workflows/social-content/Artefakte/Ergebnisse\""
 fi
 
 current_workflow_detail_dir="$(get_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR")"
 if [[ -z "$current_workflow_detail_dir" || "$current_workflow_detail_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/Laufdetails\""
+  set_env_value "OBSIDIAN_WORKFLOW_DETAIL_DIR" "\"Workflows/social-content/Artefakte/Ergebnisse/Laufdetails\""
 fi
 
 current_workflow_error_dir="$(get_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR")"
 if [[ -z "$current_workflow_error_dir" || "$current_workflow_error_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/Fehlerdetails\""
+  set_env_value "OBSIDIAN_WORKFLOW_ERROR_DIR" "\"Workflows/social-content/Artefakte/Ergebnisse/Fehlerdetails\""
 fi
 
 current_workflow_intermediate_dir="$(get_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR")"
 if [[ -z "$current_workflow_intermediate_dir" || "$current_workflow_intermediate_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Zwischenergebnisse\""
+  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR" "\"Workflows/social-content/Artefakte/Zwischenergebnisse\""
 fi
 
 current_workflow_prompts_dir="$(get_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR")"
 if [[ -z "$current_workflow_prompts_dir" || "$current_workflow_prompts_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts\""
+  set_env_value "OBSIDIAN_WORKFLOW_PROMPTS_DIR" "\"Workflows/social-content/Prompts\""
 fi
 
 current_workflow_context_dir="$(get_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR")"
 if [[ -z "$current_workflow_context_dir" || "$current_workflow_context_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext\""
+  set_env_value "OBSIDIAN_WORKFLOW_CONTEXT_DIR" "\"Workflows/social-content/Kontext\""
 fi
 
 current_workflow_config_dir="$(get_env_value "OBSIDIAN_WORKFLOW_CONFIG_DIR")"
 if [[ -z "$current_workflow_config_dir" || "$current_workflow_config_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_CONFIG_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config\""
+  set_env_value "OBSIDIAN_WORKFLOW_CONFIG_DIR" "\"Workflows/social-content/Config\""
 fi
 
 current_workflow_schema_dir="$(get_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR")"
 if [[ -z "$current_workflow_schema_dir" || "$current_workflow_schema_dir" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas\""
+  set_env_value "OBSIDIAN_WORKFLOW_SCHEMA_DIR" "\"Workflows/social-content/Schemas\""
 fi
 
 current_workflow_ssot_manifest_file="$(get_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE")"
 if [[ -z "$current_workflow_ssot_manifest_file" || "$current_workflow_ssot_manifest_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/SSOT/manifest.json\""
+  set_env_value "OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE" "\"Workflows/social-content/_system/manifest.json\""
 fi
 
 current_workflow_runs_file="$(get_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE")"
 if [[ -z "$current_workflow_runs_file" || "$current_workflow_runs_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/00-Runs.md\""
+  set_env_value "OBSIDIAN_WORKFLOW_RUNS_FILE" "\"Workflows/social-content/Artefakte/Ergebnisse/00-Runs.md\""
 fi
 
 current_workflow_overview_file="$(get_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE")"
 if [[ -z "$current_workflow_overview_file" || "$current_workflow_overview_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Beitraege-Workflow-Uebersicht.md\""
+  set_env_value "OBSIDIAN_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Social-Media/Beitraege/Beitraege-Workflow/Workflow-Uebersicht.md\""
+fi
+
+current_workflow_results_overview_file="$(get_env_value "OBSIDIAN_WORKFLOW_RESULTS_OVERVIEW_FILE")"
+if [[ -z "$current_workflow_results_overview_file" || "$current_workflow_results_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_RESULTS_OVERVIEW_FILE" "\"Marketing/Social-Media/Beitraege/Beitraege-Workflow/Ergebnisse-Uebersicht.md\""
+fi
+
+current_workflow_intermediate_overview_file="$(get_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE")"
+if [[ -z "$current_workflow_intermediate_overview_file" || "$current_workflow_intermediate_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE" "\"Marketing/Social-Media/Beitraege/Beitraege-Workflow/Zwischenergebnisse-Uebersicht.md\""
+fi
+
+current_bi_guide_workflow_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_DIR")"
+if [[ -z "$current_bi_guide_workflow_dir" || "$current_bi_guide_workflow_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_DIR" "\"Workflows/bi-guide-content\""
+fi
+
+current_bi_guide_marketing_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_MARKETING_DIR")"
+if [[ -z "$current_bi_guide_marketing_dir" || "$current_bi_guide_marketing_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_MARKETING_DIR" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow\""
+fi
+
+current_bi_guide_results_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_DIR")"
+if [[ -z "$current_bi_guide_results_dir" || "$current_bi_guide_results_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_DIR" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse\""
+fi
+
+current_bi_guide_detail_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_DETAIL_DIR")"
+if [[ -z "$current_bi_guide_detail_dir" || "$current_bi_guide_detail_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_DETAIL_DIR" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/Laufdetails\""
+fi
+
+current_bi_guide_error_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_ERROR_DIR")"
+if [[ -z "$current_bi_guide_error_dir" || "$current_bi_guide_error_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_ERROR_DIR" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/Fehlerdetails\""
+fi
+
+current_bi_guide_export_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_EXPORT_DIR")"
+if [[ -z "$current_bi_guide_export_dir" || "$current_bi_guide_export_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_EXPORT_DIR" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/Exporte\""
+fi
+
+current_bi_guide_snapshot_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_SNAPSHOT_DIR")"
+if [[ -z "$current_bi_guide_snapshot_dir" || "$current_bi_guide_snapshot_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_SNAPSHOT_DIR" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/Quellensnapshots\""
+fi
+
+current_bi_guide_opportunity_snapshot_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_SNAPSHOT_DIR")"
+if [[ -z "$current_bi_guide_opportunity_snapshot_dir" || "$current_bi_guide_opportunity_snapshot_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_SNAPSHOT_DIR" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/Chancen-Snapshots\""
+fi
+
+current_bi_guide_article_package_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_ARTICLE_PACKAGE_DIR")"
+if [[ -z "$current_bi_guide_article_package_dir" || "$current_bi_guide_article_package_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_ARTICLE_PACKAGE_DIR" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/Artikelpakete\""
+fi
+
+current_bi_guide_inputs_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_INPUTS_DIR")"
+if [[ -z "$current_bi_guide_inputs_dir" || "$current_bi_guide_inputs_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_INPUTS_DIR" "\"Workflows/bi-guide-content/Artefakte/Eingaben\""
+fi
+
+current_bi_guide_intermediate_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_DIR")"
+if [[ -z "$current_bi_guide_intermediate_dir" || "$current_bi_guide_intermediate_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_DIR" "\"Workflows/bi-guide-content/Artefakte/Zwischenergebnisse\""
+fi
+
+current_bi_guide_prompts_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_PROMPTS_DIR")"
+if [[ -z "$current_bi_guide_prompts_dir" || "$current_bi_guide_prompts_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_PROMPTS_DIR" "\"Workflows/bi-guide-content/Prompts\""
+fi
+
+current_bi_guide_context_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_CONTEXT_DIR")"
+if [[ -z "$current_bi_guide_context_dir" || "$current_bi_guide_context_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_CONTEXT_DIR" "\"Workflows/bi-guide-content/Kontext\""
+fi
+
+current_bi_guide_config_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_CONFIG_DIR")"
+if [[ -z "$current_bi_guide_config_dir" || "$current_bi_guide_config_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_CONFIG_DIR" "\"Workflows/bi-guide-content/Config\""
+fi
+
+current_bi_guide_schema_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_SCHEMA_DIR")"
+if [[ -z "$current_bi_guide_schema_dir" || "$current_bi_guide_schema_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_SCHEMA_DIR" "\"Workflows/bi-guide-content/Schemas\""
+fi
+
+current_bi_guide_template_dir="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_TEMPLATE_DIR")"
+if [[ -z "$current_bi_guide_template_dir" || "$current_bi_guide_template_dir" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_TEMPLATE_DIR" "\"Workflows/bi-guide-content/Templates\""
+fi
+
+current_bi_guide_manifest_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_SSOT_MANIFEST_FILE")"
+if [[ -z "$current_bi_guide_manifest_file" || "$current_bi_guide_manifest_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_SSOT_MANIFEST_FILE" "\"Workflows/bi-guide-content/_system/manifest.json\""
+fi
+
+current_bi_guide_runs_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_RUNS_FILE")"
+if [[ -z "$current_bi_guide_runs_file" || "$current_bi_guide_runs_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_RUNS_FILE" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Runs.md\""
+fi
+
+current_bi_guide_register_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_FILE")"
+if [[ -z "$current_bi_guide_register_file" || "$current_bi_guide_register_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_FILE" "\"Workflows/bi-guide-content/Artefakte/00-Artikelregister.md\""
+fi
+
+current_bi_guide_opportunity_register_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_REGISTER_FILE")"
+if [[ -z "$current_bi_guide_opportunity_register_file" || "$current_bi_guide_opportunity_register_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_REGISTER_FILE" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Chancenregister.md\""
+fi
+
+current_bi_guide_refresh_register_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_REGISTER_FILE")"
+if [[ -z "$current_bi_guide_refresh_register_file" || "$current_bi_guide_refresh_register_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_REGISTER_FILE" "\"Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Refreshregister.md\""
+fi
+
+current_bi_guide_manual_signals_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_MANUAL_SIGNALS_FILE")"
+if [[ -z "$current_bi_guide_manual_signals_file" || "$current_bi_guide_manual_signals_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_MANUAL_SIGNALS_FILE" "\"Workflows/bi-guide-content/Artefakte/Eingaben/Manuelle-Signale.md\""
+fi
+
+current_bi_guide_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OVERVIEW_FILE")"
+if [[ -z "$current_bi_guide_overview_file" || "$current_bi_guide_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Workflow-Uebersicht.md\""
+fi
+
+current_bi_guide_results_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_OVERVIEW_FILE")"
+if [[ -z "$current_bi_guide_results_overview_file" || "$current_bi_guide_results_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Ergebnisse-Uebersicht.md\""
+fi
+
+current_bi_guide_intermediate_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE")"
+if [[ -z "$current_bi_guide_intermediate_overview_file" || "$current_bi_guide_intermediate_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Zwischenergebnisse-Uebersicht.md\""
+fi
+
+current_bi_guide_register_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_OVERVIEW_FILE")"
+if [[ -z "$current_bi_guide_register_overview_file" || "$current_bi_guide_register_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Artikelregister-Uebersicht.md\""
+fi
+
+current_bi_guide_opportunity_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_OVERVIEW_FILE")"
+if [[ -z "$current_bi_guide_opportunity_overview_file" || "$current_bi_guide_opportunity_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Chancen-Uebersicht.md\""
+fi
+
+current_bi_guide_refresh_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_OVERVIEW_FILE")"
+if [[ -z "$current_bi_guide_refresh_overview_file" || "$current_bi_guide_refresh_overview_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Refresh-Uebersicht.md\""
+fi
+
+current_bi_guide_readme_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_README_FILE")"
+if [[ -z "$current_bi_guide_readme_file" || "$current_bi_guide_readme_file" == "replace_with_"* ]]; then
+  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_README_FILE" "\"Workflows/bi-guide-content/README.md\""
 fi
 
 # Ensure local model defaults are set
@@ -273,6 +438,11 @@ fi
 current_node_builtin="$(get_env_value "NODE_FUNCTION_ALLOW_BUILTIN")"
 if [[ -z "$current_node_builtin" || "$current_node_builtin" == "replace_with_"* ]]; then
   set_env_value "NODE_FUNCTION_ALLOW_BUILTIN" "crypto,fs,path"
+fi
+
+current_node_external="$(get_env_value "NODE_FUNCTION_ALLOW_EXTERNAL")"
+if [[ -z "$current_node_external" || "$current_node_external" == "replace_with_"* ]]; then
+  set_env_value "NODE_FUNCTION_ALLOW_EXTERNAL" "pg"
 fi
 
 current_sandbank_repo_dir="$(get_env_value "SANDBANK_REPO_DIR")"

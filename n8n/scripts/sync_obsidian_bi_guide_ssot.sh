@@ -12,26 +12,36 @@ fi
 # shellcheck disable=SC1091
 source .env
 
-if [[ -z "${OBSIDIAN_REST_URL:-}" || -z "${OBSIDIAN_REST_API_KEY:-}" ]]; then
-  echo "Missing OBSIDIAN_REST_URL or OBSIDIAN_REST_API_KEY"
-  exit 1
+VAULT_FS_PATH="${OBSIDIAN_VAULT_FS_PATH:-/Users/${USER}/Library/Mobile Documents/iCloud~md~obsidian/Documents/sandbank-obsidian}"
+SYNC_MODE="fs"
+if [[ ! -d "$VAULT_FS_PATH" ]]; then
+  if [[ -n "${OBSIDIAN_REST_URL:-}" && -n "${OBSIDIAN_REST_API_KEY:-}" ]]; then
+    SYNC_MODE="rest"
+  else
+    echo "Missing usable Obsidian target. Set OBSIDIAN_VAULT_FS_PATH or OBSIDIAN_REST_URL/OBSIDIAN_REST_API_KEY."
+    exit 1
+  fi
 fi
 
-OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL}}"
+OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL:-}}"
 if [[ "$OBSIDIAN_REST_URL_EFFECTIVE" == *"host.docker.internal"* ]]; then
   OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_EFFECTIVE/host.docker.internal/localhost}"
 fi
 
-WORKFLOW_DIR="${OBSIDIAN_BI_GUIDE_WORKFLOW_DIR:-Marketing/BI-Guide/Workflow/BI-Guide-Workflow}"
+WORKFLOW_DIR="${OBSIDIAN_BI_GUIDE_WORKFLOW_DIR:-Workflows/bi-guide-content}"
+WORKFLOW_MARKETING_DIR="${OBSIDIAN_BI_GUIDE_MARKETING_DIR:-Marketing/Content/BI-Guide/BI-Guide-Workflow}"
 WORKFLOW_PROMPTS_DIR="${OBSIDIAN_BI_GUIDE_WORKFLOW_PROMPTS_DIR:-${WORKFLOW_DIR}/Prompts}"
 WORKFLOW_CONTEXT_DIR="${OBSIDIAN_BI_GUIDE_WORKFLOW_CONTEXT_DIR:-${WORKFLOW_DIR}/Kontext}"
 WORKFLOW_CONFIG_DIR="${OBSIDIAN_BI_GUIDE_WORKFLOW_CONFIG_DIR:-${WORKFLOW_DIR}/Config}"
 WORKFLOW_SCHEMA_DIR="${OBSIDIAN_BI_GUIDE_WORKFLOW_SCHEMA_DIR:-${WORKFLOW_DIR}/Schemas}"
 WORKFLOW_TEMPLATE_DIR="${OBSIDIAN_BI_GUIDE_WORKFLOW_TEMPLATE_DIR:-${WORKFLOW_DIR}/Templates}"
-WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_SSOT_MANIFEST_FILE:-${WORKFLOW_DIR}/SSOT/manifest.json}"
-WORKFLOW_OVERVIEW_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_OVERVIEW_FILE:-${WORKFLOW_DIR}/BI-Guide-Workflow-Uebersicht.md}"
+WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_SSOT_MANIFEST_FILE:-${WORKFLOW_DIR}/_system/manifest.json}"
+WORKFLOW_OVERVIEW_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Workflow-Uebersicht.md}"
 WORKFLOW_README_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_README_FILE:-${WORKFLOW_DIR}/README.md}"
-WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/Kontext}"
+WORKFLOW_OPPORTUNITY_REGISTER_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_REGISTER_FILE:-${WORKFLOW_DIR}/Artefakte/Ergebnisse/00-Chancenregister.md}"
+WORKFLOW_REFRESH_REGISTER_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_REGISTER_FILE:-${WORKFLOW_DIR}/Artefakte/Ergebnisse/00-Refreshregister.md}"
+WORKFLOW_MANUAL_SIGNALS_FILE="${OBSIDIAN_BI_GUIDE_WORKFLOW_MANUAL_SIGNALS_FILE:-${WORKFLOW_DIR}/Artefakte/Eingaben/Manuelle-Signale.md}"
+WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/_shared/Kontext}"
 
 CURL_INSECURE=()
 if [[ "${OBSIDIAN_ALLOW_INSECURE_TLS:-false}" == "true" ]]; then
@@ -42,13 +52,42 @@ put_file() {
   local src="$1"
   local dest="$2"
   local content_type="${3:-text/markdown}"
-  curl -fsS "${CURL_INSECURE[@]}" \
-    -X PUT \
-    -H "Authorization: Bearer ${OBSIDIAN_REST_API_KEY}" \
-    -H "Content-Type: ${content_type}" \
-    --data-binary "@${src}" \
-    "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" >/dev/null
+  if [[ "$SYNC_MODE" == "fs" ]]; then
+    local dest_path="${VAULT_FS_PATH%/}/${dest}"
+    mkdir -p "$(dirname "$dest_path")"
+    cp "$src" "$dest_path"
+  else
+    curl -fsS "${CURL_INSECURE[@]}" \
+      -X PUT \
+      -H "Authorization: Bearer ${OBSIDIAN_REST_API_KEY}" \
+      -H "Content-Type: ${content_type}" \
+      --data-binary "@${src}" \
+      "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" >/dev/null
+  fi
   echo "synced: $dest"
+}
+
+target_exists() {
+  local dest="$1"
+  if [[ "$SYNC_MODE" == "fs" ]]; then
+    [[ -f "${VAULT_FS_PATH%/}/${dest}" ]]
+    return
+  fi
+  curl -fsS "${CURL_INSECURE[@]}" \
+    -H "Authorization: Bearer ${OBSIDIAN_REST_API_KEY}" \
+    "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" \
+    >/dev/null 2>&1
+}
+
+ensure_target_file() {
+  local src="$1"
+  local dest="$2"
+  local content_type="${3:-text/markdown}"
+  if target_exists "$dest"; then
+    echo "kept: $dest"
+    return
+  fi
+  put_file "$src" "$dest" "$content_type"
 }
 
 assert_non_empty_file() {
@@ -93,12 +132,17 @@ LOCAL_CONTEXT_PAIRS=(
 CONFIG_PAIRS=(
   "source_roots:source-roots.json"
   "source_policy:source-policy.json"
+  "resource_registry:resource-registry.json"
   "planning_rules:planning-rules.json"
   "quality_gates:quality-gates.json"
+  "opportunity_settings:opportunity-settings.json"
 )
 
 SCHEMA_PAIRS=(
   "source_snapshot:source_snapshot.schema.json"
+  "opportunity_snapshot:opportunity_snapshot.schema.json"
+  "opportunity_register:opportunity_register.schema.json"
+  "refresh_register:refresh_register.schema.json"
   "article_plan:article_plan.schema.json"
   "article_package:article_package.schema.json"
   "publication_fit_report:publication_fit_report.schema.json"
@@ -110,7 +154,15 @@ TEMPLATE_PAIRS=(
   "article:bi-guide-article-template.md"
   "runs_register:bi-guide-runs-register-template.md"
   "article_register:bi-guide-article-register-template.md"
+  "opportunity_register:bi-guide-opportunity-register-template.md"
+  "refresh_register:bi-guide-refresh-register-template.md"
+  "manual_signals:bi-guide-manual-signals-template.md"
   "workflow_overview:bi-guide-workflow-overview-template.md"
+  "results_overview:bi-guide-results-overview-template.md"
+  "intermediate_overview:bi-guide-intermediate-overview-template.md"
+  "register_overview:bi-guide-register-overview-template.md"
+  "opportunity_overview:bi-guide-opportunity-overview-template.md"
+  "refresh_overview:bi-guide-refresh-overview-template.md"
   "intermediate:bi-guide-zwischenergebnis-workflow-template.md"
   "readme:bi-guide-readme-template.md"
 )
@@ -176,7 +228,15 @@ for pair in "${TEMPLATE_PAIRS[@]}"; do
 done
 
 put_file "local-files/_managed/bi-guide/templates/bi-guide-workflow-overview-template.md" "${WORKFLOW_OVERVIEW_FILE}"
+put_file "local-files/_managed/bi-guide/templates/bi-guide-results-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Ergebnisse-Uebersicht.md}"
+put_file "local-files/_managed/bi-guide/templates/bi-guide-intermediate-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Zwischenergebnisse-Uebersicht.md}"
+put_file "local-files/_managed/bi-guide/templates/bi-guide-register-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Artikelregister-Uebersicht.md}"
+put_file "local-files/_managed/bi-guide/templates/bi-guide-opportunity-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Chancen-Uebersicht.md}"
+put_file "local-files/_managed/bi-guide/templates/bi-guide-refresh-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Refresh-Uebersicht.md}"
 put_file "local-files/_managed/bi-guide/templates/bi-guide-readme-template.md" "${WORKFLOW_README_FILE}"
+ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-opportunity-register-template.md" "${WORKFLOW_OPPORTUNITY_REGISTER_FILE}"
+ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-refresh-register-template.md" "${WORKFLOW_REFRESH_REGISTER_FILE}"
+ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-manual-signals-template.md" "${WORKFLOW_MANUAL_SIGNALS_FILE}"
 
 MANIFEST_FILE="$(mktemp)"
 trap 'rm -f "$MANIFEST_FILE"' EXIT

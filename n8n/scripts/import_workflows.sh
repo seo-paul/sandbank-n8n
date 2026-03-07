@@ -22,6 +22,13 @@ if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
     "Ablauf automatisch steuern"
     "Fehlerlauf klar dokumentieren"
     "Performance zurueckfuehren"
+    "BI-Guide Quellen und Planung"
+    "BI-Guide Chancen aktualisieren"
+    "BI-Guide Artikelpaket erstellen"
+    "BI-Guide Human Review pruefen"
+    "BI-Guide Ergebnisse in Obsidian speichern"
+    "BI-Guide Ablauf automatisch steuern"
+    "BI-Guide Fehlerlauf klar dokumentieren"
   )
 
   quoted_names=""

@@ -12,21 +12,28 @@ fi
 # shellcheck disable=SC1091
 source .env
 
-if [[ -z "${OBSIDIAN_REST_URL:-}" || -z "${OBSIDIAN_REST_API_KEY:-}" ]]; then
-  echo "Missing OBSIDIAN_REST_URL or OBSIDIAN_REST_API_KEY"
-  exit 1
+VAULT_FS_PATH="${OBSIDIAN_VAULT_FS_PATH:-/Users/${USER}/Library/Mobile Documents/iCloud~md~obsidian/Documents/sandbank-obsidian}"
+SYNC_MODE="fs"
+if [[ ! -d "$VAULT_FS_PATH" ]]; then
+  if [[ -n "${OBSIDIAN_REST_URL:-}" && -n "${OBSIDIAN_REST_API_KEY:-}" ]]; then
+    SYNC_MODE="rest"
+  else
+    echo "Missing usable Obsidian source. Set OBSIDIAN_VAULT_FS_PATH or OBSIDIAN_REST_URL/OBSIDIAN_REST_API_KEY."
+    exit 1
+  fi
 fi
 
-OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL}}"
+OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL:-}}"
 if [[ "$OBSIDIAN_REST_URL_EFFECTIVE" == *"host.docker.internal"* ]]; then
   OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_EFFECTIVE/host.docker.internal/localhost}"
 fi
 
-WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts}"
-WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext}"
-WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/Kontext}"
-WORKFLOW_CONFIG_DIR="${OBSIDIAN_WORKFLOW_CONFIG_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config}"
-WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas}"
+WORKFLOW_DIR="${OBSIDIAN_WORKFLOW_DIR:-Workflows/social-content}"
+WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-${WORKFLOW_DIR}/Prompts}"
+WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-${WORKFLOW_DIR}/Kontext}"
+WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/_shared/Kontext}"
+WORKFLOW_CONFIG_DIR="${OBSIDIAN_WORKFLOW_CONFIG_DIR:-${WORKFLOW_DIR}/Config}"
+WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-${WORKFLOW_DIR}/Schemas}"
 
 PROMPT_PAIRS=(
   "global_system:00-global-system.md"
@@ -61,6 +68,7 @@ LOCAL_CONTEXT_PAIRS=(
 
 CONFIG_PAIRS=(
   "source_policy:source-policy.json"
+  "resource_registry:resource-registry.json"
   "platform_profiles:platform-profiles.json"
 )
 
@@ -77,8 +85,10 @@ SCHEMA_PAIRS=(
 )
 
 python3 - <<'PY' \
+  "$SYNC_MODE" \
+  "$VAULT_FS_PATH" \
   "$OBSIDIAN_REST_URL_EFFECTIVE" \
-  "$OBSIDIAN_REST_API_KEY" \
+  "${OBSIDIAN_REST_API_KEY:-}" \
   "${OBSIDIAN_ALLOW_INSECURE_TLS:-false}" \
   "$WORKFLOW_PROMPTS_DIR" \
   "$WORKFLOWS_CONTEXT_DIR" \
@@ -97,26 +107,30 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-base_url = sys.argv[1].rstrip('/')
-api_key = sys.argv[2]
-allow_insecure = sys.argv[3].lower() == 'true'
-prompts_dir = sys.argv[4]
-global_context_dir = sys.argv[5]
-local_context_dir = sys.argv[6]
-config_dir = sys.argv[7]
-schema_dir = sys.argv[8]
-prompt_pairs = [x for x in sys.argv[9].splitlines() if x.strip()]
-global_context_pairs = [x for x in sys.argv[10].splitlines() if x.strip()]
-local_context_pairs = [x for x in sys.argv[11].splitlines() if x.strip()]
-config_pairs = [x for x in sys.argv[12].splitlines() if x.strip()]
-schema_pairs = [x for x in sys.argv[13].splitlines() if x.strip()]
+sync_mode = sys.argv[1]
+vault_root = Path(sys.argv[2])
+base_url = sys.argv[3].rstrip('/')
+api_key = sys.argv[4]
+allow_insecure = sys.argv[5].lower() == 'true'
+prompts_dir = sys.argv[6]
+global_context_dir = sys.argv[7]
+local_context_dir = sys.argv[8]
+config_dir = sys.argv[9]
+schema_dir = sys.argv[10]
+prompt_pairs = [x for x in sys.argv[11].splitlines() if x.strip()]
+global_context_pairs = [x for x in sys.argv[12].splitlines() if x.strip()]
+local_context_pairs = [x for x in sys.argv[13].splitlines() if x.strip()]
+config_pairs = [x for x in sys.argv[14].splitlines() if x.strip()]
+schema_pairs = [x for x in sys.argv[15].splitlines() if x.strip()]
 
 ctx = ssl.create_default_context()
 if allow_insecure:
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
 
-def fetch_remote_text(rel_path: str) -> str:
+def fetch_text(rel_path: str) -> str:
+    if sync_mode == 'fs':
+        return (vault_root / rel_path).read_text(encoding='utf-8')
     url = f"{base_url}/vault/{urllib.parse.quote(rel_path)}"
     req = urllib.request.Request(url, headers={'Authorization': f'Bearer {api_key}'})
     with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
@@ -136,23 +150,23 @@ def write_json(path: Path, text: str) -> None:
 
 for pair in prompt_pairs:
     _, file_name = pair.split(':', 1)
-    write_text(Path('local-files/_managed/prompts') / file_name, fetch_remote_text(f"{prompts_dir}/{file_name}"))
+    write_text(Path('local-files/_managed/prompts') / file_name, fetch_text(f"{prompts_dir}/{file_name}"))
 
 for pair in global_context_pairs:
     _, file_name = pair.split(':', 1)
-    write_text(Path('local-files/_managed/context/global') / file_name, fetch_remote_text(f"{global_context_dir}/{file_name}"))
+    write_text(Path('local-files/_managed/context/global') / file_name, fetch_text(f"{global_context_dir}/{file_name}"))
 
 for pair in local_context_pairs:
     _, file_name = pair.split(':', 1)
-    write_text(Path('local-files/_managed/context/workflow') / file_name, fetch_remote_text(f"{local_context_dir}/{file_name}"))
+    write_text(Path('local-files/_managed/context/workflow') / file_name, fetch_text(f"{local_context_dir}/{file_name}"))
 
 for pair in config_pairs:
     _, file_name = pair.split(':', 1)
-    write_json(Path('local-files/_managed/config') / file_name, fetch_remote_text(f"{config_dir}/{file_name}"))
+    write_json(Path('local-files/_managed/config') / file_name, fetch_text(f"{config_dir}/{file_name}"))
 
 for pair in schema_pairs:
     _, file_name = pair.split(':', 1)
-    write_json(Path('local-files/_managed/schemas') / file_name, fetch_remote_text(f"{schema_dir}/{file_name}"))
+    write_json(Path('local-files/_managed/schemas') / file_name, fetch_text(f"{schema_dir}/{file_name}"))
 PY
 
 echo

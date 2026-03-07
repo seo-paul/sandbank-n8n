@@ -12,22 +12,29 @@ fi
 # shellcheck disable=SC1091
 source .env
 
-if [[ -z "${OBSIDIAN_REST_URL:-}" || -z "${OBSIDIAN_REST_API_KEY:-}" ]]; then
-  echo "Missing OBSIDIAN_REST_URL or OBSIDIAN_REST_API_KEY"
-  exit 1
+VAULT_FS_PATH="${OBSIDIAN_VAULT_FS_PATH:-/Users/${USER}/Library/Mobile Documents/iCloud~md~obsidian/Documents/sandbank-obsidian}"
+SYNC_MODE="fs"
+if [[ ! -d "$VAULT_FS_PATH" ]]; then
+  if [[ -n "${OBSIDIAN_REST_URL:-}" && -n "${OBSIDIAN_REST_API_KEY:-}" ]]; then
+    SYNC_MODE="rest"
+  else
+    echo "Missing usable Obsidian target. Set OBSIDIAN_VAULT_FS_PATH or OBSIDIAN_REST_URL/OBSIDIAN_REST_API_KEY."
+    exit 1
+  fi
 fi
 
-OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL}}"
+OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_SYNC_OVERRIDE:-${OBSIDIAN_REST_URL:-}}"
 if [[ "$OBSIDIAN_REST_URL_EFFECTIVE" == *"host.docker.internal"* ]]; then
   OBSIDIAN_REST_URL_EFFECTIVE="${OBSIDIAN_REST_URL_EFFECTIVE/host.docker.internal/localhost}"
 fi
 
-WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts}"
-WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext}"
-WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/Kontext}"
-WORKFLOW_CONFIG_DIR="${OBSIDIAN_WORKFLOW_CONFIG_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config}"
-WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas}"
-WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE:-Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/SSOT/manifest.json}"
+WORKFLOW_DIR="${OBSIDIAN_WORKFLOW_DIR:-Workflows/social-content}"
+WORKFLOW_PROMPTS_DIR="${OBSIDIAN_WORKFLOW_PROMPTS_DIR:-${WORKFLOW_DIR}/Prompts}"
+WORKFLOW_CONTEXT_DIR="${OBSIDIAN_WORKFLOW_CONTEXT_DIR:-${WORKFLOW_DIR}/Kontext}"
+WORKFLOWS_CONTEXT_DIR="${OBSIDIAN_WORKFLOWS_CONTEXT_DIR:-Workflows/_shared/Kontext}"
+WORKFLOW_CONFIG_DIR="${OBSIDIAN_WORKFLOW_CONFIG_DIR:-${WORKFLOW_DIR}/Config}"
+WORKFLOW_SCHEMA_DIR="${OBSIDIAN_WORKFLOW_SCHEMA_DIR:-${WORKFLOW_DIR}/Schemas}"
+WORKFLOW_SSOT_MANIFEST_FILE="${OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE:-${WORKFLOW_DIR}/_system/manifest.json}"
 
 CURL_INSECURE=()
 if [[ "${OBSIDIAN_ALLOW_INSECURE_TLS:-false}" == "true" ]]; then
@@ -38,12 +45,18 @@ put_file() {
   local src="$1"
   local dest="$2"
   local content_type="${3:-text/markdown}"
-  curl -fsS "${CURL_INSECURE[@]}" \
-    -X PUT \
-    -H "Authorization: Bearer ${OBSIDIAN_REST_API_KEY}" \
-    -H "Content-Type: ${content_type}" \
-    --data-binary "@${src}" \
-    "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" >/dev/null
+  if [[ "$SYNC_MODE" == "fs" ]]; then
+    local dest_path="${VAULT_FS_PATH%/}/${dest}"
+    mkdir -p "$(dirname "$dest_path")"
+    cp "$src" "$dest_path"
+  else
+    curl -fsS "${CURL_INSECURE[@]}" \
+      -X PUT \
+      -H "Authorization: Bearer ${OBSIDIAN_REST_API_KEY}" \
+      -H "Content-Type: ${content_type}" \
+      --data-binary "@${src}" \
+      "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" >/dev/null
+  fi
   echo "synced: $dest"
 }
 
@@ -93,6 +106,7 @@ LOCAL_CONTEXT_PAIRS=(
 
 CONFIG_PAIRS=(
   "source_policy:source-policy.json"
+  "resource_registry:resource-registry.json"
   "platform_profiles:platform-profiles.json"
 )
 

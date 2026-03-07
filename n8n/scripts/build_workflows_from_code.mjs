@@ -28,6 +28,17 @@ function manualNode(id, name, position) {
   };
 }
 
+function scheduleTriggerNode(id, name, position, interval = 1, unit = 'days') {
+  return {
+    parameters: { interval, unit },
+    id,
+    name,
+    type: 'n8n-nodes-base.scheduleTrigger',
+    typeVersion: 1,
+    position,
+  };
+}
+
 function executeTriggerNode(id, name, position, workflowInputs = []) {
   const parameters = workflowInputs.length
     ? {
@@ -52,17 +63,21 @@ const sharedCtxInputContract = [
   { name: 'execution_id', type: 'string' },
   { name: 'workflow_name', type: 'string' },
   { name: 'status', type: 'string' },
+  { name: 'run_mode', type: 'string' },
   { name: 'created_at', type: 'string' },
   { name: 'completed_at', type: 'string' },
   { name: 'topic', type: 'string' },
   { name: 'model_primary', type: 'string' },
   { name: 'model_used', type: 'string' },
   { name: 'workflow_dir', type: 'string' },
+  { name: 'workflow_marketing_dir', type: 'string' },
+  { name: 'workflow_inputs_dir', type: 'string' },
   { name: 'workflow_results_dir', type: 'string' },
   { name: 'workflow_detail_dir', type: 'string' },
   { name: 'workflow_error_dir', type: 'string' },
   { name: 'workflow_export_dir', type: 'string' },
   { name: 'workflow_snapshot_dir', type: 'string' },
+  { name: 'workflow_opportunity_snapshot_dir', type: 'string' },
   { name: 'workflow_article_package_dir', type: 'string' },
   { name: 'workflow_intermediate_dir', type: 'string' },
   { name: 'workflow_prompts_dir', type: 'string' },
@@ -70,10 +85,19 @@ const sharedCtxInputContract = [
   { name: 'workflow_global_context_dir', type: 'string' },
   { name: 'workflow_config_dir', type: 'string' },
   { name: 'workflow_schema_dir', type: 'string' },
+  { name: 'workflow_template_dir', type: 'string' },
   { name: 'workflow_ssot_manifest_file', type: 'string' },
   { name: 'workflow_runs_file', type: 'string' },
   { name: 'workflow_register_file', type: 'string' },
+  { name: 'workflow_opportunity_register_file', type: 'string' },
+  { name: 'workflow_refresh_register_file', type: 'string' },
+  { name: 'workflow_manual_signals_file', type: 'string' },
   { name: 'workflow_overview_file', type: 'string' },
+  { name: 'workflow_results_overview_file', type: 'string' },
+  { name: 'workflow_intermediate_overview_file', type: 'string' },
+  { name: 'workflow_register_overview_file', type: 'string' },
+  { name: 'workflow_opportunity_overview_file', type: 'string' },
+  { name: 'workflow_refresh_overview_file', type: 'string' },
   { name: 'obsidian_rest_url', type: 'string' },
   { name: 'obsidian_rest_api_key', type: 'string' },
   { name: 'allow_insecure_tls', type: 'boolean' },
@@ -362,6 +386,32 @@ const biGuideOrchestrator = {
   versionId: '1996e4cf-2e7e-4ef7-b1f4-3f3b80f8a8aa',
 };
 
+const biGuideOpportunityRefresh = {
+  name: 'BI-Guide Chancen aktualisieren',
+  active: false,
+  nodes: [
+    manualNode('manual-1', 'Manuell starten', [-1320, 180]),
+    scheduleTriggerNode('schedule-1', 'Taeglich starten', [-1320, 360], 1, 'days'),
+    codeNode('code-mode', 'Opportunitylauf markieren', [-1060, 270], `const input = (items[0] && items[0].json) ? items[0].json : {};\nreturn [{\n  json: Object.assign({}, input, {\n    run_mode: 'opportunity_refresh',\n    workflow_name: 'BI-Guide Chancen aktualisieren',\n  }),\n}];\n`),
+    codeNode('code-init', 'Ablaufdaten vorbereiten', [-800, 270], readCode('bi-guide-orchestrator-init.js')),
+    codeNode('code-ssot', 'Prompt und Kontext SSOT laden', [-540, 270], readCode('bi-guide-orchestrator-load-ssot.js')),
+    executeWorkflowNode('exec-source', 'Quellen und Planung starten', [-280, 270], '/workflows/bi-guide-quellen-und-planung.json'),
+    executeWorkflowNode('exec-persist', 'Speicher Schritt starten', [0, 270], '/workflows/bi-guide-ergebnisse-in-obsidian-speichern.json'),
+    codeNode('code-return', 'Ergebnis Uebersicht ausgeben', [280, 270], readCode('bi-guide-orchestrator-return.js')),
+  ],
+  connections: {
+    'Manuell starten': { main: [[{ node: 'Opportunitylauf markieren', type: 'main', index: 0 }]] },
+    'Taeglich starten': { main: [[{ node: 'Opportunitylauf markieren', type: 'main', index: 0 }]] },
+    'Opportunitylauf markieren': { main: [[{ node: 'Ablaufdaten vorbereiten', type: 'main', index: 0 }]] },
+    'Ablaufdaten vorbereiten': { main: [[{ node: 'Prompt und Kontext SSOT laden', type: 'main', index: 0 }]] },
+    'Prompt und Kontext SSOT laden': { main: [[{ node: 'Quellen und Planung starten', type: 'main', index: 0 }]] },
+    'Quellen und Planung starten': { main: [[{ node: 'Speicher Schritt starten', type: 'main', index: 0 }]] },
+    'Speicher Schritt starten': { main: [[{ node: 'Ergebnis Uebersicht ausgeben', type: 'main', index: 0 }]] },
+  },
+  settings: workflowSettings,
+  versionId: 'ca59f7c1-634e-4dc9-98da-65fb7f746f90',
+};
+
 const biGuideSource = {
   name: 'BI-Guide Quellen und Planung',
   active: false,
@@ -471,6 +521,7 @@ writeWorkflow('system-verbindungen-pruefen.json', system);
 writeWorkflow('fehlerlauf-klar-dokumentieren.json', errorWorkflow);
 writeWorkflow('performance-zurueckfuehren.json', performance);
 writeWorkflow('bi-guide-ablauf-automatisch-steuern.json', biGuideOrchestrator);
+writeWorkflow('bi-guide-chancen-aktualisieren.json', biGuideOpportunityRefresh);
 writeWorkflow('bi-guide-quellen-und-planung.json', biGuideSource);
 writeWorkflow('bi-guide-artikelpaket-erstellen.json', biGuideContent);
 writeWorkflow('bi-guide-human-review-pruefen.json', biGuideHumanReview);

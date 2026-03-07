@@ -33,5 +33,12 @@ write_workflow "Ergebnisse in Obsidian speichern" "n8n/workflows/ergebnisse-in-o
 write_workflow "Ablauf automatisch steuern" "n8n/workflows/ablauf-automatisch-steuern.json"
 write_workflow "Fehlerlauf klar dokumentieren" "n8n/workflows/fehlerlauf-klar-dokumentieren.json"
 write_workflow "Performance zurueckfuehren" "n8n/workflows/performance-zurueckfuehren.json"
+write_workflow "BI-Guide Quellen und Planung" "n8n/workflows/bi-guide-quellen-und-planung.json"
+write_workflow "BI-Guide Chancen aktualisieren" "n8n/workflows/bi-guide-chancen-aktualisieren.json"
+write_workflow "BI-Guide Artikelpaket erstellen" "n8n/workflows/bi-guide-artikelpaket-erstellen.json"
+write_workflow "BI-Guide Human Review pruefen" "n8n/workflows/bi-guide-human-review-pruefen.json"
+write_workflow "BI-Guide Ergebnisse in Obsidian speichern" "n8n/workflows/bi-guide-ergebnisse-in-obsidian-speichern.json"
+write_workflow "BI-Guide Ablauf automatisch steuern" "n8n/workflows/bi-guide-ablauf-automatisch-steuern.json"
+write_workflow "BI-Guide Fehlerlauf klar dokumentieren" "n8n/workflows/bi-guide-fehlerlauf-klar-dokumentieren.json"
 
 echo "Workflows exported to n8n/workflows (deterministic filenames)."
