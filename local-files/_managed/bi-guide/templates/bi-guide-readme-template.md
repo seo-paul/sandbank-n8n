@@ -27,9 +27,6 @@
 - `Marketing/Content/BI-Guide/BI-Guide-Workflow/Workflow-Uebersicht.md`
 - `Marketing/Content/BI-Guide/BI-Guide-Workflow/Ergebnisse-Uebersicht.md`
 - `Marketing/Content/BI-Guide/BI-Guide-Workflow/Zwischenergebnisse-Uebersicht.md`
-- `Marketing/Content/BI-Guide/BI-Guide-Workflow/Artikelregister-Uebersicht.md`
-- `Marketing/Content/BI-Guide/BI-Guide-Workflow/Chancen-Uebersicht.md`
-- `Marketing/Content/BI-Guide/BI-Guide-Workflow/Refresh-Uebersicht.md`
 
 ## Betriebsregel
 - Sandbank bleibt read-only.

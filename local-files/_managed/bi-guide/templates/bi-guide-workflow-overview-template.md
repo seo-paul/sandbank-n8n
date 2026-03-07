@@ -3,9 +3,9 @@
 - Workflow Core: `Workflows/bi-guide-content`
 - Ergebnisse: `Marketing/Content/BI-Guide/BI-Guide-Workflow/Ergebnisse-Uebersicht.md`
 - Zwischenergebnisse: `Marketing/Content/BI-Guide/BI-Guide-Workflow/Zwischenergebnisse-Uebersicht.md`
-- Artikelregister: `Marketing/Content/BI-Guide/BI-Guide-Workflow/Artikelregister-Uebersicht.md`
-- Chancen: `Marketing/Content/BI-Guide/BI-Guide-Workflow/Chancen-Uebersicht.md`
-- Refresh: `Marketing/Content/BI-Guide/BI-Guide-Workflow/Refresh-Uebersicht.md`
+- Artikelregister: `Workflows/bi-guide-content/Artefakte/00-Artikelregister.md`
+- Chancenregister: `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Chancenregister.md`
+- Refreshregister: `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Refreshregister.md`
 
 ## Ablauf
 
