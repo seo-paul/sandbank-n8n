@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RefreshRegister",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "entries"
+  ],
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "minLength": 10
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/refreshCandidate"
+      }
+    }
+  },
+  "$defs": {
+    "refreshCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "article_id",
+        "locale",
+        "page",
+        "impressions",
+        "clicks",
+        "ctr",
+        "avg_position",
+        "trigger",
+        "priority",
+        "recommendation",
+        "last_seen"
+      ],
+      "properties": {
+        "article_id": { "type": "string" },
+        "locale": { "type": "string" },
+        "page": { "type": "string" },
+        "country": { "type": "string" },
+        "impressions": { "type": "number" },
+        "clicks": { "type": "number" },
+        "ctr": { "type": "number" },
+        "avg_position": { "type": "number" },
+        "trigger": { "type": "string" },
+        "priority": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "recommendation": { "type": "string" },
+        "source_opportunity_id": { "type": "string" },
+        "last_seen": { "type": "string" }
+      }
+    }
+  }
+}

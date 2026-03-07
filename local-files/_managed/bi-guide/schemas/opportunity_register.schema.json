@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpportunityRegister",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "entries"
+  ],
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "minLength": 10
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/opportunity"
+      }
+    }
+  },
+  "$defs": {
+    "opportunity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opportunity_id",
+        "source",
+        "type",
+        "locale",
+        "title_hint",
+        "article_hint",
+        "intent",
+        "persona",
+        "use_case",
+        "asset_type",
+        "proof_required",
+        "demand_signal",
+        "business_fit",
+        "evidence_ready",
+        "freshness_score",
+        "priority_score",
+        "recommendation",
+        "reasons"
+      ],
+      "properties": {
+        "opportunity_id": { "type": "string" },
+        "source": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "net_new",
+            "refresh",
+            "manual"
+          ]
+        },
+        "locale": { "type": "string" },
+        "country": { "type": "string" },
+        "title_hint": { "type": "string" },
+        "article_hint": { "type": "string" },
+        "target_article_id": { "type": "string" },
+        "intent": { "type": "string" },
+        "persona": { "type": "string" },
+        "use_case": { "type": "string" },
+        "asset_type": { "type": "string" },
+        "proof_required": { "type": "string" },
+        "demand_signal": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "business_fit": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "evidence_ready": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "freshness_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "priority_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "recommendation": { "type": "string" },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

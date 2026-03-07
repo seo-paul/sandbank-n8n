@@ -5,6 +5,7 @@
   "additionalProperties": false,
   "required": [
     "article_id",
+    "opportunity_id",
     "working_title",
     "target_locale",
     "category_id",
@@ -14,7 +15,14 @@
     "article_number",
     "target_source_path",
     "target_category_path",
+    "candidate_origin",
+    "priority_score",
     "audience",
+    "intent",
+    "persona",
+    "use_case",
+    "asset_type",
+    "proof_required",
     "search_intent",
     "why_now",
     "angle",
@@ -25,6 +33,10 @@
   ],
   "properties": {
     "article_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "opportunity_id": {
       "type": "string",
       "minLength": 3
     },
@@ -59,7 +71,30 @@
     "target_category_path": {
       "type": "string"
     },
+    "candidate_origin": {
+      "type": "string"
+    },
+    "priority_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
     "audience": {
+      "type": "string"
+    },
+    "intent": {
+      "type": "string"
+    },
+    "persona": {
+      "type": "string"
+    },
+    "use_case": {
+      "type": "string"
+    },
+    "asset_type": {
+      "type": "string"
+    },
+    "proof_required": {
       "type": "string"
     },
     "search_intent": {
@@ -116,6 +151,9 @@
       "items": {
         "type": "string"
       }
+    },
+    "refresh_strategy": {
+      "type": "string"
     }
   }
 }

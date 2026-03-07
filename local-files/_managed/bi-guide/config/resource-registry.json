@@ -1,0 +1,178 @@
+{
+  "version": "1.0.0",
+  "registry_name": "bi-guide-resource-registry",
+  "default_resource_profiles": {
+    "official_product_or_platform_docs": {
+      "source_type": "official",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.88,
+      "citation_readiness_score": 0.8,
+      "commercial_bias_score": 0.14,
+      "default_usage": ["fact", "comparison", "background"]
+    },
+    "official_standards_or_regulation": {
+      "source_type": "official",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.92,
+      "citation_readiness_score": 0.84,
+      "commercial_bias_score": 0.04,
+      "default_usage": ["fact", "background", "counterpoint"]
+    },
+    "first_party_original_data": {
+      "source_type": "research",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.84,
+      "citation_readiness_score": 0.76,
+      "commercial_bias_score": 0.12,
+      "default_usage": ["fact", "comparison", "background"]
+    },
+    "industry_benchmark_or_survey": {
+      "source_type": "research",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.78,
+      "citation_readiness_score": 0.74,
+      "commercial_bias_score": 0.18,
+      "default_usage": ["fact", "comparison", "background"]
+    },
+    "operator_case_study": {
+      "source_type": "vendor",
+      "source_tier": "supporting",
+      "authority": "medium",
+      "evidence_strength_score": 0.64,
+      "citation_readiness_score": 0.58,
+      "commercial_bias_score": 0.24,
+      "default_usage": ["example", "background", "counterpoint"]
+    },
+    "topic_specific_research": {
+      "source_type": "research",
+      "source_tier": "primary",
+      "authority": "high",
+      "evidence_strength_score": 0.8,
+      "citation_readiness_score": 0.78,
+      "commercial_bias_score": 0.08,
+      "default_usage": ["fact", "counterpoint", "background"]
+    },
+    "general_media": {
+      "source_type": "media",
+      "source_tier": "supporting",
+      "authority": "medium",
+      "evidence_strength_score": 0.44,
+      "citation_readiness_score": 0.42,
+      "commercial_bias_score": 0.14,
+      "default_usage": ["background", "counterpoint"]
+    },
+    "vendor_content": {
+      "source_type": "vendor",
+      "source_tier": "supporting",
+      "authority": "medium",
+      "evidence_strength_score": 0.34,
+      "citation_readiness_score": 0.32,
+      "commercial_bias_score": 0.34,
+      "default_usage": ["background", "example"]
+    },
+    "low_value_aggregator": {
+      "source_type": "vendor",
+      "source_tier": "supporting",
+      "authority": "low",
+      "evidence_strength_score": 0.12,
+      "citation_readiness_score": 0.08,
+      "commercial_bias_score": 0.42,
+      "default_usage": ["background"]
+    }
+  },
+  "publishers": [
+    {
+      "resource_id": "official-docs-generic",
+      "publisher": "Official Product and Platform Docs",
+      "domain_patterns": ["docs.", "developer.", "support.", "help.", "learn.microsoft.com", "developers.google.com", "cloud.google.com"],
+      "resource_class": "official_product_or_platform_docs",
+      "allowed_workflows": ["bi-guide", "social"],
+      "allowed_usage": ["fact", "comparison", "background"],
+      "manual_review_required": false,
+      "bias_flags": [],
+      "notes": "Bevorzugt fuer Tooling, Plattformverhalten und Produktkonzepte."
+    },
+    {
+      "resource_id": "public-standards-and-regulation",
+      "publisher": "Public Standards and Regulation",
+      "domain_patterns": [".gov", ".edu", "nist.gov", "europa.eu", "data.europa.eu"],
+      "resource_class": "official_standards_or_regulation",
+      "allowed_workflows": ["bi-guide", "social"],
+      "allowed_usage": ["fact", "background", "counterpoint"],
+      "manual_review_required": false,
+      "bias_flags": [],
+      "notes": "Bevorzugt fuer Governance, Sicherheit, Datenschutz und Standards."
+    },
+    {
+      "resource_id": "industry-benchmarks",
+      "publisher": "Industry Benchmarks and Surveys",
+      "domain_patterns": ["gartner.com", "forrester.com", "barc.com", "dresneradvisory.com", "mckinsey.com", "deloitte.com", "pwc.com", "kpmg.com"],
+      "resource_class": "industry_benchmark_or_survey",
+      "allowed_workflows": ["bi-guide", "social"],
+      "allowed_usage": ["fact", "comparison", "background"],
+      "manual_review_required": true,
+      "bias_flags": ["methodology_check_recommended"],
+      "notes": "Nur mit Scope-, Methode- und Bias-Einordnung zitieren."
+    },
+    {
+      "resource_id": "topic-research-direct",
+      "publisher": "Direct Topic Research",
+      "domain_patterns": ["arxiv.org", "nber.org", "nih.gov", "ssrn.com"],
+      "resource_class": "topic_specific_research",
+      "allowed_workflows": ["bi-guide", "social"],
+      "allowed_usage": ["fact", "counterpoint", "background"],
+      "manual_review_required": false,
+      "bias_flags": [],
+      "notes": "Nur fuer direkt passende Analytics-/BI-Fragen."
+    },
+    {
+      "resource_id": "operator-case-studies",
+      "publisher": "Operator Case Studies",
+      "domain_patterns": ["netflixtechblog.com", "shopify.engineering", "blog.cloudflare.com", "stripe.com", "engineering."],
+      "resource_class": "operator_case_study",
+      "allowed_workflows": ["bi-guide", "social"],
+      "allowed_usage": ["example", "background", "counterpoint"],
+      "manual_review_required": true,
+      "bias_flags": ["single_company_view"],
+      "notes": "Gut fuer praktische Beispiele, aber nicht als alleinige Faktengrundlage."
+    },
+    {
+      "resource_id": "general-tech-media",
+      "publisher": "General Technology Media",
+      "domain_patterns": ["techcrunch.com", "theverge.com", "wired.com", "venturebeat.com", "heise.de"],
+      "resource_class": "general_media",
+      "allowed_workflows": ["bi-guide", "social"],
+      "allowed_usage": ["background", "counterpoint"],
+      "manual_review_required": true,
+      "bias_flags": ["second_hand_reporting"],
+      "notes": "Nur fuer Marktkontext, nicht fuer Kernclaims."
+    },
+    {
+      "resource_id": "broad-science-review-only",
+      "publisher": "Broad Science Publishers",
+      "domain_patterns": ["nature.com", "sciencedirect.com", "springer.com"],
+      "resource_class": "topic_specific_research",
+      "allowed_workflows": ["bi-guide", "social"],
+      "allowed_usage": ["background", "counterpoint"],
+      "manual_review_required": true,
+      "topic_keywords_any": ["analytics", "business intelligence", "dashboard", "reporting", "data warehouse", "data governance", "decision support"],
+      "bias_flags": ["generic_science_domain_not_default_bi_source"],
+      "notes": "Nicht als generische BI-Quelle behandeln. Nur bei direktem Themenfit."
+    },
+    {
+      "resource_id": "low-value-aggregators",
+      "publisher": "Low Value Aggregators",
+      "domain_patterns": ["medium.com", "substack.com", "wikipedia.org"],
+      "resource_class": "low_value_aggregator",
+      "allowed_workflows": [],
+      "allowed_usage": ["background"],
+      "manual_review_required": true,
+      "bias_flags": ["aggregated_or_unsourced"],
+      "notes": "Default nicht als publizierbare Quelle zulassen."
+    }
+  ]
+}

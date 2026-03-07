@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpportunitySnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "created_at",
+    "collection_window",
+    "search_console_status",
+    "manual_signal_status",
+    "signal_counts",
+    "top_queries",
+    "top_pages",
+    "manual_signals",
+    "collection_notes"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 10
+    },
+    "collection_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start_date",
+        "end_date",
+        "lag_days",
+        "backfill_days"
+      ],
+      "properties": {
+        "start_date": { "type": "string" },
+        "end_date": { "type": "string" },
+        "lag_days": { "type": "number" },
+        "backfill_days": { "type": "number" }
+      }
+    },
+    "search_console_status": {
+      "type": "string",
+      "enum": [
+        "collected",
+        "disabled",
+        "missing_config",
+        "error"
+      ]
+    },
+    "manual_signal_status": {
+      "type": "string",
+      "enum": [
+        "loaded",
+        "missing",
+        "error"
+      ]
+    },
+    "signal_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "search_console_rows",
+        "manual_rows",
+        "distinct_queries",
+        "distinct_pages",
+        "distinct_countries"
+      ],
+      "properties": {
+        "search_console_rows": { "type": "number" },
+        "manual_rows": { "type": "number" },
+        "distinct_queries": { "type": "number" },
+        "distinct_pages": { "type": "number" },
+        "distinct_countries": { "type": "number" }
+      }
+    },
+    "top_queries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/searchQueryRow" }
+    },
+    "top_pages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/searchPageRow" }
+    },
+    "manual_signals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/manualSignalRow" }
+    },
+    "collection_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "searchQueryRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query",
+        "country",
+        "impressions",
+        "clicks",
+        "ctr",
+        "position"
+      ],
+      "properties": {
+        "query": { "type": "string" },
+        "country": { "type": "string" },
+        "impressions": { "type": "number" },
+        "clicks": { "type": "number" },
+        "ctr": { "type": "number" },
+        "position": { "type": "number" }
+      }
+    },
+    "searchPageRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page",
+        "country",
+        "impressions",
+        "clicks",
+        "ctr",
+        "position"
+      ],
+      "properties": {
+        "page": { "type": "string" },
+        "country": { "type": "string" },
+        "impressions": { "type": "number" },
+        "clicks": { "type": "number" },
+        "ctr": { "type": "number" },
+        "position": { "type": "number" }
+      }
+    },
+    "manualSignalRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signal_id",
+        "source",
+        "topic",
+        "locale",
+        "priority_hint"
+      ],
+      "properties": {
+        "signal_id": { "type": "string" },
+        "source": { "type": "string" },
+        "topic": { "type": "string" },
+        "locale": { "type": "string" },
+        "article_hint": { "type": "string" },
+        "priority_hint": { "type": "number" },
+        "proof_required": { "type": "string" }
+      }
+    }
+  }
+}

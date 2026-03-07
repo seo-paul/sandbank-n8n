@@ -1,0 +1,212 @@
+{
+  "search_console": {
+    "enabled": true,
+    "site_url": "",
+    "scope": "https://www.googleapis.com/auth/webmasters.readonly",
+    "collection_lag_days": 2,
+    "backfill_days": 3,
+    "row_limit": 25000,
+    "max_rows_per_report": 50000,
+    "minimum_impressions": 5,
+    "report_types": [
+      "query_country",
+      "page_country"
+    ]
+  },
+  "manual_signals": {
+    "default_locale": "de",
+    "allowed_sources": [
+      "support",
+      "demo",
+      "changelog",
+      "product_note",
+      "sales",
+      "founder_note"
+    ],
+    "max_signals": 200
+  },
+  "scoring": {
+    "weights": {
+      "demand_signal": 0.32,
+      "business_fit": 0.22,
+      "evidence_ready": 0.16,
+      "freshness": 0.14,
+      "gap_bonus": 0.1,
+      "manual_priority_hint": 0.06
+    },
+    "default_business_fit": 0.55,
+    "default_evidence_ready": 0.5,
+    "refresh_priority_floor": 52,
+    "net_new_priority_floor": 54
+  },
+  "classification": {
+    "intent_rules": {
+      "BOFU": [
+        "anbieter",
+        "alternativen",
+        "alternative",
+        "vergleich",
+        "preise",
+        "kosten",
+        "software",
+        "tool",
+        "tools",
+        "plattform"
+      ],
+      "MOFU": [
+        "beispiel",
+        "vorlage",
+        "template",
+        "checkliste",
+        "kennzahlen",
+        "kpis",
+        "dashboard",
+        "reporting",
+        "use case",
+        "anwendungsfall"
+      ],
+      "TOFU": [
+        "was ist",
+        "warum",
+        "guide",
+        "leitfaden",
+        "erklaerung",
+        "definition",
+        "einfach erklaert",
+        "grundlagen"
+      ]
+    },
+    "persona_rules": {
+      "Founder": [
+        "gruender",
+        "founder",
+        "startup"
+      ],
+      "CFO": [
+        "cfo",
+        "finanzen",
+        "controlling",
+        "budget",
+        "marge"
+      ],
+      "Operations": [
+        "operations",
+        "betrieb",
+        "prozess",
+        "ablauf",
+        "steuerung"
+      ],
+      "Analyst": [
+        "analyst",
+        "reporting",
+        "dashboard",
+        "kpi",
+        "analyse",
+        "daten"
+      ]
+    },
+    "use_case_rules": {
+      "Reporting": [
+        "report",
+        "reporting",
+        "berichte"
+      ],
+      "Dashboards": [
+        "dashboard",
+        "visualisierung"
+      ],
+      "KPI": [
+        "kpi",
+        "kennzahl",
+        "kennzahlen",
+        "metriken"
+      ],
+      "Data Consolidation": [
+        "konsolidierung",
+        "quellen",
+        "excel",
+        "erp",
+        "crm",
+        "datenintegration"
+      ],
+      "Data Governance": [
+        "governance",
+        "datenqualitaet",
+        "definitionen",
+        "single source of truth"
+      ]
+    },
+    "asset_type_rules": {
+      "comparison": [
+        "vergleich",
+        "alternativen",
+        "vs",
+        "anbieter"
+      ],
+      "case_study": [
+        "beispiel",
+        "erfahrung",
+        "case study",
+        "praxis"
+      ],
+      "research": [
+        "benchmark",
+        "studie",
+        "umfrage",
+        "zahlen"
+      ],
+      "article": [
+        "was ist",
+        "warum",
+        "guide",
+        "leitfaden"
+      ]
+    },
+    "proof_required_rules": {
+      "screenshot": [
+        "dashboard",
+        "visualisierung",
+        "template"
+      ],
+      "metric": [
+        "kpi",
+        "kennzahl",
+        "benchmark",
+        "umfrage",
+        "zahlen"
+      ],
+      "quote": [
+        "support",
+        "demo",
+        "einwand",
+        "feedback"
+      ],
+      "benchmark": [
+        "vergleich",
+        "alternativen",
+        "anbieter"
+      ]
+    }
+  },
+  "refresh_rules": {
+    "lookback_days": 45,
+    "stale_after_days": 120,
+    "high_impression_low_ctr": {
+      "minimum_impressions": 150,
+      "maximum_ctr": 0.025
+    },
+    "ranking_without_ctr": {
+      "minimum_impressions": 80,
+      "maximum_position": 12,
+      "maximum_ctr": 0.02
+    },
+    "country_gap": {
+      "minimum_impressions": 50,
+      "countries": [
+        "deu",
+        "aut",
+        "che"
+      ]
+    }
+  }
+}

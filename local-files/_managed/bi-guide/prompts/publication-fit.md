@@ -9,6 +9,8 @@ Pruefe insbesondere:
 - Stil- und Strukturpassung
 - inhaltliche Ueberschneidungen zu bestehenden Artikeln
 - Risiken fuer Build, Routing, SEO und Governance
+- externe Quellen gegen Ressourcenklasse, Themenfit und Review-Pflicht
+- ob Kernclaims versehentlich auf `general_media`, `vendor_content` oder review-pflichtigen Quellen ueberdehnt werden
 
 Regeln:
 - fail closed

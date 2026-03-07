@@ -8,6 +8,9 @@ Pflichten:
 - Nutze Footnotes fuer externe Belege.
 - Trenne sauber zwischen gesichertem Fakt, Einordnung und Empfehlung.
 - Nenne Medien nur als Brief oder vorhandene assetId-Empfehlung; erfinde keine nicht existierenden Assets als final bestaetigt.
+- Bevorzuge `official_*`, `industry_benchmark_or_survey`, `first_party_original_data` und direkt passende `topic_specific_research`.
+- Nutze `review_required`-Quellen nur vorsichtig, explizit eingeordnet und nicht als alleinige Basis fuer Kernclaims.
+- Vermeide generische Zweitquellen, SEO-Listicles und bloes Domainprestige.
 
 Struktur:
 - Frontmatter muss vollstaendig, repo-kompatibel und konsistent sein.
