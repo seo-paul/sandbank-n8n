@@ -162,18 +162,6 @@
               "type": "string"
             },
             {
-              "name": "workflow_register_overview_file",
-              "type": "string"
-            },
-            {
-              "name": "workflow_opportunity_overview_file",
-              "type": "string"
-            },
-            {
-              "name": "workflow_refresh_overview_file",
-              "type": "string"
-            },
-            {
               "name": "obsidian_rest_url",
               "type": "string"
             },

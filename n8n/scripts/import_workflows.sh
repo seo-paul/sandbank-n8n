@@ -13,6 +13,7 @@ node ./n8n/scripts/build_workflows_from_code.mjs
 # - remove legacy names that follow old two-letter + two-digit prefixes
 # - re-import exactly the repository blueprints
 if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
+  STRICT_WORKFLOW_ALLOWLIST="${STRICT_WORKFLOW_ALLOWLIST:-true}"
   target_names=(
     "System Verbindungen pruefen"
     "Thema und Quellen sammeln"
@@ -39,11 +40,19 @@ if [[ "${SKIP_WORKFLOW_PURGE:-false}" != "true" ]]; then
     quoted_names+="'$name'"
   done
 
-  docker compose exec -T postgres psql \
-    -U "$POSTGRES_USER" \
-    -d "$POSTGRES_DB" \
-    -v ON_ERROR_STOP=1 \
-    -c "DELETE FROM workflow_entity WHERE name IN (${quoted_names}) OR name ~ '^[A-Z]{2}[0-9]{2}([ _-])(System|Research|Qwen|Obsidian|Workflow|Fehler|Orchestrator|Local)';"
+  if [[ "$STRICT_WORKFLOW_ALLOWLIST" == "true" ]]; then
+    docker compose exec -T postgres psql \
+      -U "$POSTGRES_USER" \
+      -d "$POSTGRES_DB" \
+      -v ON_ERROR_STOP=1 \
+      -c "DELETE FROM workflow_entity;"
+  else
+    docker compose exec -T postgres psql \
+      -U "$POSTGRES_USER" \
+      -d "$POSTGRES_DB" \
+      -v ON_ERROR_STOP=1 \
+      -c "DELETE FROM workflow_entity WHERE name IN (${quoted_names}) OR name ~ '^[A-Z]{2}[0-9]{2}([ _-])(System|Research|Qwen|Obsidian|Workflow|Fehler|Orchestrator|Local)';"
+  fi
 fi
 
 docker compose exec -T n8n n8n import:workflow --separate --input=/workflows

@@ -20,9 +20,6 @@ const requiredInputFields = [
   'workflow_overview_file',
   'workflow_results_overview_file',
   'workflow_intermediate_overview_file',
-  'workflow_register_overview_file',
-  'workflow_opportunity_overview_file',
-  'workflow_refresh_overview_file',
   'obsidian_rest_url',
   'obsidian_rest_api_key',
 ];
@@ -208,16 +205,29 @@ function stageTable(stageRows) {
   return lines.join('\n');
 }
 
-function workflowOverviewTemplate() {
+function workflowOverviewMarkdown(paths) {
+  const opportunitySnapshot = ensureObject(ctx.artifacts.opportunity_snapshot);
+  const publicationFit = ensureObject(ctx.artifacts.publication_fit_report);
+  const opportunityCount = ensureArray(ensureObject(ctx.artifacts.opportunity_register).entries).length;
+  const refreshCount = ensureArray(ensureObject(ctx.artifacts.refresh_register).entries).length;
   return [
     '# Marketing Workflow',
     '',
     '- Workflow Core: ' + wiki(ctx.workflow_dir, 'bi-guide-content'),
     '- Ergebnisse: ' + wiki(ctx.workflow_results_overview_file, 'Ergebnisse Uebersicht'),
     '- Zwischenergebnisse: ' + wiki(ctx.workflow_intermediate_overview_file, 'Zwischenergebnisse Uebersicht'),
-    '- Artikelregister: ' + wiki(ctx.workflow_register_overview_file, 'Artikelregister Uebersicht'),
-    '- Chancen: ' + wiki(ctx.workflow_opportunity_overview_file, 'Chancen Uebersicht'),
-    '- Refresh: ' + wiki(ctx.workflow_refresh_overview_file, 'Refresh Uebersicht'),
+    '- Letzter Lauf: ' + wiki(paths.run_detail, String(ctx.run_id || 'detail')),
+    '',
+    '## Letzter Lauf',
+    '- run_id: ' + String(ctx.run_id || ''),
+    '- run_mode: ' + runMode,
+    '- status: ' + String(ctx.status || 'unknown'),
+    '- fit_status: ' + String(publicationFit.status || 'n/a'),
+    '- fit_score: ' + String(publicationFit.fit_score || 0),
+    '- search_console_status: ' + String(opportunitySnapshot.search_console_status || 'n/a'),
+    '- manual_signal_status: ' + String(opportunitySnapshot.manual_signal_status || 'n/a'),
+    '- opportunity_count: ' + String(opportunityCount),
+    '- refresh_count: ' + String(refreshCount),
     '',
     '## Ablauf',
     '',
@@ -233,6 +243,10 @@ function workflowOverviewTemplate() {
 }
 
 function resultsOverviewMarkdown(paths) {
+  const opportunitySnapshot = ensureObject(ctx.artifacts.opportunity_snapshot);
+  const opportunityRegister = ensureObject(ctx.artifacts.opportunity_register);
+  const refreshRegister = ensureObject(ctx.artifacts.refresh_register);
+  const publicationFit = ensureObject(ctx.artifacts.publication_fit_report);
   const lines = [
     '# Ergebnisse Uebersicht',
     '',
@@ -247,8 +261,27 @@ function resultsOverviewMarkdown(paths) {
     '- Refreshregister: ' + wiki(ctx.workflow_refresh_register_file, '00-Refreshregister'),
     '- Manuelle Signale: ' + wiki(ctx.workflow_manual_signals_file, 'Manuelle-Signale'),
     '- Letzter Lauf: ' + wiki(paths.run_detail, String(ctx.run_id || 'detail')),
+    '',
+    '## Letzter Stand',
+    '- run_id: ' + String(ctx.run_id || ''),
+    '- run_mode: ' + runMode,
+    '- status: ' + String(ctx.status || 'unknown'),
+    '- fit_status: ' + String(publicationFit.status || 'n/a'),
+    '- fit_score: ' + String(publicationFit.fit_score || 0),
+    '- search_console_status: ' + String(opportunitySnapshot.search_console_status || 'n/a'),
+    '- manual_signal_status: ' + String(opportunitySnapshot.manual_signal_status || 'n/a'),
+    '- opportunity_count: ' + String(ensureArray(opportunityRegister.entries).length),
+    '- refresh_count: ' + String(ensureArray(refreshRegister.entries).length),
   ];
   if (paths.export_note) lines.push('- Letztes Exportpaket: ' + wiki(paths.export_note, 'Export-Note'));
+  lines.push(
+    '',
+    '## Opportunity Register Top',
+    jsonBlock(ensureArray(opportunityRegister.entries).slice(0, 10)),
+    '',
+    '## Refresh Register Top',
+    jsonBlock(ensureArray(refreshRegister.entries).slice(0, 10))
+  );
   return lines.join('\n');
 }
 
@@ -268,54 +301,6 @@ function intermediateOverviewMarkdown(paths) {
     '- run_mode: ' + runMode,
   ];
   return lines.join('\n');
-}
-
-function registerOverviewMarkdown() {
-  return [
-    '# Register Uebersicht',
-    '',
-    '- Workflow Core: ' + wiki(ctx.workflow_dir, 'bi-guide-content'),
-    '- Artikelregister: ' + wiki(ctx.workflow_register_file, '00-Artikelregister'),
-    '- Chancenregister: ' + wiki(ctx.workflow_opportunity_register_file, '00-Chancenregister'),
-    '- Refreshregister: ' + wiki(ctx.workflow_refresh_register_file, '00-Refreshregister'),
-    '- Manuelle Signale: ' + wiki(ctx.workflow_manual_signals_file, 'Manuelle-Signale'),
-    '- Letzter Lauf: ' + String(ctx.run_id || ''),
-  ].join('\n');
-}
-
-function opportunityOverviewMarkdown(paths) {
-  const snapshot = ensureObject(ctx.artifacts.opportunity_snapshot);
-  const opportunityRegister = ensureObject(ctx.artifacts.opportunity_register);
-  const refreshRegister = ensureObject(ctx.artifacts.refresh_register);
-  return [
-    '# Chancen Uebersicht',
-    '',
-    '- Workflow Core: ' + wiki(ctx.workflow_dir, 'bi-guide-content'),
-    '- Chancenregister: ' + wiki(ctx.workflow_opportunity_register_file, '00-Chancenregister'),
-    '- Refreshregister: ' + wiki(ctx.workflow_refresh_register_file, '00-Refreshregister'),
-    '- Manuelle Signale: ' + wiki(ctx.workflow_manual_signals_file, 'Manuelle-Signale'),
-    '- Letzter Snapshot: ' + wiki(paths.opportunity_snapshot, String(snapshot.snapshot_id || ctx.run_id || 'snapshot')),
-    '',
-    '## Letzter Stand',
-    '- run_id: ' + String(ctx.run_id || ''),
-    '- search_console_status: ' + String(snapshot.search_console_status || 'n/a'),
-    '- manual_signal_status: ' + String(snapshot.manual_signal_status || 'n/a'),
-    '- opportunity_count: ' + String(ensureArray(opportunityRegister.entries).length),
-    '- refresh_count: ' + String(ensureArray(refreshRegister.entries).length),
-  ].join('\n');
-}
-
-function refreshOverviewMarkdown() {
-  const refreshRegister = ensureObject(ctx.artifacts.refresh_register);
-  return [
-    '# Refresh Uebersicht',
-    '',
-    '- Workflow Core: ' + wiki(ctx.workflow_dir, 'bi-guide-content'),
-    '- Refreshregister: ' + wiki(ctx.workflow_refresh_register_file, '00-Refreshregister'),
-    '- Chancenregister: ' + wiki(ctx.workflow_opportunity_register_file, '00-Chancenregister'),
-    '- Letzter Lauf: ' + String(ctx.run_id || ''),
-    '- Refresh-Kandidaten: ' + String(ensureArray(refreshRegister.entries).length),
-  ].join('\n');
 }
 
 function runsRegisterTemplate() {
@@ -781,7 +766,6 @@ await ensureFile.call(this, ctx.workflow_register_file, articleRegisterTemplate(
 await ensureFile.call(this, ctx.workflow_opportunity_register_file, opportunityRegisterTemplate());
 await ensureFile.call(this, ctx.workflow_refresh_register_file, refreshRegisterTemplate());
 await ensureFile.call(this, ctx.workflow_manual_signals_file, manualSignalsTemplate());
-await ensureFile.call(this, ctx.workflow_overview_file, workflowOverviewTemplate());
 
 const existingRuns = await readOrEmpty.call(this, ctx.workflow_runs_file);
 await obsidianPut.call(this, ctx.workflow_runs_file, appendRunRow(existingRuns, paths.run_detail));
@@ -817,11 +801,9 @@ if (paths.export_mdx) {
   await obsidianPut.call(this, paths.export_mdx, String(exportBundle.mdx || '').trimEnd() + '\n', 'text/markdown');
 }
 
+await obsidianPut.call(this, ctx.workflow_overview_file, workflowOverviewMarkdown(paths));
 await obsidianPut.call(this, ctx.workflow_results_overview_file, resultsOverviewMarkdown(paths));
 await obsidianPut.call(this, ctx.workflow_intermediate_overview_file, intermediateOverviewMarkdown(paths));
-await obsidianPut.call(this, ctx.workflow_register_overview_file, registerOverviewMarkdown());
-await obsidianPut.call(this, ctx.workflow_opportunity_overview_file, opportunityOverviewMarkdown(paths));
-await obsidianPut.call(this, ctx.workflow_refresh_overview_file, refreshOverviewMarkdown());
 
 const stageRows = stageRowsForRun(ctx.stage_logs);
 const sourceStageRows = stageRows.filter((row) => row.step >= 1 && row.step <= 7);
@@ -863,6 +845,9 @@ ctx.output_paths = Object.assign({}, ensureObject(ctx.output_paths), {
   source_intermediate: paths.source_intermediate,
   content_intermediate: paths.content_intermediate,
   workflow_runs: ctx.workflow_runs_file,
+  workflow_overview: ctx.workflow_overview_file,
+  workflow_results_overview: ctx.workflow_results_overview_file,
+  workflow_intermediate_overview: ctx.workflow_intermediate_overview_file,
   workflow_register: ctx.workflow_register_file,
   workflow_opportunity_register: ctx.workflow_opportunity_register_file,
   workflow_refresh_register: ctx.workflow_refresh_register_file,

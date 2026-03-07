@@ -93,9 +93,6 @@ TEMPLATE_FILES=(
   "bi-guide-workflow-overview-template.md"
   "bi-guide-results-overview-template.md"
   "bi-guide-intermediate-overview-template.md"
-  "bi-guide-register-overview-template.md"
-  "bi-guide-opportunity-overview-template.md"
-  "bi-guide-refresh-overview-template.md"
   "bi-guide-zwischenergebnis-workflow-template.md"
   "bi-guide-readme-template.md"
 )

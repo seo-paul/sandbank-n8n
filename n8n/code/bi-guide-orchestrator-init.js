@@ -95,9 +95,6 @@ const ctx = {
   workflow_overview_file: input.workflow_overview_file || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_OVERVIEW_FILE || (marketingDir + '/Workflow-Uebersicht.md'),
   workflow_results_overview_file: input.workflow_results_overview_file || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_OVERVIEW_FILE || (marketingDir + '/Ergebnisse-Uebersicht.md'),
   workflow_intermediate_overview_file: input.workflow_intermediate_overview_file || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE || (marketingDir + '/Zwischenergebnisse-Uebersicht.md'),
-  workflow_register_overview_file: input.workflow_register_overview_file || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_OVERVIEW_FILE || (marketingDir + '/Artikelregister-Uebersicht.md'),
-  workflow_opportunity_overview_file: input.workflow_opportunity_overview_file || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_OVERVIEW_FILE || (marketingDir + '/Chancen-Uebersicht.md'),
-  workflow_refresh_overview_file: input.workflow_refresh_overview_file || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_OVERVIEW_FILE || (marketingDir + '/Refresh-Uebersicht.md'),
   workflow_ssot_manifest_file: input.workflow_ssot_manifest_file || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_SSOT_MANIFEST_FILE || (workflowDir + '/_system/manifest.json'),
 
   obsidian_rest_url: input.obsidian_rest_url || $env.OBSIDIAN_REST_URL || '',

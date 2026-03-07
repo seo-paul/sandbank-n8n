@@ -409,21 +409,6 @@ if [[ -z "$current_bi_guide_intermediate_overview_file" || "$current_bi_guide_in
   set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Zwischenergebnisse-Uebersicht.md\""
 fi
 
-current_bi_guide_register_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_OVERVIEW_FILE")"
-if [[ -z "$current_bi_guide_register_overview_file" || "$current_bi_guide_register_overview_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Artikelregister-Uebersicht.md\""
-fi
-
-current_bi_guide_opportunity_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_OVERVIEW_FILE")"
-if [[ -z "$current_bi_guide_opportunity_overview_file" || "$current_bi_guide_opportunity_overview_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Chancen-Uebersicht.md\""
-fi
-
-current_bi_guide_refresh_overview_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_OVERVIEW_FILE")"
-if [[ -z "$current_bi_guide_refresh_overview_file" || "$current_bi_guide_refresh_overview_file" == "replace_with_"* ]]; then
-  set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_OVERVIEW_FILE" "\"Marketing/Content/BI-Guide/BI-Guide-Workflow/Refresh-Uebersicht.md\""
-fi
-
 current_bi_guide_readme_file="$(get_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_README_FILE")"
 if [[ -z "$current_bi_guide_readme_file" || "$current_bi_guide_readme_file" == "replace_with_"* ]]; then
   set_env_value "OBSIDIAN_BI_GUIDE_WORKFLOW_README_FILE" "\"Workflows/bi-guide-content/README.md\""

@@ -90,6 +90,25 @@ ensure_target_file() {
   put_file "$src" "$dest" "$content_type"
 }
 
+remove_target_file() {
+  local dest="$1"
+  if [[ "$SYNC_MODE" == "fs" ]]; then
+    local dest_path="${VAULT_FS_PATH%/}/${dest}"
+    if [[ -f "$dest_path" ]]; then
+      rm -f "$dest_path"
+      echo "removed: $dest"
+    fi
+    return
+  fi
+
+  curl -fsS "${CURL_INSECURE[@]}" \
+    -X DELETE \
+    -H "Authorization: Bearer ${OBSIDIAN_REST_API_KEY}" \
+    "${OBSIDIAN_REST_URL_EFFECTIVE%/}/vault/$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$dest")" \
+    >/dev/null 2>&1 || true
+  echo "removed_if_exists: $dest"
+}
+
 assert_non_empty_file() {
   local path="$1"
   local label="$2"
@@ -160,9 +179,6 @@ TEMPLATE_PAIRS=(
   "workflow_overview:bi-guide-workflow-overview-template.md"
   "results_overview:bi-guide-results-overview-template.md"
   "intermediate_overview:bi-guide-intermediate-overview-template.md"
-  "register_overview:bi-guide-register-overview-template.md"
-  "opportunity_overview:bi-guide-opportunity-overview-template.md"
-  "refresh_overview:bi-guide-refresh-overview-template.md"
   "intermediate:bi-guide-zwischenergebnis-workflow-template.md"
   "readme:bi-guide-readme-template.md"
 )
@@ -227,16 +243,33 @@ for pair in "${TEMPLATE_PAIRS[@]}"; do
   put_file "local-files/_managed/bi-guide/templates/${file}" "${WORKFLOW_TEMPLATE_DIR}/${file}"
 done
 
-put_file "local-files/_managed/bi-guide/templates/bi-guide-workflow-overview-template.md" "${WORKFLOW_OVERVIEW_FILE}"
-put_file "local-files/_managed/bi-guide/templates/bi-guide-results-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Ergebnisse-Uebersicht.md}"
-put_file "local-files/_managed/bi-guide/templates/bi-guide-intermediate-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Zwischenergebnisse-Uebersicht.md}"
-put_file "local-files/_managed/bi-guide/templates/bi-guide-register-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_REGISTER_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Artikelregister-Uebersicht.md}"
-put_file "local-files/_managed/bi-guide/templates/bi-guide-opportunity-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_OPPORTUNITY_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Chancen-Uebersicht.md}"
-put_file "local-files/_managed/bi-guide/templates/bi-guide-refresh-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_REFRESH_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Refresh-Uebersicht.md}"
+ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-workflow-overview-template.md" "${WORKFLOW_OVERVIEW_FILE}"
+ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-results-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_RESULTS_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Ergebnisse-Uebersicht.md}"
+ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-intermediate-overview-template.md" "${OBSIDIAN_BI_GUIDE_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE:-${WORKFLOW_MARKETING_DIR}/Zwischenergebnisse-Uebersicht.md}"
 put_file "local-files/_managed/bi-guide/templates/bi-guide-readme-template.md" "${WORKFLOW_README_FILE}"
 ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-opportunity-register-template.md" "${WORKFLOW_OPPORTUNITY_REGISTER_FILE}"
 ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-refresh-register-template.md" "${WORKFLOW_REFRESH_REGISTER_FILE}"
 ensure_target_file "local-files/_managed/bi-guide/templates/bi-guide-manual-signals-template.md" "${WORKFLOW_MANUAL_SIGNALS_FILE}"
+
+DEPRECATED_MARKETING_FILES=(
+  "${WORKFLOW_MARKETING_DIR}/Artikelregister-Uebersicht.md"
+  "${WORKFLOW_MARKETING_DIR}/Chancen-Uebersicht.md"
+  "${WORKFLOW_MARKETING_DIR}/Refresh-Uebersicht.md"
+)
+
+for deprecated in "${DEPRECATED_MARKETING_FILES[@]}"; do
+  remove_target_file "$deprecated"
+done
+
+DEPRECATED_TEMPLATE_FILES=(
+  "${WORKFLOW_TEMPLATE_DIR}/bi-guide-register-overview-template.md"
+  "${WORKFLOW_TEMPLATE_DIR}/bi-guide-opportunity-overview-template.md"
+  "${WORKFLOW_TEMPLATE_DIR}/bi-guide-refresh-overview-template.md"
+)
+
+for deprecated in "${DEPRECATED_TEMPLATE_FILES[@]}"; do
+  remove_target_file "$deprecated"
+done
 
 MANIFEST_FILE="$(mktemp)"
 trap 'rm -f "$MANIFEST_FILE"' EXIT

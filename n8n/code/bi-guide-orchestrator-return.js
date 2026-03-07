@@ -47,8 +47,5 @@ return [{
     workflow_overview_file: ctx.workflow_overview_file,
     workflow_results_overview_file: ctx.workflow_results_overview_file,
     workflow_intermediate_overview_file: ctx.workflow_intermediate_overview_file,
-    workflow_register_overview_file: ctx.workflow_register_overview_file,
-    workflow_opportunity_overview_file: ctx.workflow_opportunity_overview_file,
-    workflow_refresh_overview_file: ctx.workflow_refresh_overview_file,
   },
 }];

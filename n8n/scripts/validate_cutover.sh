@@ -167,7 +167,38 @@ if ls local-files/_managed/schemas/critique_report.schema.json \
   echo "Legacy schema contracts still present."
   exit 1
 fi
-echo "  ok: templates"
+if ls local-files/_managed/bi-guide/templates/bi-guide-register-overview-template.md \
+      local-files/_managed/bi-guide/templates/bi-guide-opportunity-overview-template.md \
+      local-files/_managed/bi-guide/templates/bi-guide-refresh-overview-template.md >/dev/null 2>&1; then
+  echo "Legacy BI-Guide overview templates still present."
+  exit 1
+fi
+if rg -n 'OBSIDIAN_BI_GUIDE_WORKFLOW_(REGISTER|OPPORTUNITY|REFRESH)_OVERVIEW_FILE' \
+      .env.example docker-compose.yml n8n/scripts/env-local-init.sh n8n/code/bi-guide-orchestrator-init.js \
+      n8n/code/bi-guide-persist-results.js n8n/scripts/build_workflows_from_code.mjs n8n/workflows/bi-guide-*.json \
+      >/tmp/validate_cutover_bi_guide_legacy_overview_vars.txt; then
+  echo "Legacy BI-Guide overview env vars still referenced:"
+  cat /tmp/validate_cutover_bi_guide_legacy_overview_vars.txt
+  exit 1
+fi
+rg -n 'ensure_target_file \"local-files/_managed/bi-guide/templates/bi-guide-workflow-overview-template.md\"' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'ensure_target_file \"local-files/_managed/bi-guide/templates/bi-guide-results-overview-template.md\"' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'ensure_target_file \"local-files/_managed/bi-guide/templates/bi-guide-intermediate-overview-template.md\"' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'DEPRECATED_MARKETING_FILES' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'Artikelregister-Uebersicht\.md' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'Chancen-Uebersicht\.md' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'Refresh-Uebersicht\.md' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'DEPRECATED_TEMPLATE_FILES' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'bi-guide-register-overview-template\.md' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'bi-guide-opportunity-overview-template\.md' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+rg -n 'bi-guide-refresh-overview-template\.md' n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/dev/null
+if rg -n 'put_file \"local-files/_managed/bi-guide/templates/bi-guide-(workflow|results|intermediate)-overview-template\\.md\"' \
+      n8n/scripts/sync_obsidian_bi_guide_ssot.sh >/tmp/validate_cutover_bi_guide_overwrite_mode.txt; then
+  echo "BI-Guide marketing overviews must not be overwritten by sync script:"
+  cat /tmp/validate_cutover_bi_guide_overwrite_mode.txt
+  exit 1
+fi
+echo "  ok: templates and BI-Guide overview governance"
 
 echo "[5/10] Validate workflow architecture edges"
 node <<'NODE'
@@ -212,7 +243,7 @@ if docker compose ps n8n >/dev/null 2>&1; then
 
   docker compose exec -T n8n n8n export:workflow --all --pretty > "$LIVE_EXPORT"
 
-  node <<'NODE' "$LIVE_EXPORT"
+  node - "$LIVE_EXPORT" <<'NODE'
 const fs = require('fs');
 const path = require('path');
 
