@@ -24,6 +24,10 @@ Workflow-spezifisch:
 - Social Marketing View: `Marketing/Social-Media/Beitraege/Beitraege-Workflow`
 - BI Guide Marketing View: `Marketing/Content/BI-Guide/BI-Guide-Workflow`
 
+Hinweis zur Benennung:
+- `Workflows/social-content` ist der technische Core fuer den Beitraege-Workflow.
+- Der fachliche Einstieg fuer Redaktion bleibt unter `Marketing/Social-Media/Beitraege/Beitraege-Workflow`.
+
 ## Zielbild
 - Ein Lauf erzeugt genau eine Detaildatei unter `Workflows/<workflow-id>/Artefakte/Ergebnisse/Laufdetails/<run_id>.md`.
 - Eine Basistabelle sammelt alle Laeufe unter `Workflows/<workflow-id>/Artefakte/Ergebnisse/00-Runs.md`.

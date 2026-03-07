@@ -32,6 +32,10 @@ Marketing-Views:
 - `Marketing/Social-Media/Beitraege/Beitraege-Workflow`
 - `Marketing/Content/BI-Guide/BI-Guide-Workflow`
 
+Benennung:
+- `Workflows/social-content` ist der technische Core fuer den Beitraege-Workflow.
+- Die redaktionelle Navigation bleibt unter `Marketing/Social-Media/Beitraege/Beitraege-Workflow`.
+
 ## Relevante `.env`-Variablen
 - `OBSIDIAN_VAULT_FS_PATH`
 - `OBSIDIAN_WORKFLOWS_DIR`
@@ -61,6 +65,9 @@ Defaults setzt:
 ./n8n/scripts/sync_obsidian_ssot.sh
 ./n8n/scripts/sync_obsidian_bi_guide_ssot.sh
 ```
+
+BI-Guide Marketing-Cutover:
+- `sync_obsidian_bi_guide_ssot.sh` entfernt veraltete Marketing-Uebersichten (`Artikelregister/Chancen/Refresh`) und deren deprecated Templates im Core-Template-Ordner.
 
 Lokaler Standard:
 - Wenn `OBSIDIAN_VAULT_FS_PATH` auf den Vault zeigt, nutzen Sync-, Pull- und Manifest-Skripte direkt das Dateisystem.

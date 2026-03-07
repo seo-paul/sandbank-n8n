@@ -30,7 +30,7 @@
 ## Review Steps
 - `00-Chancenregister.md` auf Top-Kandidaten pruefen
 - `00-Refreshregister.md` auf echte Refresh-Chancen pruefen
-- `Chancen-Uebersicht.md` und `Refresh-Uebersicht.md` gegen Business-Prioritaet abgleichen
+- `Ergebnisse-Uebersicht.md` (Sektionen Opportunity/Refresh) gegen Business-Prioritaet abgleichen
 
 ## No-write Rules
 - kein Schreiben in `/Users/zweigen/Sites/sandbank`

@@ -43,8 +43,7 @@
 - angereichertes `ArticleRegister`
 
 ## Obsidian Views
-- `Marketing/Content/BI-Guide/BI-Guide-Workflow/Chancen-Uebersicht.md`
-- `Marketing/Content/BI-Guide/BI-Guide-Workflow/Refresh-Uebersicht.md`
+- `Marketing/Content/BI-Guide/BI-Guide-Workflow/Ergebnisse-Uebersicht.md`
 - `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Chancenregister.md`
 - `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Refreshregister.md`
 

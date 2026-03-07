@@ -50,9 +50,6 @@
 - `Workflow-Uebersicht.md`
 - `Ergebnisse-Uebersicht.md`
 - `Zwischenergebnisse-Uebersicht.md`
-- `Artikelregister-Uebersicht.md`
-- `Chancen-Uebersicht.md`
-- `Refresh-Uebersicht.md`
 
 ## Verbotene Legacy-Pfade
 - Kein aktiver Workflow-Core unter `Marketing/**/Workflow/*-Workflow`
@@ -64,3 +61,4 @@
 - Technische Roots liegen unter `Workflows/<workflow-id>`.
 - View-Layer fuer fachliche Navigation liegen unter `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`.
 - Systemdateien liegen unter `_system/`.
+- `Workflows/social-content` ist der technische Core fuer den Beitraege-Workflow (fachlicher Einstieg bleibt im Marketing-View).
