@@ -71,6 +71,9 @@ function uniqueStrings(values, maxLen = 180) {
   }
   return out;
 }
+function lowerList(values, maxLen = 180) {
+  return uniqueStrings(values, maxLen).map((value) => value.toLowerCase());
+}
 function transliterate(value) {
   return String(value || '')
     .replace(/Ae/g, 'Ae')
@@ -314,22 +317,41 @@ async function callOllamaJsonStrict(systemPrompt, userPrompt, options = {}) {
       repair_used: false,
     };
   } catch (firstError) {
-    const repaired = await callOllamaRaw.call(
-      this,
-      'You are a strict JSON formatter. Return valid JSON only.',
+    const repairPrompts = [
       [
         'Convert this content to strict valid JSON.',
         options.format_schema ? ('Schema:\n' + JSON.stringify(options.format_schema)) : '',
         'Input:',
         raw.text,
       ].filter(Boolean).join('\n\n'),
-      { temperature: 0, num_predict: 700, num_ctx: 8192, timeout: 240000, max_attempts: 2, thinking: false, format_schema: options.format_schema || null }
-    );
-    return {
-      parsed: extractJsonCandidate(repaired.text),
-      raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text,
-      repair_used: true,
-    };
+      [
+        'Return ONLY one valid JSON object.',
+        'No markdown, no prose, no code fences.',
+        options.format_schema ? ('Schema:\n' + JSON.stringify(options.format_schema)) : '',
+        'If uncertain, still return best-effort JSON with all required keys.',
+        'Input:',
+        raw.text,
+      ].filter(Boolean).join('\n\n'),
+    ];
+
+    let combinedRaw = raw.text;
+    for (let idx = 0; idx < repairPrompts.length; idx++) {
+      const repaired = await callOllamaRaw.call(
+        this,
+        'You are a strict JSON formatter. Return valid JSON only.',
+        repairPrompts[idx],
+        { temperature: 0, num_predict: 700, num_ctx: 8192, timeout: 240000, max_attempts: 2, thinking: false, format_schema: options.format_schema || null }
+      );
+      combinedRaw += '\n\n[REPAIRED_' + String(idx + 1) + ']\n' + repaired.text;
+      try {
+        return {
+          parsed: extractJsonCandidate(repaired.text),
+          raw_text: combinedRaw,
+          repair_used: true,
+        };
+      } catch {}
+    }
+    throw new Error('Could not extract valid JSON payload after repair attempts');
   }
 }
 
@@ -773,6 +795,30 @@ function diffDays(fromValue, toValue) {
 
 function base64Url(input) {
   return Buffer.from(String(input || ''), 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function tokenize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9äöüß]+/gi, ' ')
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+}
+
+function containsAnyToken(text, needles) {
+  const normalizedText = String(text || '').toLowerCase();
+  const haystack = new Set(tokenize(text));
+  for (const needle of ensureArray(needles)) {
+    const normalizedNeedle = String(needle || '').toLowerCase().trim();
+    if (!normalizedNeedle) continue;
+    if (normalizedNeedle.includes(' ')) {
+      if (normalizedText.includes(normalizedNeedle)) return true;
+      continue;
+    }
+    if (haystack.has(normalizedNeedle)) return true;
+  }
+  return false;
 }
 
 function normalizeTokenInput(value) {
@@ -1959,20 +2005,68 @@ const planPrompt = buildPrompt(String(ctx.prompts.source_analysis || ''), {
   planning_rules: JSON.stringify(ctx.configs.planning_rules || {}, null, 2),
 });
 
-const planResponse = await callOllamaJsonStrict.call(
-  this,
-  'Du planst exakt einen BI-Guide-Artikel. Nutze den Kandidaten als strukturelle Wahrheit und liefere nur JSON.',
-  planPrompt,
-  {
-    format_schema: articlePlanSchema,
-    temperature: 0.1,
-    num_predict: 900,
-    num_ctx: 12288,
-    timeout: 300000,
-    max_attempts: 2,
-    thinking: false,
-  }
-);
+function fallbackPlanCandidateFromSelection(selected, routes) {
+  const title = String(selected.working_title || selected.article_id || 'BI-Guide Artikel').trim();
+  const workingTitle = title.length >= 10 ? title : ('Praxisleitfaden: ' + title);
+  const internalTargets = ensureArray(routes)
+    .filter((row) => row.locale === 'de' && row.type === 'article')
+    .slice(0, 3)
+    .map((row) => String(row.path || ''))
+    .filter(Boolean);
+  const fallbackTargets = internalTargets.length
+    ? internalTargets
+    : [
+      '/' + String(selected.target_locale || 'de') + '/business-intelligence-guide',
+      '/' + String(selected.target_locale || 'de') + '/business-intelligence-guide/toolvergleich',
+    ];
+  return {
+    working_title: workingTitle,
+    article_slug: String(selected.article_slug || selected.article_id || ''),
+    audience: String(selected.audience || 'Data- und BI-Verantwortliche in KMU'),
+    search_intent: String(selected.intent || 'MOFU'),
+    why_now: 'Das Thema zeigt aktuell deutliche Nachfrage- und Umsetzungsrelevanz im BI-Guide-Kontext.',
+    angle: 'Praxisnaher Leitfaden mit klaren Entscheidungen, typischen Stolpersteinen und konkreten naechsten Schritten.',
+    outline: [
+      { heading: 'Ausgangslage und Zielbild', purpose: 'Problemrahmen und erwartetes Ergebnis klaeren', bullets: ['Ist-Situation einordnen', 'Zielbild konkretisieren'] },
+      { heading: 'Vorgehensmodell in Schritten', purpose: 'Strukturierte Umsetzung mit Prioritaeten liefern', bullets: ['Schrittfolge definieren', 'Quick Wins identifizieren'] },
+      { heading: 'Typische Fehler und Gegenmassnahmen', purpose: 'Risiken frueh erkennen und vermeiden', bullets: ['Fehlannahmen benennen', 'Praeventive Massnahmen darstellen'] },
+      { heading: 'Umsetzung im Alltag', purpose: 'Transfer in Team- und Entscheidungsprozesse sichern', bullets: ['Verantwortlichkeiten klären', 'Messpunkte und Follow-up festlegen'] },
+    ],
+    internal_link_targets: fallbackTargets,
+    source_strategy: [
+      'existing_repo_articles',
+      selected.proof_required ? ('proof_required:' + selected.proof_required) : 'proof_required:metric',
+    ],
+    risks: ['Begriffliche Unschaerfe im Scope', 'Uneinheitliche Datenbasis im Team'],
+    refresh_strategy: String(selected.refresh_strategy || ''),
+  };
+}
+
+let planResponse;
+try {
+  planResponse = await callOllamaJsonStrict.call(
+    this,
+    'Du planst exakt einen BI-Guide-Artikel. Nutze den Kandidaten als strukturelle Wahrheit und liefere nur JSON.',
+    planPrompt,
+    {
+      format_schema: articlePlanSchema,
+      temperature: 0.1,
+      num_predict: 900,
+      num_ctx: 12288,
+      timeout: 300000,
+      max_attempts: 2,
+      thinking: false,
+    }
+  );
+} catch (error) {
+  const fallbackPlan = fallbackPlanCandidateFromSelection(candidate, routeMap);
+  planResponse = {
+    parsed: fallbackPlan,
+    raw_text: '[FALLBACK_PLAN]\n' + String(error && error.message ? error.message : 'unknown'),
+    repair_used: true,
+    fallback_used: true,
+  };
+}
 
 const planCandidate = ensureObject(planResponse.parsed);
 const articlePlan = Object.assign({}, planCandidate, {
@@ -2013,6 +2107,7 @@ ctx.artifacts.article_plan = articlePlan;
 ctx.artifacts.article_plan_raw = {
   raw_text: planResponse.raw_text,
   repair_used: !!planResponse.repair_used,
+  fallback_used: !!planResponse.fallback_used,
 };
 ctx.topic = articlePlan.working_title;
 ctx.status = 'planned';

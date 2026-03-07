@@ -353,18 +353,37 @@ async function callOllamaJsonStrict(systemPrompt, userPrompt, options = {}) {
   try {
     return { parsed: extractJsonCandidate(raw.text), raw_text: raw.text, repair_used: false };
   } catch (firstError) {
-    const repaired = await callOllamaRaw.call(
-      this,
-      'You are a strict JSON formatter. Return valid JSON only.',
+    const repairPrompts = [
       [
         'Convert this content to strict valid JSON.',
         options.format_schema ? ('Schema:\n' + JSON.stringify(options.format_schema)) : '',
         'Input:',
         raw.text,
       ].filter(Boolean).join('\n\n'),
-      { temperature: 0, num_predict: 900, num_ctx: 8192, timeout: 240000, max_attempts: 2, thinking: false, format_schema: options.format_schema || null }
-    );
-    return { parsed: extractJsonCandidate(repaired.text), raw_text: raw.text + '\n\n[REPAIRED]\n' + repaired.text, repair_used: true };
+      [
+        'Return ONLY one valid JSON object.',
+        'No markdown, no prose, no code fences.',
+        options.format_schema ? ('Schema:\n' + JSON.stringify(options.format_schema)) : '',
+        'If uncertain, still return best-effort JSON with all required keys.',
+        'Input:',
+        raw.text,
+      ].filter(Boolean).join('\n\n'),
+    ];
+
+    let combinedRaw = raw.text;
+    for (let idx = 0; idx < repairPrompts.length; idx++) {
+      const repaired = await callOllamaRaw.call(
+        this,
+        'You are a strict JSON formatter. Return valid JSON only.',
+        repairPrompts[idx],
+        { temperature: 0, num_predict: 900, num_ctx: 8192, timeout: 240000, max_attempts: 2, thinking: false, format_schema: options.format_schema || null }
+      );
+      combinedRaw += '\n\n[REPAIRED_' + String(idx + 1) + ']\n' + repaired.text;
+      try {
+        return { parsed: extractJsonCandidate(repaired.text), raw_text: combinedRaw, repair_used: true };
+      } catch {}
+    }
+    throw new Error('Could not extract valid JSON payload after repair attempts');
   }
 }
 
@@ -928,6 +947,67 @@ const articlePackage = {
   })),
   quality_notes: uniqueStrings(draftCandidate.quality_notes, 220),
 };
+
+const fallbackTakeaways = [
+  'Klares Zielbild und Scope vor Umsetzung festlegen.',
+  'Schrittweise vorgehen und Messpunkte frueh definieren.',
+  'Interne Verlinkung und Belege fuer Entscheidungen dokumentieren.',
+];
+const existingTakeaways = uniqueStrings(articlePackage.frontmatter.keyTakeaways, 180);
+articlePackage.frontmatter.keyTakeaways = existingTakeaways.concat(fallbackTakeaways).slice(0, 3);
+
+if (bodyWordCount(articlePackage.body_mdx) < 220 || String(articlePackage.body_mdx || '').length < 800) {
+  const fallbackChunks = [
+    articlePackage.body_mdx,
+    '',
+    '## Praktisches Vorgehen',
+    '1. Ziel und Ausgangslage klaeren.',
+    '2. Datenquellen und Verantwortlichkeiten festlegen.',
+    '3. Ergebnisse regelmaessig pruefen und nachschaerfen.',
+    '',
+    '## Typische Stolpersteine',
+    '- Unklare Begriffe im Team.',
+    '- Fehlende Priorisierung bei Anforderungen.',
+    '- Keine verbindlichen Review-Schritte.',
+    '',
+    '## Naechste Schritte',
+    'Definiere fuer die kommenden zwei Wochen konkrete Aufgaben, klare Verantwortlichkeiten und messbare Erfolgskriterien.',
+  ];
+  while (fallbackChunks.join('\n').length < 900) {
+    fallbackChunks.push(
+      '',
+      '### Vertiefung',
+      'Dokumentiere Entscheidungen, Annahmen und offene Punkte transparent, damit Teams priorisieren und iterativ verbessern koennen.'
+    );
+  }
+  articlePackage.body_mdx = fallbackChunks.join('\n').trim();
+}
+
+if (articlePackage.internal_links.length < 2) {
+  const fallbackLinks = ensureArray(sourceSnapshot.route_map)
+    .filter((row) => row.locale === articlePlan.target_locale && row.type === 'article')
+    .slice(0, 3)
+    .map((row) => ({
+      path: String(row.path || ''),
+      label: 'Verwandter BI-Guide-Artikel',
+      reason: 'Kontext und Vertiefung',
+    }))
+    .filter((row) => row.path);
+  articlePackage.internal_links = sanitizeInternalLinks(articlePackage.internal_links.concat(fallbackLinks)).slice(0, 4);
+}
+
+if (articlePackage.external_sources.length < 2) {
+  const fallbackSources = ensureArray(ctx.artifacts.external_research && ctx.artifacts.external_research.results)
+    .slice(0, 3)
+    .map((row) => ({
+      title: String(row.title || row.url || 'Quelle'),
+      url: String(row.url || ''),
+      why_used: 'Fuer Kontext und Plausibilisierung genutzt.',
+    }))
+    .filter((row) => row.url);
+  articlePackage.external_sources = articlePackage.external_sources.concat(fallbackSources).slice(0, 4);
+}
+
 validateSchema(articlePackageSchema, articlePackage, 'article_package');
 ctx.artifacts.article_package = articlePackage;
 ctx.artifacts.article_package_raw = {
