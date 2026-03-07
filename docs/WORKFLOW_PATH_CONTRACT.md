@@ -1,57 +1,66 @@
 # Workflow Path Contract
 
-## Global (workflow-uebergreifend)
+## Global
 - Root: `Workflows`
-- Shared context: `Workflows/Kontext`
+- Shared root: `Workflows/_shared`
+- Shared context: `Workflows/_shared/Kontext`
+- Resource governance: `Workflows/_shared/Ressourcen`
 
-## Beitraege (workflow-spezifisch)
-- Parent: `Marketing/Social-Media/Beitraege/Workflow`
-- Active workflow root: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
+## Social Core
+- Core root: `Workflows/social-content`
+- Prompt root: `Workflows/social-content/Prompts`
+- Kontext root: `Workflows/social-content/Kontext`
+- Config root: `Workflows/social-content/Config`
+- Schema root: `Workflows/social-content/Schemas`
+- System root: `Workflows/social-content/_system`
+- Manifest: `Workflows/social-content/_system/manifest.json`
+- Artefakte root: `Workflows/social-content/Artefakte`
+- Ergebnisse root: `Workflows/social-content/Artefakte/Ergebnisse`
+- Zwischenergebnisse root: `Workflows/social-content/Artefakte/Zwischenergebnisse`
 
-## BI Guide (workflow-spezifisch)
-- Parent: `Marketing/BI-Guide/Workflow`
-- Active workflow root: `Marketing/BI-Guide/Workflow/BI-Guide-Workflow`
+## BI Guide Core
+- Core root: `Workflows/bi-guide-content`
+- Prompt root: `Workflows/bi-guide-content/Prompts`
+- Kontext root: `Workflows/bi-guide-content/Kontext`
+- Config root: `Workflows/bi-guide-content/Config`
+- Schema root: `Workflows/bi-guide-content/Schemas`
+- Template root: `Workflows/bi-guide-content/Templates`
+- System root: `Workflows/bi-guide-content/_system`
+- Manifest: `Workflows/bi-guide-content/_system/manifest.json`
+- Artefakte root: `Workflows/bi-guide-content/Artefakte`
+- Eingaben root: `Workflows/bi-guide-content/Artefakte/Eingaben`
+- Ergebnisse root: `Workflows/bi-guide-content/Artefakte/Ergebnisse`
+- Chancen-Snapshots root: `Workflows/bi-guide-content/Artefakte/Ergebnisse/Chancen-Snapshots`
+- Opportunity register: `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Chancenregister.md`
+- Refresh register: `Workflows/bi-guide-content/Artefakte/Ergebnisse/00-Refreshregister.md`
+- Manual signals: `Workflows/bi-guide-content/Artefakte/Eingaben/Manuelle-Signale.md`
+- Zwischenergebnisse root: `Workflows/bi-guide-content/Artefakte/Zwischenergebnisse`
 
-## Beitraege-Workflow Struktur
-- `Ergebnisse/00-Runs.md`
-- `Ergebnisse/Laufdetails/`
-- `Ergebnisse/Fehlerdetails/`
-- `Ergebnisse/Performance/`
-- `Zwischenergebnisse/`
-- `Prompts/`
-- `Kontext/` (nur workflowlokal)
-- `Config/`
-- `Schemas/`
-- `SSOT/manifest.json`
-- `Beitraege-Workflow-Uebersicht.md`
-- `README.md`
+## Marketing Views
+- Social view root: `Marketing/Social-Media/Beitraege/Beitraege-Workflow`
+- BI Guide view root: `Marketing/Content/BI-Guide/BI-Guide-Workflow`
+- Zulassig im Marketing-View-Layer sind nur Uebersichten und Einstiegsseiten.
 
-## BI-Guide-Workflow Struktur
-- `Ergebnisse/00-Runs.md`
-- `Ergebnisse/Laufdetails/`
-- `Ergebnisse/Fehlerdetails/`
-- `Ergebnisse/Quellensnapshots/`
-- `Ergebnisse/Artikelpakete/`
-- `Ergebnisse/Exporte/`
-- `Zwischenergebnisse/`
-- `Prompts/`
-- `Kontext/`
-- `Config/`
-- `Schemas/`
-- `Templates/`
-- `SSOT/manifest.json`
-- `00-Artikelregister.md`
-- `BI-Guide-Workflow-Uebersicht.md`
-- `README.md`
+## Social Marketing Views
+- `Workflow-Uebersicht.md`
+- `Ergebnisse-Uebersicht.md`
+- `Zwischenergebnisse-Uebersicht.md`
 
-## Kontext-Zuordnung
-- Global: `brand.md`, `audience.md`, `offer.md`, `voice.md`, `author-voice.md`, `proof-library.md`, `red-lines.md`, `cta-goals.md`
-- Workflowlokal: `linkedin-context.md`, `reddit-communities.md`, `performance-memory.md`
+## BI Guide Marketing Views
+- `Workflow-Uebersicht.md`
+- `Ergebnisse-Uebersicht.md`
+- `Zwischenergebnisse-Uebersicht.md`
+- `Artikelregister-Uebersicht.md`
+- `Chancen-Uebersicht.md`
+- `Refresh-Uebersicht.md`
 
-## Config-Zuordnung
-- Workflowlokal: `source-policy.json`, `platform-profiles.json`
+## Verbotene Legacy-Pfade
+- Kein aktiver Workflow-Core unter `Marketing/**/Workflow/*-Workflow`
+- Kein `SSOT/manifest.json` mehr im aktiven Workflow-Core
+- Kein Shared-Kontext mehr unter `Workflows/Kontext`
+- Keine Run-Artefakte mehr im Marketing-View-Layer
 
-## Verbote
-- Keine Umlaute in Pfaden/Dateinamen.
-- Kein `Evaluations/`-Ordner im aktiven Workflow.
-- Kein Prompt-Change-Log.
+## Naming
+- Technische Roots liegen unter `Workflows/<workflow-id>`.
+- View-Layer fuer fachliche Navigation liegen unter `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`.
+- Systemdateien liegen unter `_system/`.

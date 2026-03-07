@@ -24,7 +24,7 @@
 - Research pipeline:
   - Query planning
   - Retrieval (allowlist + retry)
-  - Dedupe + source scoring
+  - Dedupe + resource classification + source scoring
   - Evidence extraction + angle slate
 - Content pipeline:
   - Topic gate
@@ -48,6 +48,7 @@
 - JSON-only outputs for intermediate stages
 - Platform-native behavior rules for LinkedIn and Reddit
 - `author_voice` and `performance_memory` as explicit steering context
+- `resource_registry` and workflow-specific `source_policy` as explicit source governance
 
 ## Contracts (Schemas)
 - ResearchOutput
@@ -61,9 +62,10 @@
 - PerformanceLearnings
 
 ## Context Boundary
-- Global shared context in `Workflows/Kontext`
-- Workflow-local context in `.../Beitraege-Workflow/Kontext`
-- Workflow-local config in `.../Beitraege-Workflow/Config`
+- Global shared context in `Workflows/_shared/Kontext`
+- Workflow-local context in `Workflows/social-content/Kontext`
+- Workflow-local config in `Workflows/social-content/Config`
+- Marketing views live separately under `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`
 
 ## Quality Gates
 - Hard fail on model mismatch
@@ -77,10 +79,13 @@
 - Optional TLS override only by env flag
 - URL allowlist guard for retrieval signals
 - Local-only runtime components
+- External sources are treated as untrusted input and must pass resource policy gates
 
 ## Cutover Strategy (Clean Cutover)
 - Rebuild workflows from `n8n/code/*.js`
 - Import clean via `import_workflows.sh`
 - Sync SSOT via `sync_obsidian_ssot.sh`
-- Remove legacy artifacts outside active workflow root
+- Move active workflow cores to `Workflows/social-content` and `Workflows/bi-guide-content`
+- Keep only overview files in `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`
+- Remove legacy artifacts outside active workflow core
 - No transition layer and no evaluation side channel

@@ -17,7 +17,9 @@
 
 ## Phase 4 Structure Cleanup
 - Global shared folder: `Workflows`
-- Workflow root: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
+- Shared fachlicher Root: `Workflows/_shared`
+- Workflow cores: `Workflows/social-content` und `Workflows/bi-guide-content`
+- Marketing views: `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`
 - ASCII naming for workflow files
 - Evaluations und Prompt-Change-Log komplett entfernt
 

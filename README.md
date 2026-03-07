@@ -15,30 +15,25 @@ Lokaler Stack fuer Social-Content-Workflows:
 
 ## Obsidian Zielstruktur
 Global:
-- `Workflows/Kontext`
+- `Workflows/_shared/Kontext`
+- `Workflows/_shared/Ressourcen`
 
 Workflow-spezifisch:
-- `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
-- `.../Ergebnisse/00-Runs.md`
-- `.../Ergebnisse/Laufdetails/`
-- `.../Ergebnisse/Fehlerdetails/`
-- `.../Ergebnisse/Performance/`
-- `.../Zwischenergebnisse/`
-- `.../Prompts/`
-- `.../Kontext/` (`linkedin-context.md`, `reddit-communities.md`, `performance-memory.md`)
-- `.../Config/`
-- `.../Schemas/`
-- `.../SSOT/manifest.json`
-- `.../Beitraege-Workflow-Uebersicht.md`
+- Social Core: `Workflows/social-content`
+- BI Guide Core: `Workflows/bi-guide-content`
+- Social Marketing View: `Marketing/Social-Media/Beitraege/Beitraege-Workflow`
+- BI Guide Marketing View: `Marketing/Content/BI-Guide/BI-Guide-Workflow`
 
 ## Zielbild
-- Ein Lauf erzeugt genau eine Detaildatei: `Ergebnisse/Laufdetails/<run_id>.md`.
-- Eine Basistabelle sammelt alle Laeufe: `Ergebnisse/00-Runs.md`.
-- Zwischenergebnisse liegen pro Workflow als vollstaendige Datei unter: `Zwischenergebnisse/*.md`.
-- Fehlerlaeufe landen in: `Ergebnisse/Fehlerdetails/<run_id>.md`.
-- Performance-Learnings landen als Einzelnotiz unter `Ergebnisse/Performance/` und kuratiert in `Kontext/performance-memory.md`.
+- Ein Lauf erzeugt genau eine Detaildatei unter `Workflows/<workflow-id>/Artefakte/Ergebnisse/Laufdetails/<run_id>.md`.
+- Eine Basistabelle sammelt alle Laeufe unter `Workflows/<workflow-id>/Artefakte/Ergebnisse/00-Runs.md`.
+- Zwischenergebnisse liegen pro Workflow unter `Workflows/<workflow-id>/Artefakte/Zwischenergebnisse/*.md`.
+- Fehlerlaeufe landen unter `Workflows/<workflow-id>/Artefakte/Ergebnisse/Fehlerdetails/<run_id>.md`.
+- Performance-Learnings landen unter `Workflows/social-content/Artefakte/Ergebnisse/Performance/` und kuratiert in `Workflows/social-content/Kontext/performance-memory.md`.
+- Marketing enthaelt nur noch Uebersichten und Einstiege.
 - Kein `Evaluations/`-Ordner, kein stiller Schema-Fallback und kein Prompt-Change-Log.
 - Fuer BI-Guide gilt zusaetzlich: Sandbank-Repo nur read-only, Exporte nur nach Obsidian.
+- Fuer BI-Guide Phase 1 gilt zusaetzlich: Opportunity- und Refresh-Register werden aus Search Console, manuellen Signalen und Repo-Abdeckung aufgebaut.
 
 ## Modell- und Qualitaetsregeln
 - Modell ist hart gepinnt: `qwen3.5:27b`.
@@ -52,7 +47,9 @@ Workflow-spezifisch:
 - KI-basierte Schrittzusammenfassungen sind per Env schaltbar: `PIPELINE_STAGE_SUMMARY_ENABLED`.
 
 ## Laufkennungen
-- run_id Format: `run-<execution_id>-<timestamp>`
+- Social run_id Format: `run-<execution_id>-<timestamp>`
+- BI-Guide Artikel run_id Format: `bi-guide-run-<execution_id>-<timestamp>`
+- BI-Guide Opportunity run_id Format: `bi-guide-opportunity-<execution_id>-<timestamp>`
 - error run_id Format: `error-<execution_id>-<timestamp>`
 
 ## Setup
@@ -89,6 +86,7 @@ make refresh-bi-guide-manifest
 - `Ablauf automatisch steuern`
 - `Fehlerlauf klar dokumentieren`
 - `Performance zurueckfuehren`
+- `BI-Guide Chancen aktualisieren`
 - `BI-Guide Ablauf automatisch steuern`
 - `BI-Guide Quellen und Planung`
 - `BI-Guide Artikelpaket erstellen`
@@ -98,7 +96,7 @@ make refresh-bi-guide-manifest
 
 ## Prompt-Steuerung
 Prompt-SSOT liegt unter:
-`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts`
+`Workflows/social-content/Prompts`
 
 Pflichtdateien:
 - `00-global-system.md`
@@ -115,18 +113,18 @@ Pflichtdateien:
 
 ## Schema-Steuerung
 Schema-SSOT liegt unter:
-`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Schemas`
+`Workflows/social-content/Schemas`
 
 SSOT-Paritaet wird ueber:
-`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/SSOT/manifest.json`
+`Workflows/social-content/_system/manifest.json`
 erzwungen.
 
 ## Kontext-SSOT
 Global:
-`Workflows/Kontext`
+`Workflows/_shared/Kontext`
 
 Workflowlokal:
-`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext`
+`Workflows/social-content/Kontext`
 
 Wichtige Kontextdateien:
 - Global: `brand.md`, `audience.md`, `offer.md`, `voice.md`, `author-voice.md`, `proof-library.md`, `red-lines.md`, `cta-goals.md`
@@ -134,7 +132,7 @@ Wichtige Kontextdateien:
 
 ## Konfigurations-SSOT
 Workflowkonfiguration liegt unter:
-`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Config`
+`Workflows/social-content/Config`
 
 Pflichtdateien:
 - `source-policy.json`

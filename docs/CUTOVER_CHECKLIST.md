@@ -1,7 +1,7 @@
 # Cutover Checklist
 
 ## Vorher
-- [ ] `.env` auf neue Pfade gesetzt (`Workflows` global, `Beitraege-Workflow` lokal).
+- [ ] `.env` auf neue Pfade gesetzt (`Workflows` als Core, `Beitraege-Workflow` und `BI-Guide-Workflow` als View-Layer).
 - [ ] `OBSIDIAN_WORKFLOWS_CONTEXT_DIR` gesetzt.
 - [ ] `OBSIDIAN_WORKFLOW_SCHEMA_DIR` gesetzt.
 - [ ] `OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE` gesetzt.
@@ -28,14 +28,15 @@
 - [ ] `./n8n/scripts/sync_obsidian_ssot.sh` erfolgreich.
 - [ ] `Prompts/` vollstaendig.
 - [ ] `Schemas/` vollstaendig.
-- [ ] `SSOT/manifest.json` vorhanden.
-- [ ] Globaler Kontext in `Workflows/Kontext` vorhanden.
+- [ ] `_system/manifest.json` vorhanden.
+- [ ] Globaler Kontext in `Workflows/_shared/Kontext` vorhanden.
 - [ ] Workflowlokaler Kontext (`linkedin-context.md`, `reddit-communities.md`) vorhanden.
 
 ## Obsidian Struktur
-- [ ] Aktiver Root: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`.
-- [ ] `Beitraege-Workflow-Uebersicht.md` vorhanden.
-- [ ] Kein `_legacy` und kein `Evaluations` unter aktivem Root.
+- [ ] Aktiver Social-Core: `Workflows/social-content`.
+- [ ] Aktiver BI-Guide-Core: `Workflows/bi-guide-content`.
+- [ ] Marketing-Views liegen unter `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`.
+- [ ] Kein `_legacy` und kein `Evaluations` unter aktivem Workflow-Core.
 
 ## Runtime
 - [ ] Modell-Pin aktiv: `qwen3.5:27b`.

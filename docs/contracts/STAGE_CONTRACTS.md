@@ -2,7 +2,7 @@
 
 | Stage | Schema File | Version | Producer | Consumer | Breaking Rules |
 |---|---|---|---|---|---|
-| recherche-signale | `research_output.schema.json` | 1.1.0 | Thema und Quellen sammeln | Beitrag aus Quellen erstellen | required/enum-Änderung, Feldentfernung |
+| recherche-signale | `research_output.schema.json` | 1.2.0 | Thema und Quellen sammeln | Beitrag aus Quellen erstellen | required/enum-Änderung, Feldentfernung |
 | thema-pruefung | `topic_gate.schema.json` | 1.1.0 | Beitrag aus Quellen erstellen | Beitrag aus Quellen erstellen | required/enum-Änderung, Feldentfernung |
 | kanal-linkedin | `linkedin_brief.schema.json` | 1.0.0 | Beitrag aus Quellen erstellen | Beitrag aus Quellen erstellen | required/enum-Änderung, Feldentfernung |
 | kanal-reddit | `reddit_brief.schema.json` | 1.0.0 | Beitrag aus Quellen erstellen | Beitrag aus Quellen erstellen | required/enum-Änderung, Feldentfernung |

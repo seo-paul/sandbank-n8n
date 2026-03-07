@@ -4,35 +4,41 @@ Globale Shared-Artefakte liegen unter:
 `Workflows`
 
 Aktive Laufdaten liegen unter:
-`Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
+`Workflows/social-content`
 
 ## Minimale Struktur
-- `Ergebnisse/00-Runs.md`
-- `Ergebnisse/Laufdetails/`
-- `Ergebnisse/Fehlerdetails/`
-- `Ergebnisse/Performance/`
-- `Zwischenergebnisse/`
+- `Artefakte/Ergebnisse/00-Runs.md`
+- `Artefakte/Ergebnisse/Laufdetails/`
+- `Artefakte/Ergebnisse/Fehlerdetails/`
+- `Artefakte/Ergebnisse/Performance/`
+- `Artefakte/Zwischenergebnisse/`
 - `Prompts/`
 - `Kontext/` (workflowlokal)
+- `Config/`
 - `Schemas/`
-- `SSOT/manifest.json`
-- `Beitraege-Workflow-Uebersicht.md`
+- `_system/manifest.json`
 
 Weitere Workflow-Familie:
-- `Marketing/BI-Guide/Workflow/BI-Guide-Workflow`
-- `.../Ergebnisse/Laufdetails/`
-- `.../Ergebnisse/Quellensnapshots/`
-- `.../Ergebnisse/Artikelpakete/`
-- `.../Ergebnisse/Exporte/`
-- `.../Zwischenergebnisse/`
+- `Workflows/bi-guide-content`
+- `.../Artefakte/Ergebnisse/Laufdetails/`
+- `.../Artefakte/Ergebnisse/Quellensnapshots/`
+- `.../Artefakte/Ergebnisse/Artikelpakete/`
+- `.../Artefakte/Ergebnisse/Exporte/`
+- `.../Artefakte/Zwischenergebnisse/`
 - `.../Templates/`
-- `.../00-Artikelregister.md`
-- `.../BI-Guide-Workflow-Uebersicht.md`
+- `.../Artefakte/00-Artikelregister.md`
+
+Marketing-Views:
+- `Marketing/Social-Media/Beitraege/Beitraege-Workflow`
+- `Marketing/Content/BI-Guide/BI-Guide-Workflow`
 
 ## Relevante `.env`-Variablen
+- `OBSIDIAN_VAULT_FS_PATH`
 - `OBSIDIAN_WORKFLOWS_DIR`
+- `OBSIDIAN_WORKFLOWS_SHARED_DIR`
 - `OBSIDIAN_WORKFLOWS_CONTEXT_DIR`
 - `OBSIDIAN_WORKFLOW_DIR`
+- `OBSIDIAN_WORKFLOW_MARKETING_DIR`
 - `OBSIDIAN_WORKFLOW_ARCHIVE_DIR`
 - `OBSIDIAN_WORKFLOW_RESULTS_DIR`
 - `OBSIDIAN_WORKFLOW_DETAIL_DIR`
@@ -44,6 +50,10 @@ Weitere Workflow-Familie:
 - `OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE`
 - `OBSIDIAN_WORKFLOW_RUNS_FILE`
 - `OBSIDIAN_WORKFLOW_OVERVIEW_FILE`
+- `OBSIDIAN_WORKFLOW_RESULTS_OVERVIEW_FILE`
+- `OBSIDIAN_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE`
+- `OBSIDIAN_BI_GUIDE_WORKFLOW_DIR`
+- `OBSIDIAN_BI_GUIDE_MARKETING_DIR`
 
 Defaults setzt:
 ```bash
@@ -51,6 +61,10 @@ Defaults setzt:
 ./n8n/scripts/sync_obsidian_ssot.sh
 ./n8n/scripts/sync_obsidian_bi_guide_ssot.sh
 ```
+
+Lokaler Standard:
+- Wenn `OBSIDIAN_VAULT_FS_PATH` auf den Vault zeigt, nutzen Sync-, Pull- und Manifest-Skripte direkt das Dateisystem.
+- Nur wenn dieser Pfad nicht verfuegbar ist, fallen die Skripte auf die Obsidian Local REST API zurueck.
 
 Clean reset + Archivierung:
 ```bash
@@ -61,15 +75,16 @@ Clean reset + Archivierung:
 ## Wichtig zum Sync
 - `sync_obsidian_ssot.sh` synchronisiert Prompts, Kontext, Schemas und Manifest.
 - `sync_obsidian_ssot.sh` bricht ab, wenn SSOT-Quelldateien fehlen oder leer sind.
+- `refresh_obsidian_ssot_manifest.sh` und `refresh_obsidian_bi_guide_manifest.sh` schreiben `_system/manifest.json` direkt in den Vault-Core.
 
 ## Was pro Run geschrieben wird
-- Laufdetail: `Ergebnisse/Laufdetails/<run_id>.md`
-- Run-Zeile: `Ergebnisse/00-Runs.md`
-- Vollstaendige Workflow-Zwischenergebnisse: `Zwischenergebnisse/<workflow-slug>.md`
+- Laufdetail: `Artefakte/Ergebnisse/Laufdetails/<run_id>.md`
+- Run-Zeile: `Artefakte/Ergebnisse/00-Runs.md`
+- Vollstaendige Workflow-Zwischenergebnisse: `Artefakte/Zwischenergebnisse/<workflow-slug>.md`
 
 ## Fehlerlaeufe
 `Fehlerlauf klar dokumentieren` schreibt in:
-`Ergebnisse/Fehlerdetails/<run_id>.md`
+`Artefakte/Ergebnisse/Fehlerdetails/<run_id>.md`
 
 ## Performance
-- `Performance zurueckfuehren` schreibt in: `Ergebnisse/Performance/<run_id>.md`
+- `Performance zurueckfuehren` schreibt in: `Artefakte/Ergebnisse/Performance/<run_id>.md`

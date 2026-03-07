@@ -1,0 +1,66 @@
+# Resource Governance Target Architecture
+
+## Ziel
+- Quellen nach Nutzwert, Themenfit, Evidenzstaerke und Risiko steuern statt nach Domainprestige.
+- Einheitliche Ressourcen-Governance fuer Social und BI-Guide mit workflow-spezifischen Schwellen.
+
+## Begriffe
+- `resource_class`: fachliche Klasse einer Quelle.
+- `allowed_usage`: erlaubte Verwendungsarten wie `fact`, `background` oder `counterpoint`.
+- `review_required`: Quelle darf nur mit menschlicher Pruefung in starke Aussagen einfliessen.
+
+## Ressourcenklassen
+- `official_product_or_platform_docs`
+- `official_standards_or_regulation`
+- `first_party_original_data`
+- `industry_benchmark_or_survey`
+- `operator_case_study`
+- `topic_specific_research`
+- `community_signal`
+- `general_media`
+- `vendor_content`
+- `low_value_aggregator`
+
+## Policy-Ebenen
+- Discovery: wo gesucht werden darf
+- Acceptance: was in den Evidence-Pool darf
+- Usage: wofuer eine Quelle verwendet werden darf
+- Review: was menschliche Freigabe braucht
+- Feedback: welche Ressourcenklassen spaeter gute Ergebnisse liefern
+
+## Bewertungslogik
+- Harte Gates:
+  - blockierte Domains und Patterns
+  - nicht erlaubte Ressourcenklasse
+  - unzureichender Themenfit
+  - unzureichende Zitationsfaehigkeit
+- Scoring:
+  - `topic_fit`
+  - `evidence_strength`
+  - `citation_readiness`
+  - `freshness`
+  - `transferability`
+  - `commercial_bias_penalty`
+
+## Sicherheitsregeln
+- Externe HTML-Inhalte sind untrusted input.
+- Keine implizite Autoritaet aus Domainnamen allein.
+- Review-Pflicht fuer breite Wissenschaftsdomains, allgemeine Medien und Benchmark-Reports.
+
+## Workflow-spezifische Regeln
+- Social:
+  - `community_signal` erlaubt, aber nie als Kernbeleg
+  - mehr Gewicht auf Diskussionswert und Transferabilitaet
+- BI-Guide:
+  - hoehere Schwellen fuer `topic_fit` und `citation_readiness`
+  - `community_signal` nicht als externe Standardrecherche
+
+## Obsidian-Ablage
+- Globale Fachbasis in `Workflows/_shared/Kontext`
+- Workflow-spezifische Registry-Dateien in `.../Config`
+- Kuratiertes Ressourcenregister fuer Review und Pflege in `Workflows/_shared/Ressourcen`
+
+## Feedback-Loop
+- Performance und Review sollen kuenftig auf Ressourcenklassen zurueckfuehren:
+  - welche Klassen zu glaubwuerdigeren Artikeln fuehren
+  - welche Klassen haeufige Review-Probleme ausloesen

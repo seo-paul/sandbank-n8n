@@ -76,11 +76,13 @@
   - `diagnostics`
 
 ## Pfadgrenzen Obsidian
-- Global shared context: `Workflows/Kontext`
-- Aktiv: `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow`
-- Workflow-Config: `.../Beitraege-Workflow/Config`
-- Workflow-Memory: `.../Beitraege-Workflow/Kontext/performance-memory.md`
-- Kein `_legacy` und kein `Evaluations` im aktiven Workflow-Root
+- Global shared context: `Workflows/_shared/Kontext`
+- Aktiver Social-Core: `Workflows/social-content`
+- Aktiver BI-Guide-Core: `Workflows/bi-guide-content`
+- Marketing-Views: `Marketing/**/{Beitraege-Workflow|BI-Guide-Workflow}`
+- Workflow-Config: `Workflows/<workflow-id>/Config`
+- Workflow-Memory: `Workflows/social-content/Kontext/performance-memory.md`
+- Kein `_legacy` und kein `Evaluations` im aktiven Workflow-Core
 
 ## Modellstrategie
 - Zulassiges Modell: `qwen3.5:27b`

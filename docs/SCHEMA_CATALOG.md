@@ -1,9 +1,9 @@
 # Schema Catalog
 
 ## SSOT
-- Authoring source of truth: Obsidian `.../Beitraege-Workflow/Schemas/*.schema.json`
+- Authoring source of truth: Obsidian `Workflows/<workflow-id>/Schemas/*.schema.json`
 - Repo mirror: `local-files/_managed/schemas/*.schema.json`
-- SSOT parity gate: `.../Beitraege-Workflow/SSOT/manifest.json`
+- SSOT parity gate: `Workflows/<workflow-id>/_system/manifest.json`
 
 ## Stage -> Output Schema
 - recherche-signale -> `research_output.schema.json`
@@ -15,6 +15,16 @@
 - strategie-kritik -> `strategy_critique.schema.json`
 - finale-kritik -> `final_gate.schema.json`
 - performance-auswertung -> `performance_learnings.schema.json`
+
+## BI Guide Stage -> Output Schema
+- source_snapshot -> `source_snapshot.schema.json`
+- opportunity_signals_collected -> `opportunity_snapshot.schema.json`
+- opportunity_register_built -> `opportunity_register.schema.json`
+- refresh_register_built -> `refresh_register.schema.json`
+- article_plan_created -> `article_plan.schema.json`
+- article_package_created -> `article_package.schema.json`
+- publication_fit_report -> `publication_fit_report.schema.json`
+- export_bundle_ready -> `export_bundle.schema.json`
 
 ## Required Field Policy
 - Jeder Stage-Output hat `required` Felder im Schema.

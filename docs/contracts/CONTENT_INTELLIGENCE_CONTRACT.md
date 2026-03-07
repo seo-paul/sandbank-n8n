@@ -18,6 +18,7 @@
 - `artifacts.angle_slate`
 - `artifacts.research_diagnostics`
 - `artifacts.channel_profiles`
+- `ctx.configs.resource_registry`
 - `ctx.context.author_voice`
 - `ctx.context.performance_memory`
 
@@ -26,6 +27,8 @@
 - `selected_angle.must_use_evidence_refs` darf nur auf bekannte `evidence_id` zeigen.
 - `platform_profiles` definieren erlaubte Formate, CTA-Ziele, Modi und Längenfenster.
 - `performance_memory` ist ein Sekundaersignal fuer Priorisierung und Formulierung, nie Ersatz fuer Evidenz.
+- `evidence_packets[*].resource_class`, `allowed_usage`, `topic_fit_score`, `evidence_strength_score`, `citation_readiness_score` und `review_required` sind fachlich verbindlich.
+- Domainprestige ohne Themenfit ist kein zulaessiger Ersatz fuer Evidenzstaerke.
 - Ein absichtliches Reddit-`skip` ist eine gueltige Strategiewahl.
 
 ## Breaking Changes
@@ -46,6 +49,17 @@
         "linkedin": 0.82,
         "reddit": 0.48
       }
+    }
+  ],
+  "evidence_packets": [
+    {
+      "evidence_id": "E1",
+      "resource_class": "industry_benchmark_or_survey",
+      "allowed_usage": ["fact", "comparison"],
+      "topic_fit_score": 0.82,
+      "evidence_strength_score": 0.76,
+      "citation_readiness_score": 0.74,
+      "review_required": true
     }
   ],
   "channel_profiles": {
