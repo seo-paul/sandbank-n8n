@@ -11,7 +11,13 @@ Diese JSON-Dateien sind fuer den lokalen n8n-Import vorbereitet.
 - `ablauf-automatisch-steuern.json` -> `Ablauf automatisch steuern`
 - `fehlerlauf-klar-dokumentieren.json` -> `Fehlerlauf klar dokumentieren`
 - `performance-zurueckfuehren.json` -> `Performance zurueckfuehren`
-
+- `bi-guide-chancen-aktualisieren.json` -> `BI-Guide Chancen aktualisieren`
+- `bi-guide-ablauf-automatisch-steuern.json` -> `BI-Guide Ablauf automatisch steuern`
+- `bi-guide-quellen-und-planung.json` -> `BI-Guide Quellen und Planung`
+- `bi-guide-artikelpaket-erstellen.json` -> `BI-Guide Artikelpaket erstellen`
+- `bi-guide-human-review-pruefen.json` -> `BI-Guide Human Review pruefen`
+- `bi-guide-ergebnisse-in-obsidian-speichern.json` -> `BI-Guide Ergebnisse in Obsidian speichern`
+- `bi-guide-fehlerlauf-klar-dokumentieren.json` -> `BI-Guide Fehlerlauf klar dokumentieren`
 Code-Node Quellen:
 - `n8n/code/*.js`
 - Workflows werden deterministisch aus diesen Quellen gebaut.
@@ -38,11 +44,12 @@ node n8n/scripts/build_workflows_from_code.mjs
 ## Hinweise
 - Keine X/Twitter-API enthalten.
 - Reddit wird lokal ueber SearXNG/`site:reddit.com` abgedeckt.
-- Prompt-SSOT liegt in Obsidian unter `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Prompts`.
-- Globaler Kontext-SSOT liegt in Obsidian unter `Workflows/Kontext`.
-- Workflowlokaler Kontext liegt unter `Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Kontext`.
+- Prompt-SSOT liegt in Obsidian unter `Workflows/social-content/Prompts`.
+- Globaler Kontext-SSOT liegt in Obsidian unter `Workflows/_shared/Kontext`.
+- Workflowlokaler Kontext liegt unter `Workflows/social-content/Kontext`.
+- BI-Guide Opportunity- und Refresh-Artefakte liegen unter `Workflows/bi-guide-content/Artefakte/Ergebnisse/`.
 - Ergebnisstruktur in Obsidian:
-  - `Ergebnisse/00-Runs.md`
-  - `Ergebnisse/Laufdetails/<run_id>.md`
-  - `Ergebnisse/Fehlerdetails/<run_id>.md`
-  - `Zwischenergebnisse/<workflow-slug>.md`
+  - `Workflows/social-content/Artefakte/Ergebnisse/00-Runs.md`
+  - `Workflows/social-content/Artefakte/Ergebnisse/Laufdetails/<run_id>.md`
+  - `Workflows/social-content/Artefakte/Ergebnisse/Fehlerdetails/<run_id>.md`
+  - `Workflows/social-content/Artefakte/Zwischenergebnisse/<workflow-slug>.md`

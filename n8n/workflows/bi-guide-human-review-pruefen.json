@@ -34,6 +34,10 @@
               "type": "string"
             },
             {
+              "name": "run_mode",
+              "type": "string"
+            },
+            {
               "name": "created_at",
               "type": "string"
             },
@@ -58,6 +62,14 @@
               "type": "string"
             },
             {
+              "name": "workflow_marketing_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_inputs_dir",
+              "type": "string"
+            },
+            {
               "name": "workflow_results_dir",
               "type": "string"
             },
@@ -75,6 +87,10 @@
             },
             {
               "name": "workflow_snapshot_dir",
+              "type": "string"
+            },
+            {
+              "name": "workflow_opportunity_snapshot_dir",
               "type": "string"
             },
             {
@@ -106,6 +122,10 @@
               "type": "string"
             },
             {
+              "name": "workflow_template_dir",
+              "type": "string"
+            },
+            {
               "name": "workflow_ssot_manifest_file",
               "type": "string"
             },
@@ -118,7 +138,39 @@
               "type": "string"
             },
             {
+              "name": "workflow_opportunity_register_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_refresh_register_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_manual_signals_file",
+              "type": "string"
+            },
+            {
               "name": "workflow_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_results_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_intermediate_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_register_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_opportunity_overview_file",
+              "type": "string"
+            },
+            {
+              "name": "workflow_refresh_overview_file",
               "type": "string"
             },
             {

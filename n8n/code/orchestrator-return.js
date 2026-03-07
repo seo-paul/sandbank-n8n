@@ -40,5 +40,7 @@ return [{
     workflow_intermediate_dir: ctx.output_paths && ctx.output_paths.workflow_intermediate_dir,
     workflow_intermediate_files: ctx.output_paths && ctx.output_paths.workflow_intermediate_files,
     workflow_overview_file: ctx.workflow_overview_file,
+    workflow_results_overview_file: ctx.workflow_results_overview_file,
+    workflow_intermediate_overview_file: ctx.workflow_intermediate_overview_file,
   },
 }];

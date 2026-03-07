@@ -218,12 +218,13 @@ const globalContextDir =
   String(
     ctx.workflow_global_context_dir ||
     $env.OBSIDIAN_WORKFLOWS_CONTEXT_DIR ||
-    (($env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows') + '/Kontext')
+    (($env.OBSIDIAN_WORKFLOWS_SHARED_DIR || (($env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows') + '/_shared')) + '/Kontext')
   );
 const workflowLocalContextDir =
   String(
     ctx.workflow_context_dir ||
-    ((ctx.workflow_dir || 'Marketing/BI-Guide/Workflow/BI-Guide-Workflow') + '/Kontext')
+    $env.OBSIDIAN_BI_GUIDE_WORKFLOW_CONTEXT_DIR ||
+    ((ctx.workflow_dir || $env.OBSIDIAN_BI_GUIDE_WORKFLOW_DIR || 'Workflows/bi-guide-content') + '/Kontext')
   );
 
 const contextPaths = {
@@ -242,6 +243,9 @@ const contextPaths = {
 
 const schemaPaths = {
   source_snapshot: ctx.workflow_schema_dir + '/source_snapshot.schema.json',
+  opportunity_snapshot: ctx.workflow_schema_dir + '/opportunity_snapshot.schema.json',
+  opportunity_register: ctx.workflow_schema_dir + '/opportunity_register.schema.json',
+  refresh_register: ctx.workflow_schema_dir + '/refresh_register.schema.json',
   article_plan: ctx.workflow_schema_dir + '/article_plan.schema.json',
   article_package: ctx.workflow_schema_dir + '/article_package.schema.json',
   publication_fit_report: ctx.workflow_schema_dir + '/publication_fit_report.schema.json',
@@ -251,11 +255,13 @@ const schemaPaths = {
 const configPaths = {
   source_roots: ctx.workflow_config_dir + '/source-roots.json',
   source_policy: ctx.workflow_config_dir + '/source-policy.json',
+  resource_registry: ctx.workflow_config_dir + '/resource-registry.json',
   planning_rules: ctx.workflow_config_dir + '/planning-rules.json',
   quality_gates: ctx.workflow_config_dir + '/quality-gates.json',
+  opportunity_settings: ctx.workflow_config_dir + '/opportunity-settings.json',
 };
 
-const manifestPath = String(ctx.workflow_ssot_manifest_file || (ctx.workflow_dir + '/SSOT/manifest.json'));
+const manifestPath = String(ctx.workflow_ssot_manifest_file || (ctx.workflow_dir + '/_system/manifest.json'));
 
 ctx.prompts = ctx.prompts && typeof ctx.prompts === 'object' ? ctx.prompts : {};
 ctx.context = ctx.context && typeof ctx.context === 'object' ? ctx.context : {};

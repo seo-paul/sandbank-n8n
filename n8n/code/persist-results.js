@@ -220,7 +220,7 @@ function sanitizeRunsRegister(text, header) {
     if (!trimmed) return true;
     if (trimmed.includes('run-<execution_id>-<timestamp>')) return false;
     if (trimmed.includes('| <thema> |')) return false;
-    if (trimmed.includes('[[Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow/Ergebnisse/Laufdetails/<run_id>.md')) return false;
+    if (trimmed.includes('[[Workflows/social-content/Artefakte/Ergebnisse/Laufdetails/<run_id>.md')) return false;
     return true;
   }).join('\n');
   const normalized = cleaned.trim();
@@ -300,9 +300,53 @@ function renderWorkflowOverviewTable(catalog) {
   return lines.join('\n');
 }
 
+function marketingWorkflowViewContent(catalog, runsPath, resultsViewPath, intermediateViewPath) {
+  return [
+    '# Marketing Workflow',
+    '',
+    '- Workflow Core: ' + wikiPlain(ctx.workflow_dir),
+    '- Shared Kontext: ' + wikiPlain(ctx.workflow_global_context_dir),
+    '- Ergebnisse: ' + wiki(resultsViewPath, 'Ergebnisse Uebersicht'),
+    '- Zwischenergebnisse: ' + wiki(intermediateViewPath, 'Zwischenergebnisse Uebersicht'),
+    '- Runs Register: ' + wiki(runsPath, '00-Runs'),
+    '',
+    renderWorkflowOverviewTable(catalog),
+  ].join('\n');
+}
+
+function marketingResultsViewContent(runsPath, detailPath) {
+  return [
+    '# Ergebnisse Uebersicht',
+    '',
+    '- Workflow Core: ' + wikiPlain(ctx.workflow_dir),
+    '- Runs Register: ' + wiki(runsPath, '00-Runs'),
+    '- Laufdetails: ' + wikiPlain(ctx.workflow_detail_dir),
+    '- Fehlerdetails: ' + wikiPlain(ctx.workflow_error_dir),
+    '- Performance: ' + wikiPlain(ctx.workflow_results_dir + '/Performance'),
+    '- Letzter Lauf: ' + wiki(detailPath, String(ctx.run_id || 'detail')),
+  ].join('\n');
+}
+
+function marketingIntermediateViewContent(intermediateFiles) {
+  return [
+    '# Zwischenergebnisse Uebersicht',
+    '',
+    '- Workflow Core: ' + wikiPlain(ctx.workflow_dir),
+    '- Zwischenergebnisse Root: ' + wikiPlain(ctx.workflow_intermediate_dir),
+    '',
+    '## Dateien',
+    ...(intermediateFiles.length
+      ? intermediateFiles.map((item) => '- ' + wiki(item.path, item.workflow))
+      : ['- n/a']),
+  ].join('\n');
+}
+
 const detailPath = String((ctx.output_paths && ctx.output_paths.run_detail) || (ctx.workflow_detail_dir + '/' + ctx.run_id + '.md'));
 const runsPath = String(ctx.workflow_runs_file || (ctx.workflow_results_dir + '/00-Runs.md'));
 const intermediateDir = String(ctx.workflow_intermediate_dir || (ctx.workflow_dir + '/Zwischenergebnisse'));
+const workflowViewPath = String(ctx.workflow_overview_file || '');
+const resultsViewPath = String(ctx.workflow_results_overview_file || '');
+const intermediateViewPath = String(ctx.workflow_intermediate_overview_file || '');
 
 const stageRows = stageRowsForRun(ctx.stage_logs || []);
 const finalQuality = normalizeQualityScore((ctx.generated && ctx.generated.final_quality_score) || 0);
@@ -488,79 +532,86 @@ const workflowCatalog = [
     workflow: 'System Verbindungen pruefen',
     steps: [
       { step: '1. Manuell starten', intermediate: '-', purpose: 'Infrastruktur Trigger', description: 'Startet den Verbindungscheck fuer alle externen Abhaengigkeiten.' },
-      { step: '2. Websuche Verbindung pruefen', intermediate: 'Zwischenergebnisse/system-verbindungen-pruefen.md', purpose: 'SearXNG Verfuegbarkeit', description: 'Prueft Erreichbarkeit und Antwortverhalten der Retrieval-Quelle.' },
-      { step: '3. KI Modell erreichbar', intermediate: 'Zwischenergebnisse/system-verbindungen-pruefen.md', purpose: 'Modell Verfuegbarkeit', description: 'Prueft die Erreichbarkeit von Ollama mit dem gepinnten Modell.' },
-      { step: '4. Obsidian API erreichbar', intermediate: 'Zwischenergebnisse/system-verbindungen-pruefen.md', purpose: 'Persistenz Verfuegbarkeit', description: 'Prueft Zugriff auf Obsidian REST fuer Schreib- und Lesepfade.' },
+      { step: '2. Websuche Verbindung pruefen', intermediate: wiki(intermediatePaths['System Verbindungen pruefen'], 'system-verbindungen-pruefen'), purpose: 'SearXNG Verfuegbarkeit', description: 'Prueft Erreichbarkeit und Antwortverhalten der Retrieval-Quelle.' },
+      { step: '3. KI Modell erreichbar', intermediate: wiki(intermediatePaths['System Verbindungen pruefen'], 'system-verbindungen-pruefen'), purpose: 'Modell Verfuegbarkeit', description: 'Prueft die Erreichbarkeit von Ollama mit dem gepinnten Modell.' },
+      { step: '4. Obsidian API erreichbar', intermediate: wiki(intermediatePaths['System Verbindungen pruefen'], 'system-verbindungen-pruefen'), purpose: 'Persistenz Verfuegbarkeit', description: 'Prueft Zugriff auf Obsidian REST fuer Schreib- und Lesepfade.' },
     ],
   },
   {
     workflow: 'Ablauf automatisch steuern',
     steps: [
       { step: '1. Manuell starten', intermediate: '-', purpose: 'End-to-end Trigger', description: 'Startet den Gesamtfluss mit run_id und Kontext.' },
-      { step: '2. Ablaufdaten vorbereiten', intermediate: 'Zwischenergebnisse/ablauf-automatisch-steuern.md', purpose: 'Kontext initialisieren', description: 'Setzt Modell-Pin, Gates, Pfade und Basis-Metadaten.' },
-      { step: '3. Prompt und Kontext SSOT laden', intermediate: 'Zwischenergebnisse/ablauf-automatisch-steuern.md', purpose: 'SSOT einlesen', description: 'Laedt Prompts und Kontextdateien aus Obsidian und validiert Vollstaendigkeit.' },
-      { step: '4. Recherche Schritt starten', intermediate: 'Zwischenergebnisse/thema-und-quellen-sammeln.md', purpose: 'Research Pipeline', description: 'Fuehrt Query-Planung, Retrieval, Dedupe/Scoring und Evidence-Extraktion aus.' },
-      { step: '5. Beitrag Schritt starten', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'Content Pipeline', description: 'Fuehrt Topic-Gate, Kanal-Briefs, Drafting, Kritiken und Final-Gate aus.' },
-      { step: '6. Review Schritt starten', intermediate: 'Zwischenergebnisse/human-review-pruefen.md', purpose: 'Human Review Gate', description: 'Wertet review_decision aus und setzt final gate fuer Freigabe/Stop.' },
-      { step: '7. Speicher Schritt starten', intermediate: 'Ergebnisse/00-Runs.md, Ergebnisse/Laufdetails/<run_id>.md', purpose: 'Persistenz', description: 'Schreibt Laufdetail, Run-Tabelle und Zwischenergebnisse.' },
+      { step: '2. Ablaufdaten vorbereiten', intermediate: wiki(intermediatePaths['Ablauf automatisch steuern'], 'ablauf-automatisch-steuern'), purpose: 'Kontext initialisieren', description: 'Setzt Modell-Pin, Gates, Pfade und Basis-Metadaten.' },
+      { step: '3. Prompt und Kontext SSOT laden', intermediate: wiki(intermediatePaths['Ablauf automatisch steuern'], 'ablauf-automatisch-steuern'), purpose: 'SSOT einlesen', description: 'Laedt Prompts, Kontextdateien, Configs und Schemas aus Obsidian und validiert Manifest-Paritaet.' },
+      { step: '4. Recherche Schritt starten', intermediate: wiki(intermediatePaths['Thema und Quellen sammeln'], 'thema-und-quellen-sammeln'), purpose: 'Research Pipeline', description: 'Fuehrt Query-Planung, Retrieval, Dedupe/Scoring und Evidence-Extraktion aus.' },
+      { step: '5. Beitrag Schritt starten', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'Content Pipeline', description: 'Fuehrt Topic-Gate, Kanal-Briefs, Drafting, Kritiken und Final-Gate aus.' },
+      { step: '6. Review Schritt starten', intermediate: wiki(intermediatePaths['Human Review pruefen'], 'human-review-pruefen'), purpose: 'Human Review Gate', description: 'Wertet review_decision aus und setzt final gate fuer Freigabe/Stop.' },
+      { step: '7. Speicher Schritt starten', intermediate: wiki(runsPath, '00-Runs') + ', ' + wiki(ctx.workflow_detail_dir + '/<run_id>.md', 'Laufdetail'), purpose: 'Persistenz', description: 'Schreibt Laufdetail, Run-Tabelle und Zwischenergebnisse in den Workflow-Core.' },
       { step: '8. Ergebnis Uebersicht ausgeben', intermediate: 'Rueckgabe JSON', purpose: 'Monitoring', description: 'Gibt kompaktes Ergebnis inkl. final gate Status aus.' },
     ],
   },
   {
     workflow: 'Thema und Quellen sammeln',
     steps: [
-      { step: '1. Query Planung', intermediate: 'Zwischenergebnisse/thema-und-quellen-sammeln.md', purpose: 'Query-Plan', description: 'Leitet priorisierte Recherchequeries aus Topic und Kontext ab.' },
-      { step: '2. Retrieval', intermediate: 'Zwischenergebnisse/thema-und-quellen-sammeln.md', purpose: 'Signale sammeln', description: 'Ruft SearXNG ab und sammelt Rohsignale mit Retry-Logik.' },
-      { step: '3. Dedupe und Source Scoring', intermediate: 'Zwischenergebnisse/thema-und-quellen-sammeln.md', purpose: 'Signalqualitaet', description: 'Entfernt Duplikate und bewertet Authority/Freshness.' },
-      { step: '4. Evidence Extraction und Angle Slate', intermediate: 'Zwischenergebnisse/thema-und-quellen-sammeln.md', purpose: 'Strukturierte Evidenz', description: 'Erzeugt research_output mit Evidence-Paketen und Topic-Ansatzoptionen.' },
+      { step: '1. Query Planung', intermediate: wiki(intermediatePaths['Thema und Quellen sammeln'], 'thema-und-quellen-sammeln'), purpose: 'Query-Plan', description: 'Leitet priorisierte Recherchequeries aus Topic und Kontext ab.' },
+      { step: '2. Retrieval', intermediate: wiki(intermediatePaths['Thema und Quellen sammeln'], 'thema-und-quellen-sammeln'), purpose: 'Signale sammeln', description: 'Ruft SearXNG ab und sammelt Rohsignale mit Retry-Logik.' },
+      { step: '3. Dedupe und Source Scoring', intermediate: wiki(intermediatePaths['Thema und Quellen sammeln'], 'thema-und-quellen-sammeln'), purpose: 'Signalqualitaet', description: 'Entfernt Duplikate und bewertet Ressourcenklasse, Themenfit, Authority und Freshness.' },
+      { step: '4. Evidence Extraction und Angle Slate', intermediate: wiki(intermediatePaths['Thema und Quellen sammeln'], 'thema-und-quellen-sammeln'), purpose: 'Strukturierte Evidenz', description: 'Erzeugt research_output mit Evidence-Paketen und Topic-Ansatzoptionen.' },
     ],
   },
   {
     workflow: 'Beitrag aus Quellen erstellen',
     steps: [
-      { step: '5. Thema Gate', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'Publish oder Hold', description: 'Waehlt einen Primaerwinkel oder stoppt bei schwacher Evidenz.' },
-      { step: '6. LinkedIn Brief', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'LinkedIn Strategie', description: 'Definiert Hook, Proof Points, CTA und Gespraechsziel.' },
-      { step: '7. Reddit Router und Brief', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'Reddit Mode', description: 'Waehlt mode comment/post/skip inkl. Risiko-Flags.' },
-      { step: '8. Entwurf Erstellung', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'Finale Assets', description: 'Erstellt Post-Entwuerfe plus first_comment und reply_seeds.' },
-      { step: '9. Ton Kritik', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'Sprachqualitaet', description: 'Bewertet Menschlichkeit und Plausibilitaet des Tons.' },
-      { step: '10. Strategie Kritik', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'Wirkung und Plattformfit', description: 'Prueft Engagement-Potenzial und Regelrisiken.' },
-      { step: '11. Final Gate', intermediate: 'Zwischenergebnisse/beitrag-aus-quellen-erstellen.md', purpose: 'Freigabeentscheidung', description: 'Entscheidet pass/revise/hold und setzt human_review_required.' },
+      { step: '5. Thema Gate', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'Publish oder Hold', description: 'Waehlt einen Primaerwinkel oder stoppt bei schwacher Evidenz.' },
+      { step: '6. LinkedIn Brief', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'LinkedIn Strategie', description: 'Definiert Hook, Proof Points, CTA und Gespraechsziel.' },
+      { step: '7. Reddit Router und Brief', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'Reddit Mode', description: 'Waehlt mode comment/post/skip inkl. Risiko-Flags.' },
+      { step: '8. Entwurf Erstellung', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'Finale Assets', description: 'Erstellt Post-Entwuerfe plus first_comment und reply_seeds.' },
+      { step: '9. Ton Kritik', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'Sprachqualitaet', description: 'Bewertet Menschlichkeit und Plausibilitaet des Tons.' },
+      { step: '10. Strategie Kritik', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'Wirkung und Plattformfit', description: 'Prueft Engagement-Potenzial und Regelrisiken.' },
+      { step: '11. Final Gate', intermediate: wiki(intermediatePaths['Beitrag aus Quellen erstellen'], 'beitrag-aus-quellen-erstellen'), purpose: 'Freigabeentscheidung', description: 'Entscheidet pass/revise/hold und setzt human_review_required.' },
     ],
   },
   {
     workflow: 'Human Review pruefen',
     steps: [
-      { step: '1. Review Gate ausfuehren', intermediate: 'Zwischenergebnisse/human-review-pruefen.md', purpose: 'Freigabesteuerung', description: 'Verarbeitet review_decision=approve|deny|pending und aktualisiert final_gate.' },
+      { step: '1. Review Gate ausfuehren', intermediate: wiki(intermediatePaths['Human Review pruefen'], 'human-review-pruefen'), purpose: 'Freigabesteuerung', description: 'Verarbeitet review_decision=approve|deny|pending und aktualisiert final_gate.' },
     ],
   },
   {
     workflow: 'Ergebnisse in Obsidian speichern',
     steps: [
-      { step: '1. Ergebnisse in Obsidian speichern', intermediate: 'Ergebnisse/00-Runs.md, Ergebnisse/Laufdetails/<run_id>.md', purpose: 'Persistenz', description: 'Schreibt Laufdetail, Run-Tabelle und workflowbezogene Zwischenergebnisse.' },
+      { step: '1. Ergebnisse in Obsidian speichern', intermediate: wiki(runsPath, '00-Runs') + ', ' + wiki(ctx.workflow_detail_dir + '/<run_id>.md', 'Laufdetail'), purpose: 'Persistenz', description: 'Schreibt Laufdetail, Run-Tabelle und workflowbezogene Zwischenergebnisse.' },
     ],
   },
   {
     workflow: 'Fehlerlauf klar dokumentieren',
     steps: [
-      { step: '1. Bei Fehler starten', intermediate: 'Zwischenergebnisse/fehlerlauf-klar-dokumentieren.md', purpose: 'Fehler Trigger', description: 'Startet den Fehlerfluss mit Execution-Kontext.' },
-      { step: '2. Fehlerdaten aufbereiten', intermediate: 'Zwischenergebnisse/fehlerlauf-klar-dokumentieren.md', purpose: 'Fehler Kontext', description: 'Normalisiert Fehlerdaten inkl. Run-ID, Status und Quelle.' },
-      { step: '3. Fehlerdetails speichern', intermediate: 'Ergebnisse/Fehlerdetails/<run_id>.md', purpose: 'Fehler Persistenz', description: 'Schreibt den vollstaendigen Fehlerlauf in die Fehlerdokumentation.' },
+      { step: '1. Bei Fehler starten', intermediate: wiki(intermediatePaths['Fehlerlauf klar dokumentieren'], 'fehlerlauf-klar-dokumentieren'), purpose: 'Fehler Trigger', description: 'Startet den Fehlerfluss mit Execution-Kontext.' },
+      { step: '2. Fehlerdaten aufbereiten', intermediate: wiki(intermediatePaths['Fehlerlauf klar dokumentieren'], 'fehlerlauf-klar-dokumentieren'), purpose: 'Fehler Kontext', description: 'Normalisiert Fehlerdaten inkl. Run-ID, Status und Quelle.' },
+      { step: '3. Fehlerdetails speichern', intermediate: wiki(ctx.workflow_error_dir + '/<run_id>.md', 'Fehlerdetail'), purpose: 'Fehler Persistenz', description: 'Schreibt den vollstaendigen Fehlerlauf in die Fehlerdokumentation.' },
       { step: '4. Fehler Ergebnis ausgeben', intermediate: 'Rueckgabe JSON', purpose: 'Monitoring', description: 'Gibt den Fehlerstatus inkl. Pfad zur Fehlerdatei aus.' },
     ],
   },
   {
     workflow: 'Performance zurueckfuehren',
     steps: [
-      { step: '1. Input normalisieren', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Metriken vorbereiten', description: 'Fuehrt Parent-Run, Content-Snapshot, Kanalstatus und Metriken in einen analysierbaren Kontext zusammen.' },
-      { step: '2. Performance Analyse ausfuehren', intermediate: 'Zwischenergebnisse/performance-zurueckfuehren.md', purpose: 'Datengetriebene Learnings', description: 'Leitet strukturierte Muster, Voice-Signale und naechste Tests aus Metriken und Kommentaren ab.' },
-      { step: '3. Lernnotiz schreiben', intermediate: 'Ergebnisse/Performance/<perf_run_id>.md', purpose: 'Provenienz', description: 'Schreibt den vollstaendigen Performance-Eintrag mit Content-, Kommentar- und Metrik-Snapshot.' },
-      { step: '4. performance_memory aktualisieren', intermediate: 'Kontext/performance-memory.md', purpose: 'Rueckkopplung', description: 'Aktualisiert den kuratierten Learning-Store fuer kommende Research- und Content-Laeufe.' },
+      { step: '1. Input normalisieren', intermediate: wiki(intermediatePaths['Performance zurueckfuehren'], 'performance-zurueckfuehren'), purpose: 'Metriken vorbereiten', description: 'Fuehrt Parent-Run, Content-Snapshot, Kanalstatus und Metriken in einen analysierbaren Kontext zusammen.' },
+      { step: '2. Performance Analyse ausfuehren', intermediate: wiki(intermediatePaths['Performance zurueckfuehren'], 'performance-zurueckfuehren'), purpose: 'Datengetriebene Learnings', description: 'Leitet strukturierte Muster, Voice-Signale und naechste Tests aus Metriken und Kommentaren ab.' },
+      { step: '3. Lernnotiz schreiben', intermediate: wiki(ctx.workflow_results_dir + '/Performance/<perf_run_id>.md', 'Performance Eintrag'), purpose: 'Provenienz', description: 'Schreibt den vollstaendigen Performance-Eintrag mit Content-, Kommentar- und Metrik-Snapshot.' },
+      { step: '4. performance_memory aktualisieren', intermediate: wiki(ctx.workflow_context_dir + '/performance-memory.md', 'performance-memory'), purpose: 'Rueckkopplung', description: 'Aktualisiert den kuratierten Learning-Store fuer kommende Research- und Content-Laeufe.' },
     ],
   },
 ];
 
-const workflowOverviewContent = ['# Workflow Uebersicht', '', renderWorkflowOverviewTable(workflowCatalog)].join('\n');
-await obsidianPut.call(this, ctx.workflow_overview_file, workflowOverviewContent.trimEnd() + '\n');
+if (workflowViewPath) {
+  await obsidianPut.call(this, workflowViewPath, marketingWorkflowViewContent(workflowCatalog, runsPath, resultsViewPath, intermediateViewPath).trimEnd() + '\n');
+}
+if (resultsViewPath) {
+  await obsidianPut.call(this, resultsViewPath, marketingResultsViewContent(runsPath, detailPath).trimEnd() + '\n');
+}
+if (intermediateViewPath) {
+  await obsidianPut.call(this, intermediateViewPath, marketingIntermediateViewContent(runIntermediateFiles).trimEnd() + '\n');
+}
 
 ctx.pipeline_status = pipelineStatus;
 ctx.status = 'completed';
@@ -570,6 +621,9 @@ ctx.output_paths = Object.assign({}, ctx.output_paths || {}, {
   workflow_runs: runsPath,
   workflow_intermediate_dir: intermediateDir,
   workflow_intermediate_files: runIntermediateFiles.map((item) => item.path),
+  workflow_overview: workflowViewPath,
+  workflow_results_overview: resultsViewPath,
+  workflow_intermediate_overview: intermediateViewPath,
 });
 
 return [{ json: ctx }];

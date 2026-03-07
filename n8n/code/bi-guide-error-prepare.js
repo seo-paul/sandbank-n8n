@@ -26,7 +26,7 @@ const errorStack = firstString(error.stack, payload.stack, '');
 const lastNode = firstString(payload.lastNodeExecuted, error.node && error.node.name, 'unknown_node');
 
 const runId = 'bi-guide-error-' + executionId + '-' + stamp;
-const errorDir = 'Marketing/BI-Guide/Workflow/BI-Guide-Workflow/Ergebnisse/Fehlerdetails';
+const errorDir = $env.OBSIDIAN_BI_GUIDE_WORKFLOW_ERROR_DIR || 'Workflows/bi-guide-content/Artefakte/Ergebnisse/Fehlerdetails';
 const detailPath = errorDir + '/' + runId + '.md';
 
 const markdown = [

@@ -77,6 +77,48 @@ function uniqueStrings(values, maxLen = 220) {
   }
   return out;
 }
+function lowerList(values) {
+  return uniqueStrings(values, 120).map((value) => value.toLowerCase());
+}
+function hasPattern(value, patterns) {
+  const haystack = String(value || '').toLowerCase();
+  return ensureArray(patterns).some((pattern) => haystack.includes(String(pattern || '').toLowerCase()));
+}
+function toScore(value, fallback) {
+  return clamp(value, 0, 1, fallback);
+}
+function tokenize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9äöüß]+/gi, ' ')
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+}
+function overlapScore(left, right) {
+  const leftTokens = new Set(tokenize(left));
+  const rightTokens = new Set(tokenize(right));
+  if (!leftTokens.size || !rightTokens.size) return 0;
+  let hits = 0;
+  for (const token of leftTokens) {
+    if (rightTokens.has(token)) hits += 1;
+  }
+  return hits / Math.max(leftTokens.size, rightTokens.size);
+}
+function containsAnyToken(text, needles) {
+  const normalizedText = String(text || '').toLowerCase();
+  const haystack = new Set(tokenize(text));
+  for (const needle of ensureArray(needles)) {
+    const normalizedNeedle = String(needle || '').toLowerCase().trim();
+    if (!normalizedNeedle) continue;
+    if (normalizedNeedle.includes(' ')) {
+      if (normalizedText.includes(normalizedNeedle)) return true;
+      continue;
+    }
+    if (haystack.has(normalizedNeedle)) return true;
+  }
+  return false;
+}
 function parseBool(value, fallback = false) {
   if (value === true || value === false) return value;
   const normalized = String(value == null ? '' : value).trim().toLowerCase();
@@ -459,21 +501,192 @@ async function fetchPageSnippet(urlValue) {
   }
 }
 
-function classifySource(urlValue, policy) {
-  const url = safeUrl(urlValue);
+function sourceTypeFromResourceClass(resourceClass, profiles) {
+  const profile = ensureObject(profiles[String(resourceClass || '').trim()]);
+  if (profile.source_type) return String(profile.source_type);
+  if (resourceClass === 'general_media') return 'media';
+  if (resourceClass === 'official_product_or_platform_docs' || resourceClass === 'official_standards_or_regulation') return 'official';
+  if (resourceClass === 'vendor_content' || resourceClass === 'operator_case_study' || resourceClass === 'low_value_aggregator') return 'vendor';
+  return 'research';
+}
+
+function profileForResourceClass(resourceClass, profiles) {
+  const normalized = String(resourceClass || '').trim();
+  const profile = ensureObject(profiles[normalized]);
+  return {
+    source_type: sourceTypeFromResourceClass(normalized, profiles),
+    source_tier: String(profile.source_tier || (normalized.startsWith('official_') || normalized === 'topic_specific_research' ? 'primary' : 'supporting')),
+    authority: String(profile.authority || (normalized.startsWith('official_') ? 'high' : 'medium')),
+    evidence_strength_score: toScore(profile.evidence_strength_score, normalized === 'low_value_aggregator' ? 0.12 : 0.5),
+    citation_readiness_score: toScore(profile.citation_readiness_score, 0.5),
+    commercial_bias_score: toScore(profile.commercial_bias_score, normalized === 'vendor_content' ? 0.34 : 0.16),
+    default_usage: lowerList(profile.default_usage),
+  };
+}
+
+function resolveRegistryEntry(domain, resourceRegistry) {
+  let best = null;
+  let bestPatternLength = -1;
+  for (const entry of ensureArray(resourceRegistry.publishers)) {
+    const patterns = lowerList(entry.domain_patterns);
+    const matched = patterns.find((pattern) => domain.includes(pattern));
+    if (!matched) continue;
+    if (matched.length > bestPatternLength) {
+      best = {
+        resource_id: String(entry.resource_id || ''),
+        publisher: String(entry.publisher || ''),
+        resource_class: String(entry.resource_class || ''),
+        allowed_workflows: lowerList(entry.allowed_workflows),
+        allowed_usage: lowerList(entry.allowed_usage),
+        manual_review_required: parseBool(entry.manual_review_required, false),
+        topic_keywords_any: lowerList(entry.topic_keywords_any),
+        bias_flags: uniqueStrings(entry.bias_flags, 80),
+        notes: String(entry.notes || ''),
+      };
+      bestPatternLength = matched.length;
+    }
+  }
+  return best;
+}
+
+function fallbackResourceClass(domain, policy) {
+  if (hasPattern(domain, policy.official_domain_markers)) return 'official_product_or_platform_docs';
+  if (hasPattern(domain, policy.research_domain_patterns)) return 'topic_specific_research';
+  if (hasPattern(domain, policy.downgraded_domain_patterns)) return 'low_value_aggregator';
+  if (/news|press|magazine|journal|techcrunch|theverge|wired|venturebeat/i.test(domain)) return 'general_media';
+  return 'vendor_content';
+}
+
+function inferFreshnessScore(publishedAt) {
+  const text = String(publishedAt || '').trim();
+  const yearMatch = text.match(/(20\d{2})/);
+  if (!yearMatch) return { freshness: 'timeless', freshness_score: 0.68 };
+  const year = Number(yearMatch[1]);
+  const current = new Date().getFullYear();
+  if (year >= current) return { freshness: 'current', freshness_score: 1 };
+  if (year >= current - 1) return { freshness: 'recent', freshness_score: 0.82 };
+  if (year <= current - 4) return { freshness: 'dated', freshness_score: 0.32 };
+  return { freshness: 'recent', freshness_score: 0.82 };
+}
+
+function scoreTopicFit(topicSeed, query, combinedText, registryEntry) {
+  const base = Math.max(overlapScore(topicSeed, combinedText), overlapScore(query, combinedText));
+  const keywordBonus = registryEntry && registryEntry.topic_keywords_any.length && containsAnyToken(combinedText, registryEntry.topic_keywords_any) ? 0.18 : 0;
+  const specificityBonus = /\b(kpi|dashboard|reporting|analytics|business intelligence|data warehouse|data governance|decision support|self-service)\b/i.test(combinedText) ? 0.08 : 0;
+  return toScore(base + keywordBonus + specificityBonus, 0);
+}
+
+function scoreTransferability(query, combinedText, resourceClass) {
+  const businessTerms = [
+    'analytics', 'reporting', 'dashboard', 'kpi', 'unternehmen', 'business',
+    'b2b', 'team', 'stakeholder', 'governance', 'report', 'entscheidung', 'data'
+  ];
+  const queryFit = overlapScore(query, combinedText);
+  const businessFit = containsAnyToken(combinedText, businessTerms) ? 0.28 : 0;
+  const classBonus = resourceClass === 'official_product_or_platform_docs' || resourceClass === 'industry_benchmark_or_survey' ? 0.12 : 0;
+  return toScore(0.28 + (queryFit * 0.34) + businessFit + classBonus, 0.3);
+}
+
+function scoreCitationReadiness(baseScore, result, summaryText) {
+  const published = String(result.publishedDate || result.published_at || '').trim();
+  const snippet = String(summaryText || '');
+  const publishedBonus = published ? 0.05 : 0;
+  const snippetBonus = snippet.length >= 120 ? 0.05 : snippet.length >= 60 ? 0.02 : 0;
+  const numericBonus = /\b\d+(?:[\.,]\d+)?%|\b\d{4}\b/.test(snippet) ? 0.04 : 0;
+  return toScore(baseScore + publishedBonus + snippetBonus + numericBonus, baseScore);
+}
+
+function scoreEvidenceStrength(baseScore, resourceClass, summaryText) {
+  const evidenceSignal = /\b(study|survey|benchmark|report|analysis|dataset|research|studie|umfrage|bericht)\b/i.test(String(summaryText || '')) ? 0.06 : 0;
+  const classPenalty = resourceClass === 'vendor_content' ? 0.05 : 0;
+  return toScore(baseScore + evidenceSignal - classPenalty, baseScore);
+}
+
+function classifySource(result, query, policy, resourceRegistry, plan) {
+  const url = safeUrl(result.url);
   const host = url ? String(url.hostname || '').toLowerCase() : '';
-  const blocked = ensureArray(policy.blocked_domain_patterns).some((pattern) => host.includes(String(pattern).toLowerCase()));
-  if (blocked) return { allowed: false, source_type: 'blocked', domain: host };
-  if (ensureArray(policy.research_domain_patterns).some((pattern) => host.includes(String(pattern).toLowerCase()))) {
-    return { allowed: true, source_type: 'research', domain: host };
+  const title = sanitizeText(result.title || '', 240);
+  const snippet = sanitizeText(result.content || result.snippet || '', 500);
+  const combinedText = [plan.working_title || '', plan.audience || '', query, title, snippet].filter(Boolean).join(' ');
+  const registryEntry = resolveRegistryEntry(host, resourceRegistry);
+  const resourceClass = String((registryEntry && registryEntry.resource_class) || fallbackResourceClass(host, policy));
+  const profiles = ensureObject(resourceRegistry.default_resource_profiles);
+  const profile = profileForResourceClass(resourceClass, profiles);
+  const allowedUsage = uniqueStrings((registryEntry && registryEntry.allowed_usage.length ? registryEntry.allowed_usage : profile.default_usage), 40);
+  const topicFitScore = scoreTopicFit(String(plan.working_title || query || ''), query, combinedText, registryEntry);
+  const evidenceStrengthScore = scoreEvidenceStrength(profile.evidence_strength_score, resourceClass, combinedText);
+  const citationReadinessScore = scoreCitationReadiness(profile.citation_readiness_score, result, combinedText);
+  const transferabilityScore = scoreTransferability(query, combinedText, resourceClass);
+  const freshnessState = inferFreshnessScore(result.publishedDate || result.published_at || '');
+  const commercialBiasScore = toScore(
+    profile.commercial_bias_score +
+      (resourceClass === 'vendor_content' ? 0.08 : 0) +
+      (resourceClass === 'operator_case_study' ? 0.04 : 0) -
+      (profile.source_type === 'official' ? 0.04 : 0),
+    profile.commercial_bias_score
+  );
+  const weights = ensureObject(policy.resource_score_weights);
+  const resourceScore = toScore(
+    (topicFitScore * toScore(weights.topic_fit, 0.36)) +
+      (evidenceStrengthScore * toScore(weights.evidence_strength, 0.24)) +
+      (citationReadinessScore * toScore(weights.citation_readiness, 0.2)) +
+      (freshnessState.freshness_score * toScore(weights.freshness, 0.1)) +
+      (transferabilityScore * toScore(weights.transferability, 0.1)) -
+      (commercialBiasScore * toScore(weights.commercial_bias_penalty, 0.18)),
+    0
+  );
+
+  if (hasPattern(host, policy.blocked_domain_patterns)) {
+    return { allowed: false, domain: host, reason: 'blocked_domain_pattern' };
   }
-  if (ensureArray(policy.official_domain_markers).some((pattern) => host.includes(String(pattern).toLowerCase()))) {
-    return { allowed: true, source_type: 'official', domain: host };
+  if (hasPattern(title, policy.blocked_title_patterns)) {
+    return { allowed: false, domain: host, reason: 'blocked_title_pattern' };
   }
-  if (host.includes('wikipedia.org') || host.includes('blog.')) {
-    return { allowed: true, source_type: 'media', domain: host };
+  if (hasPattern(snippet, policy.blocked_snippet_patterns)) {
+    return { allowed: false, domain: host, reason: 'blocked_snippet_pattern' };
   }
-  return { allowed: true, source_type: 'vendor', domain: host };
+  if (registryEntry && registryEntry.allowed_workflows.length && !registryEntry.allowed_workflows.includes('bi-guide')) {
+    return { allowed: false, domain: host, reason: 'workflow_not_allowed' };
+  }
+  if (registryEntry && registryEntry.topic_keywords_any.length && !containsAnyToken(combinedText, registryEntry.topic_keywords_any)) {
+    return { allowed: false, domain: host, reason: 'registry_topic_mismatch' };
+  }
+  if (ensureArray(policy.allowed_resource_classes).length && !lowerList(policy.allowed_resource_classes).includes(resourceClass)) {
+    return { allowed: false, domain: host, reason: 'resource_class_not_allowed' };
+  }
+  if (topicFitScore < Number(policy.minimum_topic_fit_score || 0.34)) {
+    return { allowed: false, domain: host, reason: 'low_topic_fit', topic_fit_score: topicFitScore };
+  }
+  if (evidenceStrengthScore < Number(policy.minimum_evidence_strength_score || 0.44)) {
+    return { allowed: false, domain: host, reason: 'low_evidence_strength', evidence_strength_score: evidenceStrengthScore };
+  }
+  if (citationReadinessScore < Number(policy.minimum_citation_readiness_score || 0.34)) {
+    return { allowed: false, domain: host, reason: 'low_citation_readiness', citation_readiness_score: citationReadinessScore };
+  }
+  if (resourceScore < Number(policy.minimum_resource_score || 0.56)) {
+    return { allowed: false, domain: host, reason: 'low_resource_score', resource_score: resourceScore };
+  }
+
+  return {
+    allowed: true,
+    source_type: profile.source_type,
+    resource_class: resourceClass,
+    source_tier: profile.source_tier,
+    authority: profile.authority,
+    freshness: freshnessState.freshness,
+    freshness_score: freshnessState.freshness_score,
+    domain: host,
+    allowed_usage: allowedUsage,
+    topic_fit_score: topicFitScore,
+    evidence_strength_score: evidenceStrengthScore,
+    citation_readiness_score: citationReadinessScore,
+    transferability_score: transferabilityScore,
+    commercial_bias_score: commercialBiasScore,
+    review_required: !!(registryEntry && registryEntry.manual_review_required),
+    resource_score: resourceScore,
+    bias_flags: uniqueStrings((registryEntry && registryEntry.bias_flags) || [], 80),
+    registry_notes: registryEntry ? String(registryEntry.notes || '') : '',
+  };
 }
 
 function buildQueries(plan) {
@@ -592,20 +805,48 @@ function mergeFrontmatter(rawFrontmatter, plan, planningRules) {
 const planningRules = ensureObject(ctx.configs.planning_rules);
 const qualityGates = ensureObject(ctx.configs.quality_gates);
 const sourcePolicy = ensureObject(ctx.configs.source_policy);
+const resourceRegistry = ensureObject(ctx.configs.resource_registry);
+if (!resourceRegistry.version) {
+  throw new Error('Missing runtime config: resource_registry');
+}
 const queries = buildQueries(articlePlan);
 const rawResults = [];
+const blockedResults = [];
 for (const query of queries) {
   const data = await callSearx.call(this, query);
   for (const result of ensureArray(data.results).slice(0, 6)) {
-    const classified = classifySource(result.url, sourcePolicy);
-    if (!classified.allowed) continue;
+    const classified = classifySource(result, query, sourcePolicy, resourceRegistry, articlePlan);
+    if (!classified.allowed) {
+      blockedResults.push({
+        query,
+        url: String(result.url || ''),
+        domain: String(classified.domain || ''),
+        reason: String(classified.reason || 'blocked'),
+      });
+      continue;
+    }
     rawResults.push({
       query,
       title: String(result.title || ''),
       url: String(result.url || ''),
       snippet: sanitizeText(result.content || '', 500),
       source_type: classified.source_type,
+      resource_class: classified.resource_class,
       domain: classified.domain,
+      source_tier: classified.source_tier,
+      authority: classified.authority,
+      freshness: classified.freshness,
+      allowed_usage: classified.allowed_usage,
+      topic_fit_score: classified.topic_fit_score,
+      evidence_strength_score: classified.evidence_strength_score,
+      citation_readiness_score: classified.citation_readiness_score,
+      transferability_score: classified.transferability_score,
+      commercial_bias_score: classified.commercial_bias_score,
+      review_required: classified.review_required,
+      resource_score: classified.resource_score,
+      bias_flags: classified.bias_flags,
+      registry_notes: classified.registry_notes,
+      published_at: String(result.publishedDate || result.published_at || ''),
     });
   }
 }
@@ -621,18 +862,33 @@ for (const row of searchResults.slice(0, 5)) {
     page_excerpt: await fetchPageSnippet.call(this, row.url),
   }));
 }
+const resourceClassCounts = {};
+let reviewRequiredCount = 0;
+for (const row of fetchedResults) {
+  const key = String(row.resource_class || 'vendor_content');
+  resourceClassCounts[key] = (resourceClassCounts[key] || 0) + 1;
+  if (row.review_required) reviewRequiredCount += 1;
+}
 ctx.artifacts.external_research = {
   queries,
+  blocked: blockedResults.slice(0, 12),
+  resource_summary: {
+    accepted_count: fetchedResults.length,
+    blocked_count: blockedResults.length,
+    review_required_count: reviewRequiredCount,
+    resource_class_mix: resourceClassCounts,
+  },
   results: fetchedResults,
 };
-addStage(5, 'external_research', 'ok', 'article_plan', 'external_research', 86, 'Queries: ' + queries.length + ', results: ' + fetchedResults.length);
-await addStageSummary.call(this, 5, 'external_research', ctx.artifacts.external_research);
+addStage(8, 'external_research', 'ok', 'article_plan', 'external_research', 86, 'Queries: ' + queries.length + ', results: ' + fetchedResults.length + '; blocked: ' + blockedResults.length);
+await addStageSummary.call(this, 8, 'external_research', ctx.artifacts.external_research);
 
 const compactedSnapshot = compactSnapshot(sourceSnapshot);
 const draftPrompt = buildPrompt(String(ctx.prompts.article_draft || ''), {
   article_plan: JSON.stringify(articlePlan, null, 2),
   source_snapshot: JSON.stringify(compactedSnapshot, null, 2),
   external_research: JSON.stringify(ctx.artifacts.external_research, null, 2),
+  source_policy: JSON.stringify(sourcePolicy, null, 2),
   quality_gates: JSON.stringify(qualityGates, null, 2),
 });
 
@@ -683,8 +939,8 @@ recordDiagnostic('draft', {
   external_sources: articlePackage.external_sources.length,
   body_words: bodyWordCount(articlePackage.body_mdx),
 });
-addStage(6, 'article_package_created', 'ok', 'external_research', 'article_package', 84, 'Article package generated and validated');
-await addStageSummary.call(this, 6, 'article_package_created', {
+addStage(9, 'article_package_created', 'ok', 'external_research', 'article_package', 84, 'Article package generated and validated');
+await addStageSummary.call(this, 9, 'article_package_created', {
   article_id: articlePackage.article_id,
   title: articlePackage.frontmatter.title,
   body_words: bodyWordCount(articlePackage.body_mdx),
@@ -701,6 +957,7 @@ const deterministicBlocking = [];
 const deterministicWarnings = [];
 const validatedLinks = [];
 const validatedAssets = [];
+const validatedExternalSources = [];
 
 for (const field of ensureArray(qualityGates.required_frontmatter_fields)) {
   const value = articlePackage.frontmatter[field];
@@ -756,6 +1013,36 @@ for (const link of articlePackage.internal_links) {
   if (!valid) deterministicBlocking.push('invalid_internal_link:' + pathValue);
 }
 
+for (const source of articlePackage.external_sources) {
+  const sourceUrl = String(source.url || '');
+  const classified = classifySource({
+    url: sourceUrl,
+    title: String(source.title || ''),
+    content: String(source.why_used || ''),
+    snippet: String(source.why_used || ''),
+    published_at: '',
+  }, String(articlePlan.working_title || ''), sourcePolicy, resourceRegistry, articlePlan);
+  if (!classified.allowed) {
+    validatedExternalSources.push({
+      url: sourceUrl,
+      status: 'blocked',
+      reason: String(classified.reason || 'blocked'),
+    });
+    deterministicBlocking.push('invalid_external_source:' + sourceUrl);
+    continue;
+  }
+  validatedExternalSources.push({
+    url: sourceUrl,
+    status: classified.review_required ? 'review_required' : 'ok',
+    resource_class: classified.resource_class,
+    topic_fit_score: Number(classified.topic_fit_score || 0).toFixed(2),
+    resource_score: Number(classified.resource_score || 0).toFixed(2),
+  });
+  if (classified.review_required) {
+    deterministicWarnings.push('external_source_review_required:' + sourceUrl);
+  }
+}
+
 for (const media of articlePackage.media_brief) {
   const assetId = String(media.assetId || '');
   if (!assetId) {
@@ -786,6 +1073,7 @@ recordDiagnostic('deterministic_publication_fit', {
   deterministic_blocking: deterministicBlocking,
   deterministic_warnings: deterministicWarnings,
   deterministic_score: deterministicScore,
+  validated_external_sources: validatedExternalSources,
 });
 
 const fitPrompt = buildPrompt(String(ctx.prompts.publication_fit || ''), {
@@ -795,9 +1083,11 @@ const fitPrompt = buildPrompt(String(ctx.prompts.publication_fit || ''), {
     blocking_issues: deterministicBlocking,
     warnings: deterministicWarnings,
     validated_links: validatedLinks,
+    validated_external_sources: validatedExternalSources,
     validated_assets: validatedAssets,
   }, null, 2),
   source_snapshot: JSON.stringify(compactedSnapshot, null, 2),
+  source_policy: JSON.stringify(sourcePolicy, null, 2),
   quality_gates: JSON.stringify(qualityGates, null, 2),
 });
 
@@ -845,8 +1135,8 @@ ctx.artifacts.final_gate = {
   priority_fixes: publicationFitReport.next_actions,
   release_notes: publicationFitReport.warnings,
 };
-addStage(7, 'publication_fit_report', 'ok', 'article_package', 'publication_fit_report', publicationFitReport.fit_score, 'Publication fit merged', publicationFitReport.blocking_issues.length);
-await addStageSummary.call(this, 7, 'publication_fit_report', publicationFitReport);
+addStage(10, 'publication_fit_report', 'ok', 'article_package', 'publication_fit_report', publicationFitReport.fit_score, 'Publication fit merged', publicationFitReport.blocking_issues.length);
+await addStageSummary.call(this, 10, 'publication_fit_report', publicationFitReport);
 
 const exportStatus = publicationFitReport.status === 'hold'
   ? 'blocked'
@@ -895,8 +1185,8 @@ ctx.generated = Object.assign({}, ensureObject(ctx.generated), {
   ].join('\n'),
 });
 
-addStage(8, 'export_bundle_ready', 'ok', 'publication_fit_report', 'export_bundle', publicationFitReport.fit_score, 'Export bundle created');
-await addStageSummary.call(this, 8, 'export_bundle_ready', {
+addStage(11, 'export_bundle_ready', 'ok', 'publication_fit_report', 'export_bundle', publicationFitReport.fit_score, 'Export bundle created');
+await addStageSummary.call(this, 11, 'export_bundle_ready', {
   status: exportBundle.status,
   target_source_path: exportBundle.target_source_path,
 });

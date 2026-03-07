@@ -207,18 +207,189 @@ const sourcePolicy = ensureObject(ctx.configs.source_policy);
 if (!sourcePolicy.mode) {
   throw new Error('Missing runtime config: source_policy');
 }
+const resourceRegistry = ensureObject(ctx.configs.resource_registry);
+if (!resourceRegistry.version) {
+  throw new Error('Missing runtime config: resource_registry');
+}
 
 const policy = {
   minimumExternalSignals: clamp(sourcePolicy.minimum_external_signals, 1, 20, 4),
   minimumDistinctDomains: clamp(sourcePolicy.minimum_distinct_domains, 1, 20, 3),
   minimumPrimarySources: clamp(sourcePolicy.minimum_primary_sources, 0, 10, 1),
+  minimumResourceScore: clamp(sourcePolicy.minimum_resource_score, 0, 1, 0.48),
+  minimumTopicFitScore: clamp(sourcePolicy.minimum_topic_fit_score, 0, 1, 0.28),
+  minimumEvidenceStrengthScore: clamp(sourcePolicy.minimum_evidence_strength_score, 0, 1, 0.38),
+  minimumCitationReadinessScore: clamp(sourcePolicy.minimum_citation_readiness_score, 0, 1, 0.28),
   allowedSourceTypes: new Set(lowerList(sourcePolicy.allowed_source_types)),
+  allowedResourceClasses: new Set(lowerList(sourcePolicy.allowed_resource_classes)),
   blockedDomainPatterns: lowerList(sourcePolicy.blocked_domain_patterns),
   downgradedDomainPatterns: lowerList(sourcePolicy.downgraded_domain_patterns),
+  blockedTitlePatterns: lowerList(sourcePolicy.blocked_title_patterns),
+  blockedSnippetPatterns: lowerList(sourcePolicy.blocked_snippet_patterns),
   officialDomainMarkers: lowerList(sourcePolicy.official_domain_markers),
   researchDomainPatterns: lowerList(sourcePolicy.research_domain_patterns),
   communityDomains: lowerList(sourcePolicy.community_domains),
+  resourceScoreWeights: ensureObject(sourcePolicy.resource_score_weights),
 };
+
+const resourceProfiles = ensureObject(resourceRegistry.default_resource_profiles);
+const registryEntries = ensureArray(resourceRegistry.publishers).map((entry) => ({
+  resource_id: String(entry.resource_id || ''),
+  publisher: String(entry.publisher || ''),
+  domain_patterns: lowerList(entry.domain_patterns),
+  resource_class: String(entry.resource_class || '').trim(),
+  allowed_workflows: lowerList(entry.allowed_workflows),
+  allowed_usage: lowerList(entry.allowed_usage),
+  manual_review_required: parseBool(entry.manual_review_required, false),
+  topic_keywords_any: lowerList(entry.topic_keywords_any),
+  bias_flags: uniqueStrings(entry.bias_flags, 80),
+  notes: String(entry.notes || ''),
+})).filter((entry) => entry.resource_id && entry.resource_class && entry.domain_patterns.length);
+
+function toScore(value, fallback) {
+  return clamp(value, 0, 1, fallback);
+}
+
+function tokenize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9äöüß]+/gi, ' ')
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+}
+
+function overlapScore(left, right) {
+  const leftTokens = new Set(tokenize(left));
+  const rightTokens = new Set(tokenize(right));
+  if (!leftTokens.size || !rightTokens.size) return 0;
+  let hits = 0;
+  for (const token of leftTokens) {
+    if (rightTokens.has(token)) hits += 1;
+  }
+  return hits / Math.max(leftTokens.size, rightTokens.size);
+}
+
+function containsAnyToken(text, needles) {
+  const normalizedText = String(text || '').toLowerCase();
+  const haystack = new Set(tokenize(text));
+  for (const needle of ensureArray(needles)) {
+    const normalizedNeedle = String(needle || '').toLowerCase().trim();
+    if (!normalizedNeedle) continue;
+    if (normalizedNeedle.includes(' ')) {
+      if (normalizedText.includes(normalizedNeedle)) return true;
+      continue;
+    }
+    if (haystack.has(normalizedNeedle)) return true;
+  }
+  return false;
+}
+
+function sourceTypeFromResourceClass(resourceClass) {
+  const normalized = String(resourceClass || '').trim();
+  const profile = ensureObject(resourceProfiles[normalized]);
+  if (profile.source_type) return String(profile.source_type);
+  if (normalized === 'community_signal') return 'community';
+  if (normalized === 'general_media') return 'media';
+  if (normalized === 'official_product_or_platform_docs' || normalized === 'official_standards_or_regulation') return 'official';
+  if (normalized === 'vendor_content' || normalized === 'operator_case_study' || normalized === 'low_value_aggregator') return 'vendor';
+  return 'research';
+}
+
+function defaultUsageForResourceClass(resourceClass) {
+  const profile = ensureObject(resourceProfiles[String(resourceClass || '').trim()]);
+  return lowerList(profile.default_usage);
+}
+
+function profileForResourceClass(resourceClass) {
+  const normalized = String(resourceClass || '').trim();
+  const profile = ensureObject(resourceProfiles[normalized]);
+  return {
+    source_type: sourceTypeFromResourceClass(normalized),
+    source_tier: String(profile.source_tier || (normalized === 'community_signal' ? 'community_signal' : 'supporting')),
+    authority: String(profile.authority || (normalized.startsWith('official_') ? 'high' : 'medium')),
+    evidence_strength_score: toScore(profile.evidence_strength_score, normalized === 'low_value_aggregator' ? 0.12 : 0.5),
+    citation_readiness_score: toScore(profile.citation_readiness_score, normalized === 'community_signal' ? 0.24 : 0.5),
+    commercial_bias_score: toScore(profile.commercial_bias_score, normalized === 'vendor_content' ? 0.34 : 0.18),
+    default_usage: defaultUsageForResourceClass(normalized),
+  };
+}
+
+function scoreWeights() {
+  const weights = policy.resourceScoreWeights;
+  return {
+    topicFit: toScore(weights.topic_fit, 0.34),
+    evidenceStrength: toScore(weights.evidence_strength, 0.22),
+    citationReadiness: toScore(weights.citation_readiness, 0.18),
+    freshness: toScore(weights.freshness, 0.12),
+    transferability: toScore(weights.transferability, 0.14),
+    commercialBiasPenalty: toScore(weights.commercial_bias_penalty, 0.18),
+  };
+}
+
+function resolveRegistryEntry(domain) {
+  let best = null;
+  let bestPatternLength = -1;
+  for (const entry of registryEntries) {
+    const matchedPattern = entry.domain_patterns.find((pattern) => domain.includes(pattern));
+    if (!matchedPattern) continue;
+    if (matchedPattern.length > bestPatternLength) {
+      best = entry;
+      bestPatternLength = matchedPattern.length;
+    }
+  }
+  return best;
+}
+
+function fallbackResourceClass(domain, query) {
+  if (policy.communityDomains.includes(domain) || /site:reddit\.com/i.test(String(query || ''))) return 'community_signal';
+  if (hasPattern(domain, policy.officialDomainMarkers)) return 'official_product_or_platform_docs';
+  if (hasPattern(domain, policy.researchDomainPatterns)) return 'topic_specific_research';
+  if (hasPattern(domain, policy.downgradedDomainPatterns)) return 'low_value_aggregator';
+  if (/news|press|magazine|journal|techcrunch|theverge|wired|venturebeat/i.test(domain)) return 'general_media';
+  return 'vendor_content';
+}
+
+function freshnessScore(freshness) {
+  if (freshness === 'current') return 1;
+  if (freshness === 'recent') return 0.82;
+  if (freshness === 'timeless') return 0.68;
+  if (freshness === 'dated') return 0.32;
+  return 0.5;
+}
+
+function scoreTopicFit(topicSeed, query, combinedText, registryEntry) {
+  const seedScore = Math.max(overlapScore(topicSeed, combinedText), overlapScore(query, combinedText));
+  const keywordBonus = registryEntry && registryEntry.topic_keywords_any.length && containsAnyToken(combinedText, registryEntry.topic_keywords_any) ? 0.16 : 0;
+  const specificityBonus = /\b(kpi|dashboard|reporting|analytics|business intelligence|data warehouse|data governance|decision support)\b/i.test(combinedText) ? 0.08 : 0;
+  return toScore(seedScore + keywordBonus + specificityBonus, 0);
+}
+
+function scoreTransferability(query, combinedText, resourceClass) {
+  const businessTerms = [
+    'analytics', 'reporting', 'dashboard', 'kpi', 'unternehmen', 'business',
+    'b2b', 'team', 'stakeholder', 'governance', 'report', 'entscheidung', 'data'
+  ];
+  const queryFit = overlapScore(query, combinedText);
+  const businessFit = containsAnyToken(combinedText, businessTerms) ? 0.28 : 0;
+  const classBonus = resourceClass === 'official_product_or_platform_docs' || resourceClass === 'industry_benchmark_or_survey' ? 0.12 : 0;
+  return toScore(0.28 + (queryFit * 0.34) + businessFit + classBonus, 0.3);
+}
+
+function scoreCitationReadiness(baseScore, result, summaryText) {
+  const published = String(result.publishedDate || result.published_at || '').trim();
+  const snippet = String(summaryText || '');
+  const publishedBonus = published ? 0.05 : 0;
+  const snippetBonus = snippet.length >= 120 ? 0.05 : snippet.length >= 60 ? 0.02 : 0;
+  const numericBonus = /\b\d+(?:[\.,]\d+)?%|\b\d{4}\b/.test(snippet) ? 0.04 : 0;
+  return toScore(baseScore + publishedBonus + snippetBonus + numericBonus, baseScore);
+}
+
+function scoreEvidenceStrength(baseScore, resourceClass, summaryText) {
+  const evidenceSignal = /\b(study|survey|benchmark|report|analysis|dataset|research|studie|umfrage|bericht)\b/i.test(String(summaryText || '')) ? 0.06 : 0;
+  const classPenalty = resourceClass === 'vendor_content' ? 0.05 : 0;
+  return toScore(baseScore + evidenceSignal - classPenalty, baseScore);
+}
 
 function addStage(step, stage, status, inputRef, outputRef, quality, notes, issueCount = 0) {
   ctx.stage_logs.push({
@@ -498,29 +669,6 @@ function dedupeSignals(signals) {
   return out;
 }
 
-function inferSourceType(urlValue, query) {
-  const domain = getDomain(urlValue);
-  if (policy.communityDomains.includes(domain) || /site:reddit\.com/i.test(String(query || ''))) return 'community';
-  if (hasPattern(domain, policy.officialDomainMarkers)) return 'official';
-  if (hasPattern(domain, policy.researchDomainPatterns)) return 'research';
-  if (/news|press|magazine|journal|techcrunch|theverge|wired/i.test(domain)) return 'media';
-  return 'vendor';
-}
-
-function inferAuthority(domain, sourceType, downgraded) {
-  if (downgraded) return 'low';
-  if (sourceType === 'official' || sourceType === 'research') return 'high';
-  if (sourceType === 'community') return 'medium';
-  if (sourceType === 'media') return 'medium';
-  return 'medium';
-}
-
-function inferSourceTier(sourceType, authority) {
-  if (sourceType === 'community') return 'community_signal';
-  if (sourceType === 'official' || sourceType === 'research' || authority === 'high') return 'primary';
-  return 'supporting';
-}
-
 function inferFreshness(publishedAt) {
   const text = String(publishedAt || '').trim();
   const yearMatch = text.match(/(20\d{2})/);
@@ -542,9 +690,112 @@ function summarizeSourceMix(signals) {
   return Array.from(counts.entries()).map(([sourceType, count]) => ({ source_type: sourceType, count }));
 }
 
+function summarizeResourceClassMix(signals) {
+  const counts = new Map();
+  for (const signal of ensureArray(signals)) {
+    const key = String(signal.resource_class || 'vendor_content');
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return Array.from(counts.entries()).map(([resourceClass, count]) => ({ resource_class: resourceClass, count }));
+}
+
+function classifySignal(urlValue, query, result) {
+  const url = sanitizeExternalText(urlValue || '', 420);
+  const title = sanitizeExternalText(result.title || '', 260);
+  const summary = sanitizeExternalText(result.content || result.snippet || '', 700);
+  const domain = getDomain(url);
+  const combinedText = [ctx.topic_hint || '', query, title, summary].filter(Boolean).join(' ');
+  const registryEntry = resolveRegistryEntry(domain);
+  const resourceClass = String((registryEntry && registryEntry.resource_class) || fallbackResourceClass(domain, query));
+  const profile = profileForResourceClass(resourceClass);
+  const sourceType = profile.source_type;
+  const allowedUsage = uniqueStrings((registryEntry && registryEntry.allowed_usage.length ? registryEntry.allowed_usage : profile.default_usage), 40);
+  const freshness = inferFreshness(result.publishedDate || result.published_at || '');
+  const topicFitScore = scoreTopicFit(String(ctx.topic_hint || query || ''), query, combinedText, registryEntry);
+  const evidenceStrengthScore = scoreEvidenceStrength(profile.evidence_strength_score, resourceClass, combinedText);
+  const citationReadinessScore = scoreCitationReadiness(profile.citation_readiness_score, result, combinedText);
+  const transferabilityScore = scoreTransferability(query, combinedText, resourceClass);
+  const commercialBiasScore = toScore(
+    profile.commercial_bias_score +
+      (resourceClass === 'vendor_content' ? 0.08 : 0) +
+      (resourceClass === 'operator_case_study' ? 0.04 : 0) -
+      (sourceType === 'official' ? 0.04 : 0),
+    profile.commercial_bias_score
+  );
+  const reviewRequired = !!(registryEntry && registryEntry.manual_review_required);
+  const weights = scoreWeights();
+  const resourceScore = toScore(
+    (topicFitScore * weights.topicFit) +
+      (evidenceStrengthScore * weights.evidenceStrength) +
+      (citationReadinessScore * weights.citationReadiness) +
+      (freshnessScore(freshness) * weights.freshness) +
+      (transferabilityScore * weights.transferability) -
+      (commercialBiasScore * weights.commercialBiasPenalty),
+    0
+  );
+
+  if (hasPattern(domain, policy.blockedDomainPatterns)) {
+    return { allowed: false, source_ref: url, reason: 'blocked_domain_pattern', domain, resource_class: resourceClass };
+  }
+  if (hasPattern(title, policy.blockedTitlePatterns)) {
+    return { allowed: false, source_ref: url, reason: 'blocked_title_pattern', domain, resource_class: resourceClass };
+  }
+  if (hasPattern(summary, policy.blockedSnippetPatterns)) {
+    return { allowed: false, source_ref: url, reason: 'blocked_snippet_pattern', domain, resource_class: resourceClass };
+  }
+  if (registryEntry && registryEntry.allowed_workflows.length && !registryEntry.allowed_workflows.includes('social')) {
+    return { allowed: false, source_ref: url, reason: 'workflow_not_allowed', domain, resource_class: resourceClass };
+  }
+  if (registryEntry && registryEntry.topic_keywords_any.length && !containsAnyToken(combinedText, registryEntry.topic_keywords_any)) {
+    return { allowed: false, source_ref: url, reason: 'registry_topic_mismatch', domain, resource_class: resourceClass };
+  }
+  if (policy.allowedResourceClasses.size && !policy.allowedResourceClasses.has(resourceClass)) {
+    return { allowed: false, source_ref: url, reason: 'resource_class_not_allowed', domain, resource_class: resourceClass };
+  }
+  if (policy.allowedSourceTypes.size && !policy.allowedSourceTypes.has(sourceType)) {
+    return { allowed: false, source_ref: url, reason: 'source_type_not_allowed', domain, resource_class: resourceClass };
+  }
+  if (topicFitScore < policy.minimumTopicFitScore) {
+    return { allowed: false, source_ref: url, reason: 'low_topic_fit', domain, resource_class: resourceClass, topic_fit_score: topicFitScore };
+  }
+  if (resourceClass !== 'community_signal' && evidenceStrengthScore < policy.minimumEvidenceStrengthScore) {
+    return { allowed: false, source_ref: url, reason: 'low_evidence_strength', domain, resource_class: resourceClass, evidence_strength_score: evidenceStrengthScore };
+  }
+  if (resourceClass !== 'community_signal' && citationReadinessScore < policy.minimumCitationReadinessScore) {
+    return { allowed: false, source_ref: url, reason: 'low_citation_readiness', domain, resource_class: resourceClass, citation_readiness_score: citationReadinessScore };
+  }
+  if (resourceScore < policy.minimumResourceScore) {
+    return { allowed: false, source_ref: url, reason: 'low_resource_score', domain, resource_class: resourceClass, resource_score: resourceScore };
+  }
+
+  return {
+    allowed: true,
+    source_type: sourceType,
+    resource_class: resourceClass,
+    source_tier: profile.source_tier,
+    authority: profile.authority,
+    freshness,
+    domain,
+    summary,
+    title,
+    url,
+    allowed_usage: allowedUsage,
+    topic_fit_score: topicFitScore,
+    evidence_strength_score: evidenceStrengthScore,
+    citation_readiness_score: citationReadinessScore,
+    transferability_score: transferabilityScore,
+    commercial_bias_score: commercialBiasScore,
+    review_required: reviewRequired,
+    resource_score: resourceScore,
+    risk_or_bias: uniqueStrings((registryEntry && registryEntry.bias_flags) || [], 80).join(', ') || (reviewRequired ? 'manual_review_required' : ''),
+    registry_notes: registryEntry ? String(registryEntry.notes || '') : '',
+  };
+}
+
 function buildRetrievalSummary(allowedSignals, blockedSignals) {
   const distinctDomains = new Set(ensureArray(allowedSignals).map((signal) => String(signal.domain || '')).filter(Boolean));
   const primarySourceCount = ensureArray(allowedSignals).filter((signal) => signal.source_tier === 'primary').length;
+  const reviewRequiredSignalCount = ensureArray(allowedSignals).filter((signal) => signal.review_required).length;
   return {
     external_signal_count: ensureArray(allowedSignals).length,
     allowed_signal_count: ensureArray(allowedSignals).length,
@@ -552,6 +803,8 @@ function buildRetrievalSummary(allowedSignals, blockedSignals) {
     distinct_domains: distinctDomains.size,
     primary_source_count: primarySourceCount,
     source_mix: summarizeSourceMix(allowedSignals),
+    resource_class_mix: summarizeResourceClassMix(allowedSignals),
+    review_required_signal_count: reviewRequiredSignalCount,
     external_evidence_ready:
       ensureArray(allowedSignals).length >= policy.minimumExternalSignals &&
       distinctDomains.size >= policy.minimumDistinctDomains &&
@@ -604,8 +857,6 @@ for (const row of queryPlan) {
 
     for (const result of results) {
       const url = sanitizeExternalText(result.url || '', 420);
-      const title = sanitizeExternalText(result.title || '', 260);
-      const domain = getDomain(url);
 
       if (!isAllowedExternalUrl(url)) {
         blockedSignals.push({ source_ref: url || query, reason: 'blocked_or_invalid_url' });
@@ -613,44 +864,35 @@ for (const row of queryPlan) {
         continue;
       }
 
-      const sourceType = inferSourceType(url, query);
-      if (policy.allowedSourceTypes.size && !policy.allowedSourceTypes.has(sourceType)) {
-        blockedSignals.push({ source_ref: url, reason: 'source_type_not_allowed' });
+      const classified = classifySignal(url, query, result);
+      if (!classified.allowed) {
+        blockedSignals.push(classified);
         blockedCount += 1;
         continue;
       }
-
-      if (hasPattern(domain, policy.blockedDomainPatterns)) {
-        blockedSignals.push({ source_ref: url, reason: 'blocked_domain_pattern' });
-        blockedCount += 1;
-        continue;
-      }
-
-      const downgraded = hasPattern(domain, policy.downgradedDomainPatterns);
-      const authority = inferAuthority(domain, sourceType, downgraded);
-      const freshness = inferFreshness(result.publishedDate || result.published_at || '');
-      const sourceTier = inferSourceTier(sourceType, authority);
-      const freshnessBoost = freshness === 'current' ? 0.08 : freshness === 'recent' ? 0.04 : freshness === 'dated' ? -0.08 : 0;
-      const sourceScore = clamp(
-        (authority === 'high' ? 0.84 : authority === 'medium' ? 0.72 : 0.52) + freshnessBoost - (downgraded ? 0.12 : 0),
-        0,
-        1,
-        0.5
-      );
 
       rawSignals.push({
         query,
-        source_type: sourceType,
-        source_tier: sourceTier,
-        title,
-        url,
-        domain,
-        summary: sanitizeExternalText(result.content || result.snippet || '', 700),
+        source_type: classified.source_type,
+        resource_class: classified.resource_class,
+        source_tier: classified.source_tier,
+        title: classified.title,
+        url: classified.url,
+        domain: classified.domain,
+        summary: classified.summary,
         published_at: sanitizeExternalText(result.publishedDate || result.published_at || '', 80),
-        authority,
-        freshness,
-        source_score: sourceScore,
-        downgraded,
+        authority: classified.authority,
+        freshness: classified.freshness,
+        source_score: classified.resource_score,
+        allowed_usage: classified.allowed_usage,
+        topic_fit_score: classified.topic_fit_score,
+        evidence_strength_score: classified.evidence_strength_score,
+        citation_readiness_score: classified.citation_readiness_score,
+        transferability_score: classified.transferability_score,
+        commercial_bias_score: classified.commercial_bias_score,
+        review_required: classified.review_required,
+        risk_or_bias: classified.risk_or_bias,
+        registry_notes: classified.registry_notes,
       });
       acceptedCount += 1;
     }
@@ -728,6 +970,7 @@ if (!dedupedSignals.length) {
       raw_signals: JSON.stringify(dedupedSignals.slice(0, 20)),
       existing_context: JSON.stringify(buildContextBundle()),
       source_policy: JSON.stringify(sourcePolicy),
+      resource_registry: JSON.stringify(resourceRegistry),
       query_diagnostics: JSON.stringify(queryDiagnostics),
       retrieval_summary: JSON.stringify(retrievalSummary),
     }

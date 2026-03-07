@@ -27,12 +27,20 @@ if (requestedModel !== pinnedModel) {
 const workflowDir =
   input.workflow_dir ||
   $env.OBSIDIAN_WORKFLOW_DIR ||
-  'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow';
+  'Workflows/social-content';
 const workflowsDir = input.workflows_dir || $env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows';
+const sharedDir =
+  input.workflows_shared_dir ||
+  $env.OBSIDIAN_WORKFLOWS_SHARED_DIR ||
+  (workflowsDir + '/_shared');
 const globalContextDir =
   input.workflow_global_context_dir ||
   $env.OBSIDIAN_WORKFLOWS_CONTEXT_DIR ||
-  (workflowsDir + '/Kontext');
+  (sharedDir + '/Kontext');
+const marketingDir =
+  input.workflow_marketing_dir ||
+  $env.OBSIDIAN_WORKFLOW_MARKETING_DIR ||
+  'Marketing/Social-Media/Beitraege/Beitraege-Workflow';
 
 const ctx = {
   run_id: runId,
@@ -57,19 +65,22 @@ const ctx = {
   },
 
   workflow_dir: workflowDir,
-  workflow_results_dir: input.workflow_results_dir || $env.OBSIDIAN_WORKFLOW_RESULTS_DIR || (workflowDir + '/Ergebnisse'),
-  workflow_detail_dir: input.workflow_detail_dir || $env.OBSIDIAN_WORKFLOW_DETAIL_DIR || (workflowDir + '/Ergebnisse/Laufdetails'),
-  workflow_error_dir: input.workflow_error_dir || $env.OBSIDIAN_WORKFLOW_ERROR_DIR || (workflowDir + '/Ergebnisse/Fehlerdetails'),
-  workflow_intermediate_dir: input.workflow_intermediate_dir || $env.OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR || (workflowDir + '/Zwischenergebnisse'),
+  workflow_marketing_dir: marketingDir,
+  workflow_results_dir: input.workflow_results_dir || $env.OBSIDIAN_WORKFLOW_RESULTS_DIR || (workflowDir + '/Artefakte/Ergebnisse'),
+  workflow_detail_dir: input.workflow_detail_dir || $env.OBSIDIAN_WORKFLOW_DETAIL_DIR || (workflowDir + '/Artefakte/Ergebnisse/Laufdetails'),
+  workflow_error_dir: input.workflow_error_dir || $env.OBSIDIAN_WORKFLOW_ERROR_DIR || (workflowDir + '/Artefakte/Ergebnisse/Fehlerdetails'),
+  workflow_intermediate_dir: input.workflow_intermediate_dir || $env.OBSIDIAN_WORKFLOW_INTERMEDIATE_DIR || (workflowDir + '/Artefakte/Zwischenergebnisse'),
   workflow_prompts_dir: input.workflow_prompts_dir || $env.OBSIDIAN_WORKFLOW_PROMPTS_DIR || (workflowDir + '/Prompts'),
   workflow_context_dir: input.workflow_context_dir || $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR || (workflowDir + '/Kontext'),
   workflow_global_context_dir: globalContextDir,
   workflow_config_dir: input.workflow_config_dir || $env.OBSIDIAN_WORKFLOW_CONFIG_DIR || (workflowDir + '/Config'),
   workflow_schema_dir: input.workflow_schema_dir || $env.OBSIDIAN_WORKFLOW_SCHEMA_DIR || (workflowDir + '/Schemas'),
 
-  workflow_runs_file: input.workflow_runs_file || $env.OBSIDIAN_WORKFLOW_RUNS_FILE || (workflowDir + '/Ergebnisse/00-Runs.md'),
-  workflow_overview_file: input.workflow_overview_file || $env.OBSIDIAN_WORKFLOW_OVERVIEW_FILE || (workflowDir + '/Beitraege-Workflow-Uebersicht.md'),
-  workflow_ssot_manifest_file: input.workflow_ssot_manifest_file || $env.OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE || (workflowDir + '/SSOT/manifest.json'),
+  workflow_runs_file: input.workflow_runs_file || $env.OBSIDIAN_WORKFLOW_RUNS_FILE || (workflowDir + '/Artefakte/Ergebnisse/00-Runs.md'),
+  workflow_overview_file: input.workflow_overview_file || $env.OBSIDIAN_WORKFLOW_OVERVIEW_FILE || (marketingDir + '/Workflow-Uebersicht.md'),
+  workflow_results_overview_file: input.workflow_results_overview_file || $env.OBSIDIAN_WORKFLOW_RESULTS_OVERVIEW_FILE || (marketingDir + '/Ergebnisse-Uebersicht.md'),
+  workflow_intermediate_overview_file: input.workflow_intermediate_overview_file || $env.OBSIDIAN_WORKFLOW_INTERMEDIATE_OVERVIEW_FILE || (marketingDir + '/Zwischenergebnisse-Uebersicht.md'),
+  workflow_ssot_manifest_file: input.workflow_ssot_manifest_file || $env.OBSIDIAN_WORKFLOW_SSOT_MANIFEST_FILE || (workflowDir + '/_system/manifest.json'),
 
   obsidian_rest_url: input.obsidian_rest_url || $env.OBSIDIAN_REST_URL || '',
   obsidian_rest_api_key: input.obsidian_rest_api_key || $env.OBSIDIAN_REST_API_KEY || '',

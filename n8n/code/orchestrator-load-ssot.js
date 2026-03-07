@@ -233,13 +233,13 @@ const globalContextDir =
   String(
     ctx.workflow_global_context_dir ||
     $env.OBSIDIAN_WORKFLOWS_CONTEXT_DIR ||
-    (($env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows') + '/Kontext')
+    (($env.OBSIDIAN_WORKFLOWS_SHARED_DIR || (($env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows') + '/_shared')) + '/Kontext')
   );
 const workflowLocalContextDir =
   String(
     ctx.workflow_context_dir ||
     $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR ||
-    ((ctx.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow') + '/Kontext')
+    ((ctx.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Workflows/social-content') + '/Kontext')
   );
 
 const contextPaths = {
@@ -272,10 +272,11 @@ const configDir =
   String(
     ctx.workflow_config_dir ||
     $env.OBSIDIAN_WORKFLOW_CONFIG_DIR ||
-    ((ctx.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow') + '/Config')
+    ((ctx.workflow_dir || $env.OBSIDIAN_WORKFLOW_DIR || 'Workflows/social-content') + '/Config')
   );
 const configPaths = {
   source_policy: configDir + '/source-policy.json',
+  resource_registry: configDir + '/resource-registry.json',
   platform_profiles: configDir + '/platform-profiles.json',
 };
 

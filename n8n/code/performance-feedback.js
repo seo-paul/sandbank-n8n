@@ -59,20 +59,25 @@ const runId = 'perf-' + sanitizedParentRunId + '-' + timestamp;
 const workflowDir = String(
   input.workflow_dir ||
   $env.OBSIDIAN_WORKFLOW_DIR ||
-  'Marketing/Social-Media/Beitraege/Workflow/Beitraege-Workflow'
+  'Workflows/social-content'
 );
 const workflowsDir = String(input.workflows_dir || $env.OBSIDIAN_WORKFLOWS_DIR || 'Workflows');
+const sharedDir = String(
+  input.workflows_shared_dir ||
+  $env.OBSIDIAN_WORKFLOWS_SHARED_DIR ||
+  (workflowsDir + '/_shared')
+);
 const globalContextDir = String(
   input.workflow_global_context_dir ||
   $env.OBSIDIAN_WORKFLOWS_CONTEXT_DIR ||
-  (workflowsDir + '/Kontext')
+  (sharedDir + '/Kontext')
 );
 const workflowLocalContextDir = String(
   input.workflow_context_dir ||
   $env.OBSIDIAN_WORKFLOW_CONTEXT_DIR ||
   (workflowDir + '/Kontext')
 );
-const resultsDir = String(input.workflow_results_dir || $env.OBSIDIAN_WORKFLOW_RESULTS_DIR || (workflowDir + '/Ergebnisse'));
+const resultsDir = String(input.workflow_results_dir || $env.OBSIDIAN_WORKFLOW_RESULTS_DIR || (workflowDir + '/Artefakte/Ergebnisse'));
 const promptsDir = String(input.workflow_prompts_dir || $env.OBSIDIAN_WORKFLOW_PROMPTS_DIR || (workflowDir + '/Prompts'));
 const schemaDir = String(input.workflow_schema_dir || $env.OBSIDIAN_WORKFLOW_SCHEMA_DIR || (workflowDir + '/Schemas'));
 
